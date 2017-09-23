@@ -1,12 +1,12 @@
 /****************************************************************
- * Filename: time_bl.c
+ * Filename: time_helper.c
  * -------------------------------
  * Copyright(C),
  * Author: zhenquan.qiu
  * Version: V1.0.0
  * Last modified: 22/09 2017 22:05
  * Description:
- * 
+ *
  * Change Log:
  * NO.	Author		    Date		Modified
  * 00	zhenquan.qiu	22/09 2017
@@ -35,9 +35,9 @@
  */
 #include <stdio.h>
 
-#define TIME_BL_GB
-#include "time_bl.h"
-#undef TIME_BL_GB
+#define TIME_HELPER_GB
+#include "time_helper.h"
+#undef TIME_HELPER_GB
 
 struct timespec cur_delay_ms(unsigned int timeout_ms)
 {

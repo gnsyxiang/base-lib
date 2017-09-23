@@ -1,5 +1,5 @@
 /****************************************************************
- * Filename: type.h
+ * Filename: type_helper.h
  * -------------------------------
  * Copyright(C),
  * Author: zhenquan.qiu
@@ -11,8 +11,8 @@
  * NO.	Author		    Date		Modified
  * 00	zhenquan.qiu	21/09 2017
  ****************************************************************/
-#ifndef _TYPE_H_
-#define _TYPE_H_
+#ifndef _TYPE_HELPER_H_
+#define _TYPE_HELPER_H_
 
 #if defined _WIN32 || defined __CYGWIN__
     #ifdef BUILDING_DLL
@@ -48,10 +48,10 @@
 extern "C" {
 #endif
 
-#ifndef TYPE_GB
-#define TYPE_EX extern
+#ifndef TYPE_HELPER_GB
+#define TYPE_HELPER_EX extern
 #else
-#define TYPE_EX
+#define TYPE_HELPER_EX
 #endif
 
 
@@ -60,5 +60,5 @@ extern "C" {
 }
 #endif
 
-#endif /* end _TYPE_H_ */
+#endif /* end _TYPE_HELPER_H_ */
 

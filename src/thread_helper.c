@@ -1,5 +1,5 @@
 /****************************************************************
- * Filename: thread.c
+ * Filename: thread_helper.c
  * -------------------------------
  * Copyright(C),
  * Author: zhenquan.qiu
@@ -13,9 +13,9 @@
  ****************************************************************/
 #include <pthread.h>
 
-#define THREAD_GB
-#include "thread.h"
-#undef THREAD_GB
+#define THREAD_HELPER_GB
+#include "thread_helper.h"
+#undef THREAD_HELPER_GB
 
 pthread_t thread_create_detached(thread_cb_t cb, void *arg)
 {

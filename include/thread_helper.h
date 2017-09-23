@@ -1,5 +1,5 @@
 /****************************************************************
- * Filename: thread.h
+ * Filename: thread_helper.h
  * -------------------------------
  * Copyright(C),
  * Author: zhenquan.qiu
@@ -11,8 +11,8 @@
  * NO.	Author		    Date		Modified
  * 00	zhenquan.qiu	23/09 2017
  ****************************************************************/
-#ifndef _THREAD_H_
-#define _THREAD_H_
+#ifndef _THREAD_HELPER_H_
+#define _THREAD_HELPER_H_
 
 #ifdef __cplusplus
 export "C" {
@@ -20,19 +20,19 @@ export "C" {
 
 #include <pthread.h>
 
-#ifndef THREAD_GB
-#define THREAD_EX extern
+#ifndef THREAD_HELPER_GB
+#define THREAD_HELPER_EX extern
 #else
-#define THREAD_EX
+#define THREAD_HELPER_EX
 #endif
 
 typedef void *(*thread_cb_t)(void *);
 
-THREAD_EX pthread_t thread_create_detached(thread_cb_t cb, void *arg);
+THREAD_HELPER_EX pthread_t thread_create_detached(thread_cb_t cb, void *arg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* end _THREAD_H_ */
+#endif /* end _THREAD_HELPER_H_ */
 
