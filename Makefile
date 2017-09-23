@@ -105,8 +105,17 @@ clean:
 	$(RM) $(DEPS)
 	$(RM) $(TARGET)
 
-distclean: clean
+distclean: clean index-clean
 	$(RM) $(OBJ_DIR)
+
+index: index-clean
+	$(Q)echo generate index
+	$(Q)ctags -R
+	$(Q)cscope -Rbkq
+
+index-clean:
+	$(RM) *.out
+	$(RM) tags
 
 debug:
 	echo $(SRC_DIR)
