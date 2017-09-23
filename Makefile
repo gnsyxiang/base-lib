@@ -61,7 +61,7 @@ MSG_LD := LD
 # -------
 # h files
 # -------
-INC_C := $(TARGET).h
+INC_C := $(wildcard $(INC_DIR)/*.h)
 
 MSG_INC := INC_COPY
 # -------
@@ -80,6 +80,8 @@ $(TARGET_SO): $(OBJS)
 	$(Q)$(CC) $(LDFLAGS) $(OBJS)  -o $(LIB_DIR)/$(TARGET_SO)
 	$(Q)ln -s $(TARGET_SO) $(LIB_DIR)/lib$(TARGET).so
 	$(Q)ln -s $(TARGET_SO) $(LIB_DIR)/lib$(TARGET).so.$(MAJOR_VERSION)
+	$(Q)cp $(LIB_DIR)/* ../lib/ -ar
+	$(Q)cp $(INC_C) ../include/ -ar
 
 #
 # make *.c
