@@ -29,6 +29,8 @@ extern "C" {
 
 
 TIME_BL_EX struct timespec cur_delay_ms(unsigned int timeout_ms);
+TIME_BL_EX void get_tm_time(struct tm *tm);
+TIME_BL_EX void format_time(char *time);
 
 #ifdef __cplusplus
 }
