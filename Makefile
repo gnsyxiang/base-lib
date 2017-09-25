@@ -119,6 +119,9 @@ index-clean:
 	$(RM) *.out
 	$(RM) tags
 
+note:
+	doxygen configs/Doxyfile
+
 debug:
 	echo $(SRC_DIR)
 
