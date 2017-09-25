@@ -1,16 +1,22 @@
-/****************************************************************
- * Filename: time_helper.h
- * -------------------------------
- * Copyright(C),
- * Author: zhenquan.qiu
- * Version: V1.0.0
- * Last modified: 22/09 2017 22:07
- * Description:
+/**
+ * Copyright (C) 2017 xxx Co., Ltd.
+ * All rights reserved.
  *
- * Change Log:
- * NO.	Author		    Date		Modified
- * 00	zhenquan.qiu	22/09 2017
- ****************************************************************/
+ * @file     time_helper.h
+ * @brief    Get the system time and function of operation time.
+ * @author   gnsyxiang <gnsyxiang@163.com>
+ * @date     2017.09.25
+ * @version  0.0.1
+ *
+ * @since    note
+ * @note
+ *
+ *     Change Log:
+ *     NO.      Author              Date		    Modified
+ *     00	    zhenquan.qiu	    25/09 2017      create the file
+ *
+ *     Last modified: 25/09 2017 15:19
+ */
 #ifndef _TIME_HELPER_H_
 #define _TIME_HELPER_H_
 
@@ -22,14 +28,34 @@ extern "C" {
 #include <sys/time.h>
 
 #ifndef TIME_HELPER_GB
-#define TIME_HELPER_EX extern
+#define TIME_HELPER_EX extern       /**< control function external reference macro. */
 #else
 #define TIME_HELPER_EX
 #endif
 
-
+/**
+ * return the 'struct timespec' time
+ * after the currtent time delay specifies milliseconds.
+ *
+ * @param timeout_ms: milliseconds requiring delay.
+ * @return return the 'struct timespec' time.
+ */
 TIME_HELPER_EX struct timespec cur_delay_ms(unsigned int timeout_ms);
+
+/**
+ * get the current time with 'struct tm'
+ *
+ * @param tm: pointers to 'struct tm'
+ * @return void
+ */
 TIME_HELPER_EX void get_tm_time(struct tm *tm);
+
+/**
+ * format time as required
+ *
+ * @param time: a pointer to storing formatting time
+ * @return void
+ */
 TIME_HELPER_EX void format_time(char *time);
 
 #ifdef __cplusplus
