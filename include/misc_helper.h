@@ -28,6 +28,7 @@ extern "C" {
 #define FOR_ZERO_TO_LEN(len) for (int i = 0; i < (len); i++)
 
 MISC_HELPER_EX void test(void);
+MISC_HELPER_EX int random_num(int range);
 
 #ifdef __cplusplus
 }

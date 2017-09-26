@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #include "time_helper.h"
+#include "misc_helper.h"
 
 void time_test(void)
 {
@@ -33,9 +34,18 @@ void time_test(void)
     printf("time: %s \n", time_buf);
 }
 
+void random_test(void)
+{
+    for (int i = 0; i < 100; i++) {
+        printf("%d ",  random_num(100));
+    }
+}
+
 int main(int argc, const char *argv[])
 {
     time_test();
+
+    random_test();
 
     return 0;
 }
