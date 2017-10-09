@@ -6,7 +6,7 @@
 # Version: V1.0.0
 # Last modified: 22/09 2017 21:39
 # Description:
-# 
+#
 # Change Log:
 # NO.	Author		    Date		Modified
 # 00	zhenquan.qiu	22/09 2017
@@ -20,7 +20,12 @@ INC_DIR ?= include
 SRC_DIR ?= src
 
 Q := @
+
 RM := $(Q)rm -rf
+ECHO := $(Q)echo
+MKDIR := $(Q)mkdir -p
+LN := $(Q)ln -s
+CP := $(Q)cp -ar
 
 MAJOR_VERSION := 1
 MINOR_VERSION := 0
@@ -28,6 +33,7 @@ BUG_VERSION := 0
 
 TARGET := base_lib
 TARGET_SO := lib$(TARGET).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUG_VERSION)
+TARGET_PATH := $(LIB_DIR)/$(TARGET_SO)
 
 MSG_LIB := LIB_COPY
 
@@ -39,7 +45,7 @@ GCC_NAME := mips-linux-gnu-
 
 # CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
 
-CC := $(CROSS_TOOL)gcc
+CC := $(Q)$(CROSS_TOOL)gcc
 
 # ------
 # cflags
@@ -61,7 +67,7 @@ MSG_LD := LD
 # -------
 # h files
 # -------
-INC_C := $(TARGET).h
+INC_C := $(wildcard $(INC_DIR)/*.h)
 
 MSG_INC := INC_COPY
 # -------
@@ -73,32 +79,41 @@ DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(SRC_C))
 DEPS  ?= $(DEP_C)
 OBJS  ?= $(OBJ_C)
 
-all: clean-lib $(TARGET_SO)
+all: $(TARGET_PATH) handle_lib
 
-$(TARGET_SO): $(OBJS)
-	$(Q)echo $(MSG_LD) $<
-	$(Q)$(CC) $(LDFLAGS) $(OBJS)  -o $(LIB_DIR)/$(TARGET_SO)
-	$(Q)ln -s $(TARGET_SO) $(LIB_DIR)/lib$(TARGET).so
-	$(Q)ln -s $(TARGET_SO) $(LIB_DIR)/lib$(TARGET).so.$(MAJOR_VERSION)
+$(TARGET_PATH): $(OBJS)
+	$(ECHO) $(MSG_LD) $<
+	$(MKDIR) $(LIB_DIR)
+	$(CC) $(LDFLAGS) $(OBJS)  -o $@
+
+handle_lib: clean_lib ln_lib cp_lib
+	$(ECHO) "copy lib and inc successful"
+
+clean_lib:
+	$(RM) $(LIB_DIR)/lib$(TARGET).so
+	$(RM) $(LIB_DIR)/lib$(TARGET).so.$(MAJOR_VERSION)
+
+ln_lib:
+	$(LN) $(TARGET_SO) $(LIB_DIR)/lib$(TARGET).so
+	$(LN) $(TARGET_SO) $(LIB_DIR)/lib$(TARGET).so.$(MAJOR_VERSION)
+
+cp_lib:
+	$(CP) $(LIB_DIR)/* ../lib/
+	$(CP) $(INC_C) ../include/
 
 #
 # make *.c
 #
 $(OBJ_C): $(OBJ_DIR)/%.o : %.c
-	$(Q)mkdir -p $(dir $@)
-	$(Q)echo $(MSG_CC) $<
-	$(Q)$(CC) -c $(CFLAGS) $< -o $@
+	$(MKDIR) $(dir $@)
+	$(ECHO) $(MSG_CC) $<
+	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEP_C): $(OBJ_DIR)/%.d : %.c
-	$(Q)mkdir -p $(dir $@);
-	$(Q)$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
+	$(MKDIR) $(dir $@);
+	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
 sinclude $(DEPS)
-
-clean-lib:
-	$(RM) $(LIB_DIR)/lib$(TARGET).so
-	$(RM) $(LIB_DIR)/lib$(TARGET).so.$(MAJOR_VERSION)
-	$(RM) $(LIB_DIR)/$(TARGET_SO)
 
 clean:
 	$(RM) $(OBJS)
@@ -107,15 +122,19 @@ clean:
 
 distclean: clean index-clean
 	$(RM) $(OBJ_DIR)
+	$(RM) $(LIB_DIR)
 
 index: index-clean
-	$(Q)echo generate index
+	$(ECHO) generate index
 	$(Q)ctags -R
 	$(Q)cscope -Rbkq
 
 index-clean:
 	$(RM) *.out
 	$(RM) tags
+
+note:
+	doxygen configs/Doxyfile
 
 debug:
 	echo $(SRC_DIR)

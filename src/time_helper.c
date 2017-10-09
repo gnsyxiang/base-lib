@@ -39,7 +39,7 @@
 #include "time_helper.h"
 #undef TIME_HELPER_GB
 
-struct timespec cur_delay_ms(unsigned int timeout_ms)
+struct timespec cur_delay_ms(uint32_t timeout_ms)
 {
     struct timeval tv;
     struct timespec ts;

@@ -20,6 +20,8 @@ export "C" {
 
 #include <pthread.h>
 
+#include "data_type.h"
+
 #ifndef THREAD_HELPER_GB
 #define THREAD_HELPER_EX extern
 #else

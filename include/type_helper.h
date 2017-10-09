@@ -39,14 +39,17 @@
     #endif
 #endif
 
-#define BYTE_ALIGN(len, align) (((len) + (align) - 1) & ~((align) - 1))
-
-#define ALIGN_INT(len)  BYTE_ALIGN(len, sizeof(int))
-#define ALIGN4(len)     BYTE_ALIGN(len, 4)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "data_type.h"
+
+#define BYTE_ALIGN(len, align) (((len) + (align) - 1) & ~((align) - 1))
+
+#define ALIGN_INT(len)  BYTE_ALIGN(len, sizeof(uint32_t))
+#define ALIGN4(len)     BYTE_ALIGN(len, 4)
 
 #ifndef TYPE_HELPER_GB
 #define TYPE_HELPER_EX extern

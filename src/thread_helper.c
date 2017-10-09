@@ -25,7 +25,7 @@ pthread_t thread_create_detached(thread_cb_t cb, void *arg)
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-    int error = pthread_create(&tid, &attr, cb, arg);
+    uint32_t error = pthread_create(&tid, &attr, cb, arg);
 
     pthread_attr_destroy(&attr);
 

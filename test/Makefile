@@ -4,9 +4,9 @@
 # Copyright(C),
 # Author: zhenquan.qiu
 # Version: V1.0.0
-# Last modified: 23/09 2017 11:46
+# Last modified: 23/09 2017 17:06
 # Description:
-# 
+#
 # Change Log:
 # NO.	Author		    Date		Modified
 # 00	zhenquan.qiu	23/09 2017
@@ -16,8 +16,8 @@ ROOT := $(shell pwd)
 TARGET ?= main
 
 OBJ_DIR ?= objs
-INC_DIR ?= ../include
-LIB_DIR ?= ../lib
+INC_DIR ?= ../../include
+LIB_DIR ?= ../../lib
 
 Q := @
 RM := $(Q)rm -rf
@@ -35,10 +35,8 @@ CC := $(CROSS_TOOL)gcc
 # ------
 # cflags
 # ------
-INC_FLAGS := -I. -I$(INC_DIR)
-
 CFLAGS := -Wall
-CFLAGS += $(INC_FLAGS)
+CFLAGS += -I. -I$(INC_DIR)
 
 MSG_CC := CC
 
@@ -47,9 +45,10 @@ MSG_CC := CC
 # -------
 
 LDFLAGS :=
-LDFLAGS += -L$(LIB_DIR) -lbase_lib
-LDFLAGS += -Wl,-rpath ~/test/base-lib/lib
-LDFLAGS += $(INC_FLAGS)
+LDFLAGS += -L$(LIB_DIR)
+LDFLAGS += -lbase_lib
+LDFLAGS += -lpthread
+LDFLAGS += -Wl,-rpath ~/test/skills/lib
 
 MSG_LD := LD
 # -------
