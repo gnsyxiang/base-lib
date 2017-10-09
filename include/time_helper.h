@@ -27,6 +27,8 @@ extern "C" {
 #include <time.h>
 #include <sys/time.h>
 
+#include "data_type.h"
+
 #ifndef TIME_HELPER_GB
 #define TIME_HELPER_EX extern       /**< control function external reference macro. */
 #else
@@ -40,7 +42,7 @@ extern "C" {
  * @param timeout_ms: milliseconds requiring delay.
  * @return return the 'struct timespec' time.
  */
-TIME_HELPER_EX struct timespec cur_delay_ms(unsigned int timeout_ms);
+TIME_HELPER_EX struct timespec cur_delay_ms(uint32_t timeout_ms);
 
 /**
  * get the current time with 'struct tm'
