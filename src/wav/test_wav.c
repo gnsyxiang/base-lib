@@ -20,6 +20,10 @@
 
 #define NEW_WAV_PATH "new_wav"
 
+#define ALIGN4(size) (((size) + 3) & ~(0x3))
+#define ALIGN3(size) (((size) + 2) & ~(0x2))
+#define ALIGN2(size) (((size) + 1) & ~(0x1))
+
 void wav_handle(const char *base_path, const char *name)
 {
     wav_t *wav = NULL;
@@ -43,8 +47,15 @@ void wav_handle(const char *base_path, const char *name)
     int total_bytes;
     total_bytes = 15 * 16000 * 2;
 
+    int bps = wav->format.bits_per_sample / 8;
     int blank_bytes;
     blank_bytes = (total_bytes - wav->data.size) / 2;
+    if (bps == 2)
+        blank_bytes = ALIGN2(blank_bytes);
+    else if (bps == 3)
+        blank_bytes = ALIGN3(blank_bytes);
+    else if (bps == 4)
+        blank_bytes = ALIGN4(blank_bytes);
 
     char buf[blank_bytes];
     char voice[wav->data.size];
