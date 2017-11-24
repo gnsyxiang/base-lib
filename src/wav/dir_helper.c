@@ -39,14 +39,16 @@ void read_file_list(char *basePath, handle handle_file_dir)
             printf("base_path: %s, name: %s \n", basePath, ptr->d_name);
 
             handle_file_dir(basePath, ptr->d_name);
+        } else if(ptr->d_type == DT_DIR) {
+            int len = strlen(ptr->d_name) + strlen(basePath) + 20;
+            char *sub_dir = (char *)malloc(len);
+            sprintf(sub_dir, "%s/%s", basePath, ptr->d_name);
+
+            /* printf("base_path: %s, sub_dir: %s, len: %d \n", basePath, sub_dir, len); */
+            read_file_list(sub_dir, handle_file_dir);
+
+            free(sub_dir);
         }
-        /* else if(ptr->d_type == 4) { */
-            /* memset(base,'\0',sizeof(base)); */
-            /* strcpy(base,basePath); */
-            /* strcat(base,"/"); */
-            /* strcat(base,ptr->d_name); */
-            /* read_file_list(base, handle_file_dir); */
-        /* } */
     }
 
     closedir(dir);
