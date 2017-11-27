@@ -29,10 +29,6 @@ struct wav_header {
 
 #define FORMAT_PCM 1
 
-struct wav_writer {
-	struct wav_header wav;
-	FILE *file;
-};
 
 struct wav_writer *create_wav_writer_by_file(FILE *file, int channels,
 		int sample_rate, int bits_per_sample) {
