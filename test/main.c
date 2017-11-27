@@ -16,6 +16,8 @@
 #include "time_helper.h"
 #include "misc_helper.h"
 
+int wav_test(void);
+
 void time_test(void)
 {
     struct timespec ts;
@@ -43,9 +45,11 @@ void random_test(void)
 
 int main(int argc, const char *argv[])
 {
-    time_test();
+    /* time_test(); */
 
-    random_test();
+    /* random_test(); */
+
+    wav_test();
 
     return 0;
 }
