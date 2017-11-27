@@ -16,11 +16,12 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-typedef void (*handle)(const char* base_path, const char *name);
+#define DIR_HELPER_GB
+#include "dir_helper.h"
+#undef DIR_HELPER_GB
 
 void read_file_list(char *basePath, handle handle_file_dir)
 {
@@ -28,7 +29,7 @@ void read_file_list(char *basePath, handle handle_file_dir)
     struct dirent *ptr;
 
     if ((dir = opendir(basePath)) == NULL) {
-        perror("Open dir error...");
+        perror("open dir error...");
         exit(1);
     }
 
@@ -36,8 +37,6 @@ void read_file_list(char *basePath, handle handle_file_dir)
         if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)
             continue;
         else if(ptr->d_type == DT_REG) {
-            printf("base_path: %s, name: %s \n", basePath, ptr->d_name);
-
             handle_file_dir(basePath, ptr->d_name);
         } else if(ptr->d_type == DT_DIR) {
             int len = strlen(ptr->d_name) + strlen(basePath) + 20;
@@ -54,21 +53,3 @@ void read_file_list(char *basePath, handle handle_file_dir)
     closedir(dir);
 }
 
-extern void wav_handle(const char *base_path, const char *name);
-
-int main(void)
-{
-    char basePath[1000];
-
-    memset(basePath,'\0',sizeof(basePath));
-    getcwd(basePath, 999);
-    printf("the current dir is : %s\n",basePath);
-
-    ///get the file list
-    memset(basePath,'\0',sizeof(basePath));
-    strcpy(basePath,"./wav");
-
-    read_file_list(basePath, wav_handle);
-
-    return 0;
-}
