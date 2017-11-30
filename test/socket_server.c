@@ -9,16 +9,14 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 
-#define MYPORT  8887
+#include "socket_helper.h"
+
 #define QUEUE   20
-#define BUFFER_SIZE 1024
 
 int socket_server(void)
 {
-    ///定义sockfd
     int server_sockfd = socket(AF_INET,SOCK_STREAM, 0);
 
-    ///定义sockaddr_in
     struct sockaddr_in server_sockaddr;
     server_sockaddr.sin_family = AF_INET;
     server_sockaddr.sin_port = htons(MYPORT);

@@ -9,27 +9,16 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 
-#define MYPORT  8887
-#define BUFFER_SIZE 1024
+#include "socket_helper.h"
+
 
 int socket_client(void)
 {
-    ///定义sockfd
-    int sock_cli = socket(AF_INET,SOCK_STREAM, 0);
+	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
 
-    ///定义sockaddr_in
-    struct sockaddr_in servaddr;
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(MYPORT);  ///服务器端口
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");  ///服务器ip
+	int sock_cli = sk_client->fd;
 
-    ///连接服务器，成功返回0，错误返回-1
-    if (connect(sock_cli, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
-    {
-        perror("connect");
-        exit(1);
-    }
+	socket_connect(sk_client, 3);
 
     char sendbuf[BUFFER_SIZE];
     char recvbuf[BUFFER_SIZE];
@@ -50,6 +39,7 @@ int socket_client(void)
 		printf("recvbuf: %s \n", recvbuf);
     }
 
-    close(sock_cli);
+	socket_clean_client(sk_client);
+
     return 0;
 }
