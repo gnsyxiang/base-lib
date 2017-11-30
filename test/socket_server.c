@@ -15,19 +15,9 @@
 
 int socket_server(void)
 {
-    int server_sockfd = socket(AF_INET,SOCK_STREAM, 0);
 
-    struct sockaddr_in server_sockaddr;
-    server_sockaddr.sin_family = AF_INET;
-    server_sockaddr.sin_port = htons(MYPORT);
-    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    ///bind，成功返回0，出错返回-1
-    if(bind(server_sockfd,(struct sockaddr *)&server_sockaddr,sizeof(server_sockaddr))==-1)
-    {
-        perror("bind");
-        exit(1);
-    }
+	socket_t *sk_server = socket_init_server(MYPORT);
+    int server_sockfd = sk_server->fd;
 
     ///listen，成功返回0，出错返回-1
     if(listen(server_sockfd,QUEUE) == -1)

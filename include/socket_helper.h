@@ -46,6 +46,8 @@ typedef struct _socket_tag {
 
 SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
+SOCKET_HELPER_EX socket_t *socket_init_server(int port);
+SOCKET_HELPER_EX void socket_clean_server(socket_t *sk);
 
 SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, int timeout);

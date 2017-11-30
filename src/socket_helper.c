@@ -46,26 +46,28 @@ static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
 	sk->port = port;
 	pthread_mutex_init(&sk->lock, NULL);
 
-	int ipaddr_len = strlen(ipaddr) + 1;
-	sk->ipaddr = (char *)malloc(ipaddr_len);
-	if (NULL == sk->ipaddr) {
-		printf("%s: malloc faild: %s(%d) \n",
-				__func__, strerror(errno), -errno);
-		exit(-1);
-	}
+	if (ipaddr) {
+		int ipaddr_len = strlen(ipaddr) + 1;
+		sk->ipaddr = (char *)malloc(ipaddr_len);
+		if (NULL == sk->ipaddr) {
+			printf("%s: malloc faild: %s(%d) \n",
+					__func__, strerror(errno), -errno);
+			exit(-1);
+		}
 
-	memset(sk->ipaddr, '\0', ipaddr_len);
-	strcpy(sk->ipaddr, ipaddr);
+		memset(sk->ipaddr, '\0', ipaddr_len);
+		strcpy(sk->ipaddr, ipaddr);
+	}
 
 	return sk;
 }
 
 static void _socket_clean_struct(socket_t *sk)
 {
-	if (NULL == sk)
+	if (!sk)
 		return;
 
-	if (NULL != sk->ipaddr)
+	if (sk->ipaddr)
 		free(sk->ipaddr);
 
 	free(sk);
@@ -91,6 +93,33 @@ void socket_clean_client(socket_t *sk)
 	close(sk->fd);
 
 	_socket_clean_struct(sk);
+}
+
+socket_t *socket_init_server(int port)
+{
+	socket_t *sk;
+	int ret;
+
+	sk = socket_init_client(NULL, port);
+
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    ret = bind(sk->fd, (struct sockaddr *)&addr, sizeof(addr));
+	if (ret < 0) {
+		printf("%s: failed to create socket: %s(%d) \n",
+				__func__, strerror(errno), -errno);
+		exit(-1);
+	}
+
+	return sk;
+}
+
+void socket_clean_server(socket_t *sk)
+{
+	return socket_clean_client(sk);
 }
 
 int socket_set_nonblocking(socket_t *sk)
