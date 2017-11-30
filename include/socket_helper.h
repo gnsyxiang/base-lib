@@ -43,6 +43,7 @@ typedef struct _socket_tag {
 #define MYPORT  8887
 #define BUFFER_SIZE 10
 
+typedef void (*server_handle_message)(int fd);
 
 SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
@@ -51,6 +52,7 @@ SOCKET_HELPER_EX void socket_clean_server(socket_t *sk);
 
 SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, int timeout);
+SOCKET_HELPER_EX int socket_wait_for_connect(socket_t *sk, server_handle_message callback);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);
 SOCKET_HELPER_EX int socket_read(socket_t *sk, char *buf, int size);

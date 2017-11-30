@@ -13,44 +13,34 @@
 
 #define QUEUE   20
 
+void do_something(int fd)
+{    
+	char buffer[BUFFER_SIZE];
+	int len;
+
+	while(1)
+	{
+		memset(buffer,0,sizeof(buffer));
+
+		len = recv(fd, buffer, sizeof(buffer),0);
+		printf("buf: %s \n", buffer);
+
+		if(strcmp(buffer,"exit")==0)
+			break;
+
+		send(fd, buffer, len, 0);
+	}
+
+   close(fd);
+}
+
 int socket_server(void)
 {
 
 	socket_t *sk_server = socket_init_server(MYPORT);
-    int server_sockfd = sk_server->fd;
 
-    ///listen，成功返回0，出错返回-1
-    if(listen(server_sockfd,QUEUE) == -1)
-    {
-        perror("listen");
-        exit(1);
-    }
+	socket_wait_for_connect(sk_server, do_something);
 
-    ///客户端套接字
-    char buffer[BUFFER_SIZE];
-    struct sockaddr_in client_addr;
-    socklen_t length = sizeof(client_addr);
-
-    ///成功返回非负描述字，出错返回-1
-    int conn = accept(server_sockfd, (struct sockaddr*)&client_addr, &length);
-    if(conn<0)
-    {
-        perror("connect");
-        exit(1);
-    }
-
-    while(1)
-    {
-        memset(buffer,0,sizeof(buffer));
-
-        int len = recv(conn, buffer, sizeof(buffer),0);
-        if(strcmp(buffer,"exit")==0)
-            break;
-		printf("buf: %s \n", buffer);
-
-        send(conn, buffer, len, 0);
-    }
-    close(conn);
-    close(server_sockfd);
+    close(sk_server->fd);
     return 0;
 }

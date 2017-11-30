@@ -160,6 +160,42 @@ void socket_connect(socket_t *sk, int timeout)
 		printf("connect to server \n");
 }
 
+int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
+{
+	int fd = sk->fd;
+
+	int status = listen(fd, SOMAXCONN);
+	if (status < 0) {
+		printf("%s: failed to listen socket: %s(%d) \n", __func__, strerror(errno), -errno);
+		return -1;
+	}
+
+	while (1) {
+		fd_set read_fs;
+		FD_ZERO(&read_fs);
+		FD_SET(fd, &read_fs);
+
+		int ret = select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
+		if (ret < 0) {
+			printf("%s: select error: %s(%d)\n", __func__, strerror(errno), -errno);
+			break;
+		}
+
+		if (FD_ISSET(fd, &read_fs)) {
+			int client_fd = accept(fd, NULL, NULL);
+			if (client_fd < 0) {
+				printf("%s: failed to accept socket: %s(%d) \n", __func__, strerror(errno), -errno);
+				return -1;
+			}
+
+			callback(client_fd);
+		}
+	}
+
+	return 0;
+}
+
+
 int socket_write(socket_t *sk, const char *buf, int size)
 {
 	int offset = 0;
