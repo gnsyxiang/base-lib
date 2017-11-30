@@ -41,12 +41,13 @@ typedef struct _socket_tag {
 } socket_t;
 
 #define MYPORT  8887
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 10
 
 
 SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
 
+SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, int timeout);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);

@@ -26,6 +26,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
@@ -91,6 +93,16 @@ void socket_clean_client(socket_t *sk)
 	_socket_clean_struct(sk);
 }
 
+int socket_set_nonblocking(socket_t *sk)
+{
+	int flags;
+
+	if ((flags = fcntl(sk->fd, F_GETFL, 0)) == -1)
+		flags = 0;
+
+	return fcntl(sk->fd, F_SETFL, flags | O_NONBLOCK);
+}
+
 void socket_connect(socket_t *sk, int timeout)
 {
 	struct sockaddr_in addr;
@@ -142,7 +154,11 @@ int socket_read(socket_t *sk, char *buf, int size)
 	while (sz > 0) {
 		int bytes = read(sk->fd, buf + offset, sz);
 		printf("bytes: %d \n", bytes);
-		if (bytes <= 0) {
+		if (bytes == 0)
+			break;
+		else if (bytes < 0) {
+		printf("%s: failed to create socket: %s(%d) \n",
+				__func__, strerror(errno), -errno);
 			return bytes;
 		}
 
