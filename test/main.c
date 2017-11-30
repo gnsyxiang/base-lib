@@ -41,11 +41,43 @@ void random_test(void)
     }
 }
 
+void dis_func(void)
+{
+	printf("-----------------------------------------------\n");
+	printf("enter the sequence number, select the function \n");
+	printf("-----------------------------------------------\n");
+	printf("1. socket client test \n");
+	printf("2. socket server test \n");
+	printf("input your number: ");
+}
+
+int get_user_input()
+{
+	int a;
+
+	scanf("%d", &a);
+
+	return a;
+}
+
+int socket_client(void);
+int socket_server(void);
+
 int main(int argc, const char *argv[])
 {
-    time_test();
+	dis_func();
 
-    random_test();
+	switch (get_user_input()) {
+		case 1:
+			socket_client();
+			break;
+		case 2:
+			socket_server();
+			break;
+		default:
+			break;
+	}
+
 
     return 0;
 }
