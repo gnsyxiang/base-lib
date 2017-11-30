@@ -48,6 +48,10 @@ SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
 
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, int timeout);
+
+SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);
+SOCKET_HELPER_EX int socket_read(socket_t *sk, char *buf, int size);
+
 #ifdef __cplusplus
 }
 #endif

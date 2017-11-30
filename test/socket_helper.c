@@ -116,8 +116,42 @@ void socket_connect(socket_t *sk, int timeout)
 		printf("connect to server \n");
 }
 
+int socket_write(socket_t *sk, const char *buf, int size)
+{
+	int offset = 0;
+	int sz = size;
 
+	while (sz > 0) {
+		int bytes = write(sk->fd, buf + offset, sz);
+		if (bytes <= 0) {
+			return bytes;
+		}
 
+		sz -= bytes;
+		offset += bytes;
+	}
+
+	return size;
+}
+
+int socket_read(socket_t *sk, char *buf, int size)
+{
+	int offset = 0;
+	int sz = size;
+
+	while (sz > 0) {
+		int bytes = read(sk->fd, buf + offset, sz);
+		printf("bytes: %d \n", bytes);
+		if (bytes <= 0) {
+			return bytes;
+		}
+
+		sz -= bytes;
+		offset += bytes;
+	}
+
+	return size;
+}
 
 
 

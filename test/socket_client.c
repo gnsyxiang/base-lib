@@ -16,8 +16,6 @@ int socket_client(void)
 {
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
 
-	int sock_cli = sk_client->fd;
-
 	socket_connect(sk_client, 3);
 
     char sendbuf[BUFFER_SIZE];
@@ -30,12 +28,12 @@ int socket_client(void)
 		printf("input your string: ");
 		scanf("%s", sendbuf);
 
-        send(sock_cli, sendbuf, strlen(sendbuf),0); ///发送
+		socket_write(sk_client, sendbuf, strlen(sendbuf));
 
         if(strcmp(sendbuf,"exit")==0)
             break;
 
-        recv(sock_cli, recvbuf, sizeof(recvbuf),0); ///接收
+		socket_read(sk_client, recvbuf, BUFFER_SIZE);
 		printf("recvbuf: %s \n", recvbuf);
     }
 
