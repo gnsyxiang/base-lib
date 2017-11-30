@@ -107,6 +107,9 @@ socket_t *socket_init_server(int port)
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
+	int val = 1;
+	ret = setsockopt(sk->fd, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(int));
+
     ret = bind(sk->fd, (struct sockaddr *)&addr, sizeof(addr));
 	if (ret < 0) {
 		printf("%s: failed to create socket: %s(%d) \n",
