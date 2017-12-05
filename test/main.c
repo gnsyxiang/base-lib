@@ -32,6 +32,8 @@ void time_test(void)
     format_time(time_buf);
 
     printf("time: %s \n", time_buf);
+
+	printf("time_ms: %ld \n", get_sys_time_ms());
 }
 
 void random_test(void)

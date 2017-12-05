@@ -39,6 +39,15 @@
 #include "time_helper.h"
 #undef TIME_HELPER_GB
 
+time_t get_sys_time_ms(void)
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
 struct timespec cur_delay_ms(uint32_t timeout_ms)
 {
     struct timeval tv;

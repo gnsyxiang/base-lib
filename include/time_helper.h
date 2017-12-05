@@ -60,6 +60,14 @@ TIME_HELPER_EX void get_tm_time(struct tm *tm);
  */
 TIME_HELPER_EX void format_time(char *time);
 
+/**
+ * get the current time of the system in ms
+ *
+ * @param void
+ * @return void
+ */
+time_t get_sys_time_ms(void);
+
 #ifdef __cplusplus
 }
 #endif
