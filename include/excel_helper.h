@@ -39,6 +39,10 @@ typedef struct _excel_row_tag {
 	int asr_flag;
 }excel_row_t;
 
+#define EXCEL_ROWS (4)
+#define FILE_NAME_LEN (256)
+#define EXCEL_ROW_LEN (sizeof(excel_row_t))
+
 excel_row_t *excel_open(char *name);
 void excel_close(excel_row_t *row);
 

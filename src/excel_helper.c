@@ -82,11 +82,11 @@ excel_row_t *excel_open(char *name)
 {
 	excel_row_t *row;
 
-	row = (excel_row_t *)malloc(sizeof(excel_row_t));
-	memset(row, '\0', sizeof(excel_row_t));
+	row = (excel_row_t *)malloc(EXCEL_ROW_LEN);
+	memset(row, '\0', EXCEL_ROW_LEN);
 
-	row->name = (char *)malloc(20);
-	memset(row->name, '\0', 20);
+	row->name = (char *)malloc(FILE_NAME_LEN);
+	memset(row->name, '\0', FILE_NAME_LEN);
 
 	row->fp = fopen(name, "w+");
 
@@ -119,14 +119,14 @@ int main(int argc, char **argv)
 
 	row = excel_open("test.xls");
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < EXCEL_ROWS; i++) {
 		excel_row_init(row, i, "test.wav", 1, 1);
 		excel_write_row(row);
 	}
 
 	fseek(row->fp, 0L, SEEK_SET);
 
-	for(i = 0; i < 4; i++) {
+	for(i = 0; i < EXCEL_ROWS; i++) {
 		excel_read_row(row);
 		printf("num: %d, name: %s, wakeup_flag: %d, asr_flag: %d \n", \
 				row->num, row->name, row->wakeup_flag, row->asr_flag);
