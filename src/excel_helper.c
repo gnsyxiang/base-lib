@@ -19,29 +19,81 @@
  */
 #include <stdio.h>
 
+static inline void _excel_write_char(FILE *fp, char data)
+{
+	fprintf(fp, "%c\t", data);
+}
+
+static inline void _excel_write_int(FILE *fp, int data)
+{
+	fprintf(fp, "%d\t", data);
+}
+
+static inline void _excel_write_str(FILE *fp, char *data)
+{
+	fprintf(fp, "%s\t", data);
+}
+
+static inline void _excel_write_row(FILE *fp)
+{
+	fprintf(fp, "\n");
+}
+
+void excel_write_row(FILE *fp, int num, char *name, int wakeup_flag, int asr_flag)
+{
+	_excel_write_int(fp, num);
+	_excel_write_str(fp, name);
+	_excel_write_int(fp, wakeup_flag);
+	_excel_write_int(fp, asr_flag);
+
+	_excel_write_row(fp);
+}
+
+static inline void _excel_read_char(FILE *fp, char *data)
+{
+	fscanf(fp, "%c", data);
+}
+
+static inline void _excel_read_int(FILE *fp, int *data)
+{
+	fscanf(fp, "%d", data);
+}
+
+static inline void _excel_read_str(FILE *fp, char *data)
+{
+	fscanf(fp, "%s", data);
+}
+
+void excel_read_row(FILE *fp, int *num, char *name, int *wakeup_flag, int *asr_flag)
+{
+	_excel_read_int(fp, num);
+	_excel_read_str(fp, name);
+	_excel_read_int(fp, wakeup_flag);
+	_excel_read_int(fp, asr_flag);
+}
+
 void write_excel(FILE *fp)
 {
-	int chy[4]={2, 4, 6, 8};
-	int data[4]={1, 3, 5, 7};
 	int i;
 
 	for (i = 0; i < 4; i++)
-		fprintf(fp, "%d\t%d\n", chy[i], data[i]);
+		excel_write_row(fp, 1, "test.wav", 1, 1);
 }
 
 void read_excel(FILE *fp)
 {   
-	int i, j;
-	int da[4][2] = {0};
+	int i;
+	int num;
+	char name[30] = {0};
+	int wakeup_flag;
+	int asr_flag;
 
 	fseek(fp, 0L, SEEK_SET);
 
-	for(i = 0; i < 4; i++)
-		for(j = 0; j < 2; j++)
-			fscanf(fp,"%d",&da[i][j]);
-
-	for(i = 0; i < 4; i++)
-		printf("%d\t%d\n", da[i][0], da[i][1]);
+	for(i = 0; i < 4; i++) {
+		excel_read_row(fp, &num, name, &wakeup_flag, &asr_flag);
+		printf("num: %d, name: %s, wakeup_flag: %d, asr_flag: %d \n", num, name, wakeup_flag, asr_flag);
+	}
 }
 
 void main()
