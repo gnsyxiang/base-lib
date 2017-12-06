@@ -25,80 +25,87 @@
 #include "excel_helper.h"
 #undef EXCEL_HELPER_GB
 
-static inline void _excel_write_char(FILE *fp, char data)
+static FILE *fp;
+
+static inline void _excel_write_char(char data)
 {
 	fprintf(fp, "%c\t", data);
 }
 
-static inline void _excel_write_int(FILE *fp, int data)
+static inline void _excel_write_int(int data)
 {
 	fprintf(fp, "%d\t", data);
 }
 
-static inline void _excel_write_str(FILE *fp, char *data)
+static inline void _excel_write_str(char *data)
 {
 	fprintf(fp, "%s\t", data);
 }
 
-static inline void _excel_write_row(FILE *fp)
+static inline void _excel_write_row(void)
 {
 	fprintf(fp, "\n");
 }
 
-static inline void _excel_read_char(FILE *fp, char *data)
+static inline void _excel_read_char(char *data)
 {
 	fscanf(fp, "%c", data);
 }
 
-static inline void _excel_read_int(FILE *fp, int *data)
+static inline void _excel_read_int(int *data)
 {
 	fscanf(fp, "%d", data);
 }
 
-static inline void _excel_read_str(FILE *fp, char *data)
+static inline void _excel_read_str(char *data)
 {
 	fscanf(fp, "%s", data);
 }
 
 void excel_read_row(excel_row_t *row)
 {
-	_excel_read_int(row->fp, &row->num);
-	_excel_read_str(row->fp, row->name);
-	_excel_read_int(row->fp, &row->wakeup_flag);
-	_excel_read_int(row->fp, &row->asr_flag);
+	_excel_read_int(&row->num);
+	_excel_read_str(row->name);
+	_excel_read_int(&row->wakeup_flag);
+	_excel_read_int(&row->asr_flag);
 }
 
 void excel_write_row(excel_row_t *row)
 {
-	_excel_write_int(row->fp, row->num);
-	_excel_write_str(row->fp, row->name);
-	_excel_write_int(row->fp, row->wakeup_flag);
-	_excel_write_int(row->fp, row->asr_flag);
+	_excel_write_int(row->num);
+	_excel_write_str(row->name);
+	_excel_write_int(row->wakeup_flag);
+	_excel_write_int(row->asr_flag);
 
-	_excel_write_row(row->fp);
+	_excel_write_row();
 }
 
-excel_row_t *excel_open(char *name)
+excel_t *excel_open(char *name)
 {
-	excel_row_t *row;
+	excel_t *excel;
 
-	row = (excel_row_t *)malloc(EXCEL_ROW_LEN);
-	memset(row, '\0', EXCEL_ROW_LEN);
+	excel = (excel_t *)malloc(EXCEL_LEN);
+	memset(excel, '\0', EXCEL_LEN);
 
-	row->name = (char *)malloc(FILE_NAME_LEN);
-	memset(row->name, '\0', FILE_NAME_LEN);
+	excel->row = (excel_row_t *)malloc(EXCEL_ROW_LEN);
+	memset(excel->row, '\0', EXCEL_ROW_LEN);
 
-	row->fp = fopen(name, "w+");
+	excel->row->name = (char *)malloc(FILE_NAME_LEN);
+	memset(excel->row->name, '\0', FILE_NAME_LEN);
 
-	return row;
+	excel->fp = fopen(name, "w+");
+	fp = excel->fp;
+
+	return excel;
 }
 
-void excel_close(excel_row_t *row)
+void excel_close(excel_t *excel)
 {
-	fclose(row->fp);
+	fclose(excel->fp);
 
-	free(row->name);
-	free(row);
+	free(excel->row->name);
+	free(excel->row);
+	free(excel);
 }
 
 void excel_row_init(excel_row_t *row, 
@@ -121,23 +128,23 @@ void excel_row_print(excel_row_t *row)
 int main(int argc, char **argv)
 {                   
 	int i;
-	excel_row_t *row;
+	excel_t *excel;
 
-	row = excel_open("test.xls");
+	excel = excel_open("test.xls");
 
 	for (i = 0; i < EXCEL_ROWS; i++) {
-		excel_row_init(row, i, "test.wav", 1, 1);
-		excel_write_row(row);
+		excel_row_init(excel->row, i, "test.wav", 1, 1);
+		excel_write_row(excel->row);
 	}
 
-	fseek(row->fp, 0L, SEEK_SET);
+	fseek(excel->fp, 0L, SEEK_SET);
 
 	for(i = 0; i < EXCEL_ROWS; i++) {
-		excel_read_row(row);
-		excel_row_print(row);
+		excel_read_row(excel->row);
+		excel_row_print(excel->row);
 	}
 
-	excel_close(row);
+	excel_close(excel);
 
 	return 0;
 }

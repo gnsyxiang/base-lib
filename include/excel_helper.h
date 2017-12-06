@@ -31,20 +31,24 @@ extern "C" {
 #endif
 
 typedef struct _excel_row_tag {
-	FILE *fp;
-	char *name;
-
 	int num;
 	int wakeup_flag;
 	int asr_flag;
+	char *name;
 }excel_row_t;
+
+typedef struct _excel_tag {
+	FILE *fp;
+	excel_row_t *row;
+}excel_t;
 
 #define EXCEL_ROWS (4)
 #define FILE_NAME_LEN (256)
+#define EXCEL_LEN (sizeof(excel_t))
 #define EXCEL_ROW_LEN (sizeof(excel_row_t))
 
-EXCEL_HELPER_EX excel_row_t *excel_open(char *name);
-EXCEL_HELPER_EX void excel_close(excel_row_t *row);
+EXCEL_HELPER_EX excel_t *excel_open(char *name);
+EXCEL_HELPER_EX void excel_close(excel_t *excel);
 
 EXCEL_HELPER_EX void excel_write_row(excel_row_t *row);
 EXCEL_HELPER_EX void excel_read_row(excel_row_t *row);
