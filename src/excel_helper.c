@@ -125,6 +125,11 @@ void excel_row_print(excel_row_t *row)
 			row->num, row->name, row->wakeup_flag, row->asr_flag);
 }
 
+void excel_seek(long offset, int whence)
+{
+	fseek(fp, offset, whence);
+}
+
 int main(int argc, char **argv)
 {                   
 	int i;
@@ -137,7 +142,7 @@ int main(int argc, char **argv)
 		excel_write_row(excel->row);
 	}
 
-	fseek(excel->fp, 0L, SEEK_SET);
+	excel_seek(0L, SEEK_SET);
 
 	for(i = 0; i < EXCEL_ROWS; i++) {
 		excel_read_row(excel->row);

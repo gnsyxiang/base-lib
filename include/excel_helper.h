@@ -49,6 +49,7 @@ typedef struct _excel_tag {
 
 EXCEL_HELPER_EX excel_t *excel_open(char *name);
 EXCEL_HELPER_EX void excel_close(excel_t *excel);
+EXCEL_HELPER_EX void excel_seek(long offset, int whence);
 
 EXCEL_HELPER_EX void excel_write_row(excel_row_t *row);
 EXCEL_HELPER_EX void excel_read_row(excel_row_t *row);
