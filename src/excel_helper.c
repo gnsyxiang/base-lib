@@ -112,6 +112,12 @@ void excel_row_init(excel_row_t *row,
 	strcpy(row->name, name);
 }
 
+void excel_row_print(excel_row_t *row)
+{
+	printf("num: %d, name: %s, wakeup_flag: %d, asr_flag: %d \n", \
+			row->num, row->name, row->wakeup_flag, row->asr_flag);
+}
+
 int main(int argc, char **argv)
 {                   
 	int i;
@@ -128,8 +134,7 @@ int main(int argc, char **argv)
 
 	for(i = 0; i < EXCEL_ROWS; i++) {
 		excel_read_row(row);
-		printf("num: %d, name: %s, wakeup_flag: %d, asr_flag: %d \n", \
-				row->num, row->name, row->wakeup_flag, row->asr_flag);
+		excel_row_print(row);
 	}
 
 	excel_close(row);

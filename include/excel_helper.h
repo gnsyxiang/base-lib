@@ -43,15 +43,16 @@ typedef struct _excel_row_tag {
 #define FILE_NAME_LEN (256)
 #define EXCEL_ROW_LEN (sizeof(excel_row_t))
 
-excel_row_t *excel_open(char *name);
-void excel_close(excel_row_t *row);
+EXCEL_HELPER_EX excel_row_t *excel_open(char *name);
+EXCEL_HELPER_EX void excel_close(excel_row_t *row);
 
-void excel_write_row(excel_row_t *row);
-void excel_read_row(excel_row_t *row);
+EXCEL_HELPER_EX void excel_write_row(excel_row_t *row);
+EXCEL_HELPER_EX void excel_read_row(excel_row_t *row);
 
-void excel_row_init(excel_row_t *row, 
-		int num, char *name, 
-		int wakeup_flag, int asr_flag);
+EXCEL_HELPER_EX void excel_row_init(excel_row_t *row, 
+									int num, char *name, 
+									int wakeup_flag, int asr_flag);
+EXCEL_HELPER_EX void excel_row_print(excel_row_t *row);
 
 #ifdef __cplusplus
 }
