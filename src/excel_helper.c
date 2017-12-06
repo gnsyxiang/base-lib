@@ -78,9 +78,8 @@ void excel_write_row(excel_row_t *row)
 	_excel_write_row(row->fp);
 }
 
-int main(int argc, char **argv)
-{                   
-	int i;
+excel_row_t *excel_open(char *name)
+{
 	excel_row_t *row;
 
 	row = (excel_row_t *)malloc(sizeof(excel_row_t));
@@ -89,16 +88,41 @@ int main(int argc, char **argv)
 	row->name = (char *)malloc(20);
 	memset(row->name, '\0', 20);
 
-	row->fp = fopen("test.xls","w+") ;
+	row->fp = fopen(name, "w+");
 
-	row->num = 1;
-	row->wakeup_flag = 1;
-	row->asr_flag = 1;
+	return row;
+}
 
-	strcpy(row->name, "test.wav");
+void excel_close(excel_row_t *row)
+{
+	fclose(row->fp);
 
-	for (i = 0; i < 4; i++)
+	free(row->name);
+	free(row);
+}
+
+void excel_row_init(excel_row_t *row, 
+		int num, char *name, 
+		int wakeup_flag, int asr_flag)
+{
+	row->num = num;
+	row->wakeup_flag = wakeup_flag;
+	row->asr_flag = asr_flag;
+
+	strcpy(row->name, name);
+}
+
+int main(int argc, char **argv)
+{                   
+	int i;
+	excel_row_t *row;
+
+	row = excel_open("test.xls");
+
+	for (i = 0; i < 4; i++) {
+		excel_row_init(row, i, "test.wav", 1, 1);
 		excel_write_row(row);
+	}
 
 	fseek(row->fp, 0L, SEEK_SET);
 
@@ -108,10 +132,7 @@ int main(int argc, char **argv)
 				row->num, row->name, row->wakeup_flag, row->asr_flag);
 	}
 
-	fclose(row->fp);
-
-	free(row->name);
-	free(row);
+	excel_close(row);
 
 	return 0;
 }
