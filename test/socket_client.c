@@ -25,7 +25,7 @@ int socket_client(void)
     {
 		sleep(2);
 
-		ret = socket_write(sk_client, buf, strlen(buf));
+		ret = socket_write(sk_client, buf, 8);
 		printf("ret: %d \n", ret);
     }
 
