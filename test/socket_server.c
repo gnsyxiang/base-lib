@@ -14,7 +14,7 @@
 void *do_something(void *args)
 {    
 	int ret;
-	char buf[BUF_LEN];
+	unsigned char buf[BUF_LEN];
 	socket_t *client_sk = (socket_t *)args;
 
 	while(1)
@@ -23,14 +23,15 @@ void *do_something(void *args)
 
 		memset(buf, '\0', sizeof(buf));
 
-		ret = socket_read(client_sk, buf, 4);
+		ret = socket_read(client_sk, (char *)buf, 8);
+		printf("ret: %d \n", ret);
 		if (ret < 0) {
 			printf("client socket close \n");
 			break;
 		}
 
 		for (int i = 0; i < ret; i++) {
-			printf("%2x ", buf[i]);
+			printf("%02x ", buf[i]);
 		}
 		printf("\n");
 	}

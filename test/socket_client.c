@@ -16,7 +16,7 @@ int socket_client(void)
 {
 	int ret;
 	int cnt = 0;
-	char buf[BUF_LEN] = {0xaa, 0x07, 0x00, 0x1, 0x1, 0x7, 0xbb, 0x55};
+	unsigned char buf[BUF_LEN] = {0xaa, 0x07, 0x0, 0x1, 0x1, 0x7, 0xbb, 0x55};
 
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
 	socket_connect(sk_client, 3);
@@ -25,7 +25,7 @@ int socket_client(void)
     {
 		sleep(2);
 
-		ret = socket_write(sk_client, buf, 8);
+		ret = socket_write(sk_client, (char *)buf, 8);
 		printf("ret: %d \n", ret);
     }
 
