@@ -128,6 +128,21 @@ void excel_row_print(excel_row_t *row)
 			row->num, row->name, row->wakeup_flag, row->asr_flag);
 }
 
+void excel_print(excel_t *excel)
+{
+	if (fp < 0) {
+		printf("excel file close \n");
+		return;
+	}
+
+	excel_seek(0L, SEEK_SET);
+
+	for(int i = 0; i < excel->rows; i++) {
+		excel_row_read(excel->row);
+		excel_row_print(excel->row);
+	}
+}
+
 void excel_seek(long offset, int whence)
 {
 	fseek(fp, offset, whence);
@@ -145,12 +160,7 @@ int main(int argc, char **argv)
 		excel_row_write(excel->row);
 	}
 
-	excel_seek(0L, SEEK_SET);
-
-	for(i = 0; i < excel->rows; i++) {
-		excel_row_read(excel->row);
-		excel_row_print(excel->row);
-	}
+	excel_print(excel);
 
 	excel_close(excel);
 

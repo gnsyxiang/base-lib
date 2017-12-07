@@ -61,6 +61,7 @@ EXCEL_HELPER_EX void excel_row_init(excel_row_t *row,
 									int num, char *name, 
 									int wakeup_flag, int asr_flag);
 EXCEL_HELPER_EX void excel_row_print(excel_row_t *row);
+EXCEL_HELPER_EX void excel_print(excel_t *excel);
 
 #ifdef __cplusplus
 }
