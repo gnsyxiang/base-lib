@@ -143,6 +143,14 @@ void excel_print(excel_t *excel)
 	}
 }
 
+void excel_write(excel_t *excel, 
+		int num, char *name, 
+		int wakeup_flag, int asr_flag)
+{
+	excel_row_init(excel->row, num, name, wakeup_flag, asr_flag);
+	excel_row_write(excel->row);
+}
+
 void excel_seek(long offset, int whence)
 {
 	fseek(fp, offset, whence);
@@ -150,15 +158,12 @@ void excel_seek(long offset, int whence)
 
 int main(int argc, char **argv)
 {                   
-	int i;
 	excel_t *excel;
 
 	excel = excel_open("test.xls", EXCEL_ROWS, EXCEL_COLUMN);
 
-	for (i = 0; i < excel->rows; i++) {
-		excel_row_init(excel->row, i, "test.wav", 1, 1);
-		excel_row_write(excel->row);
-	}
+	for (int i = 0; i < excel->rows; i++)
+		excel_write(excel, i, "test.wav", i, i);
 
 	excel_print(excel);
 
