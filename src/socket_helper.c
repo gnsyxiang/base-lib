@@ -225,12 +225,9 @@ int socket_read(socket_t *sk, char *buf, int size)
 
 	while (sz > 0) {
 		int bytes = read(sk->fd, buf + offset, sz);
-		printf("bytes: %d \n", bytes);
-		if (bytes == 0)
-			break;
-		else if (bytes < 0) {
-		printf("%s: failed to create socket: %s(%d) \n",
-				__func__, strerror(errno), -errno);
+		if (bytes <= 0) {
+			printf("%s: failed to read: %s(%d) \n",
+					__func__, strerror(errno), -errno);
 			return bytes;
 		}
 

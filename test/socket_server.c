@@ -25,7 +25,7 @@ void *do_something(void *args)
 
 		ret = socket_read(client_sk, (char *)buf, 8);
 		printf("ret: %d \n", ret);
-		if (ret < 0) {
+		if (ret <= 0) {
 			printf("client socket close \n");
 			break;
 		}
