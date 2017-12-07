@@ -11,36 +11,32 @@
 
 #include "socket_helper.h"
 
-#define QUEUE   20
-
-void do_something(int fd)
+void *do_something(void *args)
 {    
 	char buffer[BUFFER_SIZE];
-	int len;
+	socket_t *client_sk = (socket_t *)args;
 
 	while(1)
 	{
 		memset(buffer,0,sizeof(buffer));
 
-		len = recv(fd, buffer, sizeof(buffer),0);
+		socket_read(client_sk, buffer, sizeof(buffer));
 		printf("buf: %s \n", buffer);
 
 		if(strcmp(buffer,"exit")==0)
 			break;
-
-		send(fd, buffer, len, 0);
 	}
 
-   close(fd);
+	socket_clean_client(client_sk);
+
+	return NULL;
 }
 
 int socket_server(void)
 {
-
 	socket_t *sk_server = socket_init_server(MYPORT);
-
 	socket_wait_for_connect(sk_server, do_something);
-
     close(sk_server->fd);
+
     return 0;
 }

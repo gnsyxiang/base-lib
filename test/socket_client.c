@@ -32,9 +32,6 @@ int socket_client(void)
 
         if(strcmp(sendbuf,"exit")==0)
             break;
-
-		socket_read(sk_client, recvbuf, BUFFER_SIZE);
-		printf("recvbuf: %s \n", recvbuf);
     }
 
 	socket_clean_client(sk_client);
