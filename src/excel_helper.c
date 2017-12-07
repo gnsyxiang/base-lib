@@ -62,7 +62,7 @@ static inline void _excel_read_str(char *data)
 	fscanf(fp, "%s", data);
 }
 
-void excel_read_row(excel_row_t *row)
+void excel_row_read(excel_row_t *row)
 {
 	_excel_read_int(&row->num);
 	_excel_read_str(row->name);
@@ -70,7 +70,7 @@ void excel_read_row(excel_row_t *row)
 	_excel_read_int(&row->asr_flag);
 }
 
-void excel_write_row(excel_row_t *row)
+void excel_row_write(excel_row_t *row)
 {
 	_excel_write_int(row->num);
 	_excel_write_str(row->name);
@@ -139,13 +139,13 @@ int main(int argc, char **argv)
 
 	for (i = 0; i < EXCEL_ROWS; i++) {
 		excel_row_init(excel->row, i, "test.wav", 1, 1);
-		excel_write_row(excel->row);
+		excel_row_write(excel->row);
 	}
 
 	excel_seek(0L, SEEK_SET);
 
 	for(i = 0; i < EXCEL_ROWS; i++) {
-		excel_read_row(excel->row);
+		excel_row_read(excel->row);
 		excel_row_print(excel->row);
 	}
 
