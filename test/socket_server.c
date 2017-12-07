@@ -13,18 +13,26 @@
 
 void *do_something(void *args)
 {    
-	char buffer[BUFFER_SIZE];
+	int ret;
+	char buf[BUF_LEN];
 	socket_t *client_sk = (socket_t *)args;
 
 	while(1)
 	{
-		memset(buffer,0,sizeof(buffer));
+		sleep(1);
 
-		socket_read(client_sk, buffer, sizeof(buffer));
-		printf("buf: %s \n", buffer);
+		memset(buf, '\0', sizeof(buf));
 
-		if(strcmp(buffer,"exit")==0)
+		ret = socket_read(client_sk, buf, 4);
+		if (ret < 0) {
+			printf("client socket close \n");
 			break;
+		}
+
+		for (int i = 0; i < ret; i++) {
+			printf("%2x ", buf[i]);
+		}
+		printf("\n");
 	}
 
 	socket_clean_client(client_sk);
@@ -40,3 +48,4 @@ int socket_server(void)
 
     return 0;
 }
+

@@ -14,24 +14,19 @@
 
 int socket_client(void)
 {
-	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
+	int ret;
+	int cnt = 0;
+	char buf[BUF_LEN] = {0xaa, 0x07, 0x00, 0x1, 0x1, 0x7, 0xbb, 0x55};
 
+	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
 	socket_connect(sk_client, 3);
 
-    char sendbuf[BUFFER_SIZE];
-    char recvbuf[BUFFER_SIZE];
-    while (1)
+    while (cnt++ < 5)
     {
-        memset(sendbuf, 0, sizeof(sendbuf));
-        memset(recvbuf, 0, sizeof(recvbuf));
+		sleep(2);
 
-		printf("input your string: ");
-		scanf("%s", sendbuf);
-
-		socket_write(sk_client, sendbuf, strlen(sendbuf));
-
-        if(strcmp(sendbuf,"exit")==0)
-            break;
+		ret = socket_write(sk_client, buf, strlen(buf));
+		printf("ret: %d \n", ret);
     }
 
 	socket_clean_client(sk_client);

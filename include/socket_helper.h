@@ -41,7 +41,7 @@ typedef struct _socket_tag {
 } socket_t;
 
 #define MYPORT  8887
-#define BUFFER_SIZE 10
+#define BUF_LEN (1024)
 
 typedef void *(*server_handle_message)(void *args);
 
