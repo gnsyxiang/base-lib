@@ -80,7 +80,7 @@ void excel_row_write(excel_row_t *row)
 	_excel_write_row();
 }
 
-excel_t *excel_open(char *name)
+excel_t *excel_open(char *name, int rows, int columns)
 {
 	excel_t *excel;
 
@@ -95,6 +95,9 @@ excel_t *excel_open(char *name)
 
 	excel->fp = fopen(name, "w+");
 	fp = excel->fp;
+
+	excel->rows = rows;
+	excel->columns = columns;
 
 	return excel;
 }
@@ -135,16 +138,16 @@ int main(int argc, char **argv)
 	int i;
 	excel_t *excel;
 
-	excel = excel_open("test.xls");
+	excel = excel_open("test.xls", EXCEL_ROWS, EXCEL_COLUMN);
 
-	for (i = 0; i < EXCEL_ROWS; i++) {
+	for (i = 0; i < excel->rows; i++) {
 		excel_row_init(excel->row, i, "test.wav", 1, 1);
 		excel_row_write(excel->row);
 	}
 
 	excel_seek(0L, SEEK_SET);
 
-	for(i = 0; i < EXCEL_ROWS; i++) {
+	for(i = 0; i < excel->rows; i++) {
 		excel_row_read(excel->row);
 		excel_row_print(excel->row);
 	}

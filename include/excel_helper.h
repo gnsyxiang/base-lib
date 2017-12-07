@@ -40,14 +40,17 @@ typedef struct _excel_row_tag {
 typedef struct _excel_tag {
 	FILE *fp;
 	excel_row_t *row;
+	int rows;
+	int columns;
 }excel_t;
 
 #define EXCEL_ROWS (4)
+#define EXCEL_COLUMN (4)
 #define FILE_NAME_LEN (256)
 #define EXCEL_LEN (sizeof(excel_t))
 #define EXCEL_ROW_LEN (sizeof(excel_row_t))
 
-EXCEL_HELPER_EX excel_t *excel_open(char *name);
+EXCEL_HELPER_EX excel_t *excel_open(char *name, int rows, int columns);
 EXCEL_HELPER_EX void excel_close(excel_t *excel);
 EXCEL_HELPER_EX void excel_seek(long offset, int whence);
 
