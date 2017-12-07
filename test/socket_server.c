@@ -63,7 +63,7 @@ void *do_something(void *args)
 
 			message = (unsigned char *)malloc(package_len + 1);
 
-			strncpy(message, pbuf, package_len + 1);
+			memcpy(message, pbuf, package_len + 1);
 
 			handle_message(message, package_len + 1);
 
