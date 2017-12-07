@@ -11,29 +11,66 @@
 
 #include "socket_helper.h"
 
+#define FRONT_SYMBOL (0xaa)
+#define TAIL_SYMBOL (0x55)
+
+void print_hex(unsigned char *buf, int len)
+{
+	for (int i = 0; i < len; i++) {
+		printf("%02x ", buf[i]);
+	}
+	printf("\n");
+}
+
+void handle_message(unsigned char *message, int len)
+{
+	print_hex(message, len);
+}
+
 void *do_something(void *args)
 {    
-	int ret;
-	unsigned char buf[BUF_LEN];
 	socket_t *client_sk = (socket_t *)args;
+	unsigned char buf[BUF_LEN], *pbuf;
+	int ret;
+	int package_len;
+	unsigned char *message;
 
-	while(1)
-	{
+	while(1) {
 		sleep(1);
 
 		memset(buf, '\0', sizeof(buf));
 
-		ret = socket_read(client_sk, (char *)buf, 8);
-		printf("ret: %d \n", ret);
+		pbuf = buf;
+		ret = socket_read(client_sk, (char *)buf, 9);
 		if (ret <= 0) {
 			printf("client socket close \n");
 			break;
 		}
 
-		for (int i = 0; i < ret; i++) {
-			printf("%02x ", buf[i]);
+		print_hex(buf, ret);
+
+		while (*pbuf) {
+			sleep(1);
+			while (*pbuf != FRONT_SYMBOL)
+				pbuf++;
+
+			package_len = pbuf[1] | pbuf[2] << 8;
+
+			if (pbuf[package_len] != TAIL_SYMBOL) {
+				pbuf++;
+				continue;
+			}
+
+			message = (unsigned char *)malloc(package_len + 1);
+
+			strncpy(message, pbuf, package_len + 1);
+
+			handle_message(message, package_len + 1);
+
+			free(message);
+
+			pbuf += package_len + 1;
 		}
-		printf("\n");
 	}
 
 	socket_clean_client(client_sk);
