@@ -13,6 +13,7 @@
 
 #define FRONT_SYMBOL (0xaa)
 #define TAIL_SYMBOL (0x55)
+typedef void (*handle_message_t)(unsigned char *message, int len);
 
 void print_hex(unsigned char *buf, int len)
 {
@@ -25,13 +26,16 @@ void print_hex(unsigned char *buf, int len)
 void handle_message(unsigned char *message, int len)
 {
 	print_hex(message, len);
+
+	free(message);
 }
 
-int check_is_package(unsigned char *buf, unsigned char *message)
+int check_is_package(unsigned char *buf, handle_message_t handle_message)
 {
 	int package_len;
 	int buf_cnt = 0;
 	int is_package_ok = 1;
+	unsigned char *message;
 
 	while (*buf != FRONT_SYMBOL) {
 		buf++;
@@ -45,10 +49,15 @@ int check_is_package(unsigned char *buf, unsigned char *message)
 		buf_cnt++;
 		is_package_ok = 0;
 	}
-	print_hex(buf, package_len + 1);
 
-	if (is_package_ok)
+	if (is_package_ok) {
+		message = (unsigned char *)malloc(package_len + 1);
+		memcpy(message, buf, package_len + 1);
+
+		handle_message(message, package_len + 1);
+
 		buf_cnt += package_len;
+	}
 
 	return buf_cnt;
 }
@@ -57,9 +66,7 @@ void *do_something(void *args)
 {    
 	socket_t *client_sk = (socket_t *)args;
 	unsigned char buf[BUF_LEN], *pbuf;
-	int buf_cnt;
 	int ret;
-	unsigned char *message;
 
 	while(1) {
 		sleep(1);
@@ -75,14 +82,7 @@ void *do_something(void *args)
 
 		while (*pbuf) {
 			sleep(1);
-
-			buf_cnt = check_is_package(pbuf, message);
-			pbuf += buf_cnt + 1;
-
-			/*message = (unsigned char *)malloc(package_len + 1);*/
-			/*memcpy(message, pbuf, package_len + 1);*/
-			/*handle_message(message, package_len + 1);*/
-			/*free(message);*/
+			pbuf += 1 + check_is_package(pbuf, handle_message);
 		}
 	}
 
