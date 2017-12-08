@@ -53,7 +53,7 @@ void check_is_package(unsigned char *buf, handle_message_t handle_message)
 
 			handle_message(message, package_len + 1);
 
-			buf += package_len;
+			buf += package_len + 1;
 		}
 	}
 }
@@ -65,7 +65,7 @@ void *client_thread_callback(void *args)
 	while(1) {
 		unsigned char buf[BUF_LEN] = {0};
 
-		if (socket_read(client_sk, (char *)buf, 9) <= 0) {
+		if (socket_read(client_sk, (char *)buf, 16) <= 0) {
 			printf("client socket close \n");
 			break;
 		}
