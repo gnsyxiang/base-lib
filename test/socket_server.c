@@ -41,14 +41,21 @@ void check_is_package(unsigned char *buf, int ret, handle_message_t handle_messa
 	int cur_status = 1;
 	int package_len;
 	unsigned char *pbuf;
-	static unsigned char buf_tmp[BUF_LEN];
+	static unsigned char buf_tmp[BUF_LEN] = {0};
 	static int store_left_bytes = 0;
 
-	pbuf = buf;
+	printf("-------1--\n");
+	memcpy(buf_tmp + store_left_bytes, buf, ret);
+	print_hex(buf_tmp, ret + store_left_bytes);
 
-	while (ret > 0) {
+	ret += store_left_bytes;
+
+	pbuf = buf_tmp;
+
+	while ((ret) > 0) {
 		switch (cur_status) {
 			case 1:
+				printf("-----1\n");
 				while (*pbuf != FRONT_SYMBOL) {
 					pbuf++;
 					ret--;
@@ -56,6 +63,7 @@ void check_is_package(unsigned char *buf, int ret, handle_message_t handle_messa
 				cur_status++;
 				break;
 			case 2:
+				printf("-----2\n");
 				package_len = pbuf[1] | pbuf[2] << 8;
 
 				if (pbuf[package_len] != TAIL_SYMBOL && pbuf[package_len] != 0x0) {
@@ -67,16 +75,19 @@ void check_is_package(unsigned char *buf, int ret, handle_message_t handle_messa
 				cur_status++;
 				break;
 			case 3:
+				printf("-----3\n");
 				if (pbuf[package_len] == TAIL_SYMBOL) {
 					handle_message(pbuf, package_len + 1);
 
 					pbuf += package_len + 1;
 					ret -= package_len + 1;
 					cur_status = 1;
+					break;
 				}
 				cur_status++;
 				break;
 			case 4:
+				printf("-----4\n");
 				memcpy(buf_tmp, pbuf, ret);
 				print_hex(buf_tmp, ret);
 

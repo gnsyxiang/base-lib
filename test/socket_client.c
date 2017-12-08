@@ -20,7 +20,7 @@ int socket_client(void)
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
 	socket_connect(sk_client, 3);
 
-    while (cnt++ < 2) {
+    while (cnt++ < 4) {
 		socket_write(sk_client, (char *)buf, 9);
     }
 
