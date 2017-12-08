@@ -23,8 +23,14 @@ void print_hex(unsigned char *buf, int len)
 	printf("\n");
 }
 
-void handle_message(unsigned char *message, int len)
+void handle_message(unsigned char *buf, int len)
 {
+	unsigned char *message;
+
+	message = (unsigned char *)malloc(len);
+
+	memcpy(message, buf, len);
+
 	print_hex(message, len);
 
 	free(message);
@@ -32,6 +38,7 @@ void handle_message(unsigned char *message, int len)
 
 void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
+	int cur_status = 1;
 	int package_len;
 	unsigned char *pbuf;
 	static unsigned char buf_tmp[BUF_LEN];
@@ -40,34 +47,45 @@ void check_is_package(unsigned char *buf, int ret, handle_message_t handle_messa
 	pbuf = buf;
 
 	while (ret > 0) {
-		sleep(1);
+		switch (cur_status) {
+			case 1:
+				while (*pbuf != FRONT_SYMBOL) {
+					pbuf++;
+					ret--;
+				}
+				cur_status++;
+				break;
+			case 2:
+				package_len = pbuf[1] | pbuf[2] << 8;
 
-		while (*pbuf != FRONT_SYMBOL) {
-			pbuf++;
-			ret--;
-		}
+				if (pbuf[package_len] != TAIL_SYMBOL && pbuf[package_len] != 0x0) {
+					pbuf++;
+					ret--;
+					cur_status = 1;
+					break;
+				}
+				cur_status++;
+				break;
+			case 3:
+				if (pbuf[package_len] == TAIL_SYMBOL) {
+					handle_message(pbuf, package_len + 1);
 
-		package_len = pbuf[1] | pbuf[2] << 8;
+					pbuf += package_len + 1;
+					ret -= package_len + 1;
+					cur_status = 1;
+				}
+				cur_status++;
+				break;
+			case 4:
+				memcpy(buf_tmp, pbuf, ret);
+				print_hex(buf_tmp, ret);
 
-		if (pbuf[package_len] != TAIL_SYMBOL && pbuf[package_len] != 0x0) {
-			pbuf++;
-			ret--;
-			continue;
-		}
-
-		if (pbuf[package_len] == TAIL_SYMBOL) {
-			unsigned char *message = (unsigned char *)malloc(package_len + 1);
-			memcpy(message, pbuf, package_len + 1);
-			handle_message(message, package_len + 1);
-
-			pbuf += package_len + 1;
-			ret -= package_len + 1;
-		} else {
-			memcpy(buf_tmp, pbuf, ret);
-			print_hex(buf_tmp, ret);
-
-			store_left_bytes = ret;
-			ret = 0;
+				store_left_bytes = ret;
+				ret = 0;
+				break;
+			default:
+				printf("error status \n");
+				break;
 		}
 	}
 }
