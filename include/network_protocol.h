@@ -33,10 +33,12 @@ extern "C" {
 #define FRONT_SYMBOL	(0xaa)
 #define TAIL_SYMBOL		(0x55)
 
+#define SOCKET_READ_TIMEOUT_MS (1000)
+
 typedef void (*handle_message_t)(unsigned char *message, int len);
 
 
-NETWORK_PROTOCOL_EX void network_protocol_init(handle_message_t handle_message);
+NETWORK_PROTOCOL_EX void network_protocol_server_init(handle_message_t handle_message);
 
 
 #ifdef __cplusplus

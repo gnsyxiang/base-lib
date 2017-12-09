@@ -18,21 +18,18 @@ int socket_client(void)
 	unsigned char buf[BUF_LEN] = { \
 		0x11, 0xaa, 0x07, 0x0, 0x1, 0x1, 0x7, 0xbb, 0x55, \
 		0x11, 0xaa, 0x07, 0x0, 0x1, 0x1, 0x7, 0xbb, 0x55, \
-		0xcc, \
 		0x11, 0xaa, 0x07, 0x0, 0x1, 0x1, 0x7, 0xbb, 0x55 \
 	};
 
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
 	socket_connect(sk_client, 3);
 
-	int i = 0;
-	int sum = 0;
-    while (cnt++ < 7) {
-		i++;
-		socket_write(sk_client, (char *)&buf[sum], i);
-		print_hex(&buf[sum], i);
-		sum += i;
+    while (cnt++ < 3) {
+		socket_write(sk_client, (char *)buf, 9);
+		print_hex(buf, 9);
     }
+
+	sleep(3);
 
 	socket_clean_client(sk_client);
 

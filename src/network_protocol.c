@@ -35,7 +35,7 @@
 #include "network_protocol.h"
 #undef NETWORK_PROTOCOL_GB
 
-static handle_message_t handle_message_callback;
+static handle_message_t handle_message_l;
 
 static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
@@ -112,7 +112,7 @@ static void *client_thread_callback(void *args)
 			break;
 		}
 
-		check_is_package(buf, ret, handle_message_callback);
+		check_is_package(buf, ret, handle_message_l);
 	}
 
 	socket_clean_client(client_sk);
@@ -129,11 +129,11 @@ static int init_server(void)
     return 0;
 }
 
-void network_protocol_init(handle_message_t handle_message)
+void network_protocol_server_init(handle_message_t handle_message)
 {
 	assert(handle_message);
 
-	handle_message_callback = handle_message;
+	handle_message_l = handle_message;
 
 	init_server();
 }
