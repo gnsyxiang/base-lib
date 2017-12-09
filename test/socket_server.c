@@ -1,46 +1,27 @@
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <sys/shm.h>
+#include <string.h>
 
-#include "socket_helper.h"
+#include "hex_helper.h"
+#include "network_protocol.h"
 
-#define QUEUE   20
+void handle_message(unsigned char *buf, int len)
+{
+	unsigned char *message;
 
-void do_something(int fd)
-{    
-	char buffer[BUFFER_SIZE];
-	int len;
+	message = (unsigned char *)malloc(len);
 
-	while(1)
-	{
-		memset(buffer,0,sizeof(buffer));
+	memcpy(message, buf, len);
 
-		len = recv(fd, buffer, sizeof(buffer),0);
-		printf("buf: %s \n", buffer);
+	print_hex(message, len);
 
-		if(strcmp(buffer,"exit")==0)
-			break;
-
-		send(fd, buffer, len, 0);
-	}
-
-   close(fd);
+	free(message);
 }
 
 int socket_server(void)
 {
+	network_protocol_server_init(handle_message);
 
-	socket_t *sk_server = socket_init_server(MYPORT);
-
-	socket_wait_for_connect(sk_server, do_something);
-
-    close(sk_server->fd);
     return 0;
 }
+

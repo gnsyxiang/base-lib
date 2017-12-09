@@ -29,6 +29,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "thread_helper.h"
+
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
 #undef SOCKET_HELPER_GB
@@ -139,7 +141,7 @@ void socket_connect(socket_t *sk, int timeout)
 {
 	struct sockaddr_in addr;
 	int status;
-	int time;
+	int time = 0;
 
 	memset(&addr, '\0', sizeof(addr));
 
@@ -188,7 +190,9 @@ int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
 				return -1;
 			}
 
-			callback(client_fd);
+			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port);
+
+			thread_create_detached(callback, (void *)client_sk);
 		}
 	}
 
@@ -221,12 +225,9 @@ int socket_read(socket_t *sk, char *buf, int size)
 
 	while (sz > 0) {
 		int bytes = read(sk->fd, buf + offset, sz);
-		printf("bytes: %d \n", bytes);
-		if (bytes == 0)
-			break;
-		else if (bytes < 0) {
-		printf("%s: failed to create socket: %s(%d) \n",
-				__func__, strerror(errno), -errno);
+		if (bytes <= 0) {
+			printf("%s: failed to read: %s(%d) \n",
+					__func__, strerror(errno), -errno);
 			return bytes;
 		}
 

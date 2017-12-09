@@ -41,9 +41,9 @@ typedef struct _socket_tag {
 } socket_t;
 
 #define MYPORT  8887
-#define BUFFER_SIZE 10
+#define BUF_LEN (1024)
 
-typedef void (*server_handle_message)(int fd);
+typedef void *(*server_handle_message)(void *args);
 
 SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
