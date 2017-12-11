@@ -39,6 +39,12 @@
 
 static handle_message_t handle_message_l;
 static int read_timeout_ms_l;
+static unsigned char *send_buf_l;
+static int send_buf_len_l;
+
+static int is_client_running;
+static pthread_mutex_t send_mutex;
+static pthread_cond_t  send_cond;
 
 static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
@@ -100,12 +106,6 @@ static void check_is_package(unsigned char *buf, int ret, handle_message_t handl
 	}
 }
 
-static int is_client_running;
-static unsigned char *pbuf;
-static int send_len_l;
-static pthread_mutex_t send_mutex;
-static pthread_cond_t  send_cond;
-
 static void send_wait(void)
 {
 	pthread_mutex_lock(&send_mutex);
@@ -124,11 +124,11 @@ void send_message(unsigned char *buf, int len)
 {
 	send_ok();
 
-	pbuf = (unsigned char *)malloc(len + 1);
-	memset(pbuf, '\0', len + 1);
+	send_buf_l = (unsigned char *)malloc(len + 1);
+	memset(send_buf_l, '\0', len + 1);
 
-	memcpy(pbuf, buf, len);
-	send_len_l = len;
+	memcpy(send_buf_l, buf, len);
+	send_buf_len_l = len;
 }
 
 int get_client_running_flag(void)
@@ -146,9 +146,9 @@ static void *send_message_thread(void *args)
 	while (!is_client_running) {
 		send_wait();
 
-		socket_write(client_sk, (char *)pbuf, send_len_l);
+		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
 
-		free(pbuf);
+		free(send_buf_l);
 	}
 
 	return NULL;
