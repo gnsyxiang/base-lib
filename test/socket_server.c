@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2017 xxx Co., Ltd.
+ * All rights reserved.
+ * 
+ * @file    socket_server.c
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    11/12 2017 20:42
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        11/12 2017      create the file
+ * 
+ *     last modified: 11/12 2017 20:42
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

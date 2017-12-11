@@ -160,6 +160,8 @@ static void *client_thread_callback(void *args)
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
+	is_client_running = 0;
+
 	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
 
 	thread_create_detached(send_message_thread, args);
