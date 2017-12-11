@@ -27,9 +27,11 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "socket_helper.h"
 #include "hex_helper.h"
+#include "thread_helper.h"
 
 #define NETWORK_PROTOCOL_GB
 #include "network_protocol.h"
@@ -98,6 +100,55 @@ static void check_is_package(unsigned char *buf, int ret, handle_message_t handl
 	}
 }
 
+static int is_client_running;
+static unsigned char *pbuf;
+static int send_len_l;
+static pthread_mutex_t send_mutex;
+static pthread_cond_t  send_cond;
+
+void send_wait(void)
+{
+	pthread_mutex_lock(&send_mutex);
+	pthread_cond_wait(&send_cond, &send_mutex);
+	pthread_mutex_unlock(&send_mutex);
+}
+
+void send_ok(unsigned char *buf, int len)
+{
+	pthread_mutex_lock(&send_mutex);
+	pthread_cond_signal(&send_cond);
+	pthread_mutex_unlock(&send_mutex);
+
+	pbuf = (unsigned char *)malloc(len + 1);
+	memset(pbuf, '\0', len + 1);
+
+	memcpy(pbuf, buf, len);
+	send_len_l = len;
+}
+
+void *send_message_thread(void *args)
+{
+	socket_t *client_sk;
+
+	client_sk = (socket_t *)args;
+
+	pthread_mutex_init(&send_mutex, NULL);
+	pthread_cond_init(&send_cond, NULL);
+
+	while (!is_client_running) {
+		send_wait();
+
+		print_hex(pbuf, send_len_l);
+
+		socket_write(client_sk, (char *)pbuf, send_len_l);
+
+		free(pbuf);
+	
+	}
+
+	return NULL;
+}
+
 static void *client_thread_callback(void *args)
 {    
 	int i = 0;
@@ -106,12 +157,16 @@ static void *client_thread_callback(void *args)
 
 	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
 
-	while(1) {
+	thread_create_detached(send_message_thread, args);
+
+	while(!is_client_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
 		ret = socket_read(client_sk, (char *)buf, ++i);
 		if (ret == 0) {
 			printf("client socket close \n");
+			is_client_running = 1;
+			usleep(1 * 1000);
 			break;
 		}
 

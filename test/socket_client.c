@@ -30,7 +30,13 @@ int socket_client(void)
 		cnt++;
     }
 
-	sleep(7);
+	memset(buf, '\0', BUF_LEN);
+	int ret;
+	while (1) {
+		sleep(1);
+		ret = socket_read(sk_client, (char *)buf, 8);
+		print_hex(buf, ret);
+	}
 
 	socket_clean_client(sk_client);
 
