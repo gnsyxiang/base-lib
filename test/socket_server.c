@@ -7,15 +7,24 @@
 
 void handle_message(unsigned char *buf, int len)
 {
-	unsigned char *message;
+	char cmd_type;
+	cmd_type = buf[4];
 
-	message = (unsigned char *)malloc(len);
+	print_hex(buf, len);
 
-	memcpy(message, buf, len);
-
-	print_hex(message, len);
-
-	free(message);
+	switch (cmd_type) {
+		case 1:
+			printf("---------1\n");
+			break;
+		case 2:
+			printf("---------2\n");
+			break;
+		case 3:
+			printf("---------3\n");
+			break;
+		default:
+			break;
+	}
 }
 
 int socket_server(void)
