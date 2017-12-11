@@ -27,15 +27,24 @@
 #include <fcntl.h>
 #include <sys/shm.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include "socket_helper.h"
 #include "hex_helper.h"
+#include "thread_helper.h"
 
 #define NETWORK_PROTOCOL_GB
 #include "network_protocol.h"
 #undef NETWORK_PROTOCOL_GB
 
 static handle_message_t handle_message_l;
+static int read_timeout_ms_l;
+static unsigned char *send_buf_l;
+static int send_buf_len_l;
+
+static int is_client_running;
+static pthread_mutex_t send_mutex;
+static pthread_cond_t  send_cond;
 
 static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
@@ -97,22 +106,79 @@ static void check_is_package(unsigned char *buf, int ret, handle_message_t handl
 	}
 }
 
+static void send_wait(void)
+{
+	pthread_mutex_lock(&send_mutex);
+	pthread_cond_wait(&send_cond, &send_mutex);
+	pthread_mutex_unlock(&send_mutex);
+}
+
+static void send_ok(void)
+{
+	pthread_mutex_lock(&send_mutex);
+	pthread_cond_signal(&send_cond);
+	pthread_mutex_unlock(&send_mutex);
+}
+
+void send_message(unsigned char *buf, int len)
+{
+	send_ok();
+
+	send_buf_l = (unsigned char *)malloc(len + 1);
+	memset(send_buf_l, '\0', len + 1);
+
+	memcpy(send_buf_l, buf, len);
+	send_buf_len_l = len;
+}
+
+int get_client_running_flag(void)
+{
+	return is_client_running;
+}
+
+static void *send_message_thread(void *args)
+{
+	socket_t *client_sk = (socket_t *)args;
+
+	pthread_mutex_init(&send_mutex, NULL);
+	pthread_cond_init(&send_cond, NULL);
+
+	while (!is_client_running) {
+		send_wait();
+
+		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
+
+		free(send_buf_l);
+	}
+
+	return NULL;
+}
+
 static void *client_thread_callback(void *args)
 {    
 	int i = 0;
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
-	while(1) {
+	is_client_running = 0;
+
+	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
+
+	thread_create_detached(send_message_thread, args);
+
+	while(!is_client_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
 		ret = socket_read(client_sk, (char *)buf, ++i);
-		if (ret <= 0) {
+		if (ret == 0) {
 			printf("client socket close \n");
+			is_client_running = 1;
+			usleep(1 * 1000);
 			break;
 		}
 
-		check_is_package(buf, ret, handle_message_l);
+		if (ret > 0)
+			check_is_package(buf, ret, handle_message_l);
 	}
 
 	socket_clean_client(client_sk);
@@ -129,11 +195,12 @@ static int init_server(void)
     return 0;
 }
 
-void network_protocol_server_init(handle_message_t handle_message)
+void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms)
 {
 	assert(handle_message);
 
 	handle_message_l = handle_message;
+	read_timeout_ms_l = read_timeout_ms;
 
 	init_server();
 }

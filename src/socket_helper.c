@@ -137,6 +137,16 @@ int socket_set_nonblocking(socket_t *sk)
 	return fcntl(sk->fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
+{
+	struct timeval timeout;
+
+	timeout.tv_sec = timeout_ms / 1000;
+	timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
+}
+
 void socket_connect(socket_t *sk, int timeout)
 {
 	struct sockaddr_in addr;
@@ -206,7 +216,7 @@ int socket_write(socket_t *sk, const char *buf, int size)
 	int sz = size;
 
 	while (sz > 0) {
-		int bytes = write(sk->fd, buf + offset, sz);
+		int bytes = send(sk->fd, buf + offset, sz, 0);
 		if (bytes <= 0) {
 			return bytes;
 		}
@@ -224,18 +234,22 @@ int socket_read(socket_t *sk, char *buf, int size)
 	int sz = size;
 
 	while (sz > 0) {
-		int bytes = read(sk->fd, buf + offset, sz);
-		if (bytes <= 0) {
-			printf("%s: failed to read: %s(%d) \n",
+		int bytes = recv(sk->fd, buf + offset, sz, 0);
+		if (bytes == 0) {
+			printf("%s: client close fd: %s(%d) \n",
 					__func__, strerror(errno), -errno);
-			return bytes;
+			break;
+		} else if (bytes == -1) {
+			if (offset == 0)
+				offset = -1;
+			break;
 		}
 
 		sz -= bytes;
 		offset += bytes;
 	}
 
-	return size;
+	return offset;
 }
 
 
