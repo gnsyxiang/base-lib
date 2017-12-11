@@ -36,6 +36,7 @@
 #undef NETWORK_PROTOCOL_GB
 
 static handle_message_t handle_message_l;
+static int read_timeout_ms_l;
 
 static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
@@ -103,16 +104,19 @@ static void *client_thread_callback(void *args)
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
+	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
+
 	while(1) {
 		unsigned char buf[BUF_LEN] = {0};
 
 		ret = socket_read(client_sk, (char *)buf, ++i);
-		if (ret <= 0) {
+		if (ret == 0) {
 			printf("client socket close \n");
 			break;
 		}
 
-		check_is_package(buf, ret, handle_message_l);
+		if (ret > 0)
+			check_is_package(buf, ret, handle_message_l);
 	}
 
 	socket_clean_client(client_sk);
@@ -129,11 +133,12 @@ static int init_server(void)
     return 0;
 }
 
-void network_protocol_server_init(handle_message_t handle_message)
+void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms)
 {
 	assert(handle_message);
 
 	handle_message_l = handle_message;
+	read_timeout_ms_l = read_timeout_ms;
 
 	init_server();
 }

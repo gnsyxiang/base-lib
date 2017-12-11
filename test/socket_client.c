@@ -29,7 +29,7 @@ int socket_client(void)
 		print_hex(buf, 9);
     }
 
-	sleep(3);
+	sleep(7);
 
 	socket_clean_client(sk_client);
 

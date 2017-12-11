@@ -20,7 +20,9 @@ void handle_message(unsigned char *buf, int len)
 
 int socket_server(void)
 {
-	network_protocol_server_init(handle_message);
+	int read_timeout_ms = 3000;
+
+	network_protocol_server_init(handle_message, read_timeout_ms);
 
     return 0;
 }
