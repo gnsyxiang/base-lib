@@ -106,18 +106,23 @@ static int send_len_l;
 static pthread_mutex_t send_mutex;
 static pthread_cond_t  send_cond;
 
-void send_wait(void)
+static void send_wait(void)
 {
 	pthread_mutex_lock(&send_mutex);
 	pthread_cond_wait(&send_cond, &send_mutex);
 	pthread_mutex_unlock(&send_mutex);
 }
 
-void send_ok(unsigned char *buf, int len)
+static void send_ok(void)
 {
 	pthread_mutex_lock(&send_mutex);
 	pthread_cond_signal(&send_cond);
 	pthread_mutex_unlock(&send_mutex);
+}
+
+void send_message(unsigned char *buf, int len)
+{
+	send_ok();
 
 	pbuf = (unsigned char *)malloc(len + 1);
 	memset(pbuf, '\0', len + 1);
@@ -126,11 +131,14 @@ void send_ok(unsigned char *buf, int len)
 	send_len_l = len;
 }
 
-void *send_message_thread(void *args)
+int get_client_running_flag(void)
 {
-	socket_t *client_sk;
+	return is_client_running;
+}
 
-	client_sk = (socket_t *)args;
+static void *send_message_thread(void *args)
+{
+	socket_t *client_sk = (socket_t *)args;
 
 	pthread_mutex_init(&send_mutex, NULL);
 	pthread_cond_init(&send_cond, NULL);
@@ -138,12 +146,9 @@ void *send_message_thread(void *args)
 	while (!is_client_running) {
 		send_wait();
 
-		print_hex(pbuf, send_len_l);
-
 		socket_write(client_sk, (char *)pbuf, send_len_l);
 
 		free(pbuf);
-	
 	}
 
 	return NULL;

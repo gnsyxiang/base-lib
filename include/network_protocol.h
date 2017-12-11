@@ -39,6 +39,8 @@ typedef void (*handle_message_t)(unsigned char *message, int len);
 
 
 NETWORK_PROTOCOL_EX void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms);
+NETWORK_PROTOCOL_EX void send_message(unsigned char *buf, int len);
+NETWORK_PROTOCOL_EX int get_client_running_flag(void);
 
 
 #ifdef __cplusplus
