@@ -51,6 +51,9 @@ SOCKET_HELPER_EX socket_t *socket_init_server(int port);
 SOCKET_HELPER_EX void socket_clean_server(socket_t *sk);
 
 SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
+SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
+
+
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, int timeout);
 SOCKET_HELPER_EX int socket_wait_for_connect(socket_t *sk, server_handle_message callback);
 
