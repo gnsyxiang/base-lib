@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2017 xxx Co., Ltd.
+ * All rights reserved.
+ * 
+ * @file    serial_send.c
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    12/12 2017 23:02
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        12/12 2017      create the file
+ * 
+ *     last modified: 12/12 2017 23:02
+ */
 #include<stdio.h>
 #include<string.h>
 #include<malloc.h>
@@ -6,36 +25,25 @@
 #include<fcntl.h>
 #include<unistd.h>
 #include<termios.h>
+#include <stdlib.h>
+
+#include "serial_helper.h"
 
 #define MAX_BUFFER_SIZE512
+#define SERIAL_SEND_PATH "/dev/pts/20"
 
 int fd,flag_close;
 
-int open_serial()
-{
-    //这里的/dev/pts/1是使用mkptych.py虚拟的两个串口名字之一
-    fd = open("/dev/pts/20",O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if(fd == -1)
-    {
-        perror("open serial porterror!\n");
-        return -1;
-    }
-
-    printf("Open serial portsuccess!");
-    return 0;
-}
-
 int serial_send(void)
 {
-    char sbuf[] = {"Hello, thisis a serial port test!\n"};
+    char sbuf[] = {"hello world \n"};
     int retv;
     struct termios option;
 
-    retv =open_serial();
-    if(retv <0)
-    {
-        perror("open serial porterror!\n");
-        return -1;
+	fd = serial_open(SERIAL_SEND_PATH);
+    if(fd < 0) {
+		printf("serial open faild \n");
+		exit(1);
     }
 
     printf("Ready for sendingdata...\n");
