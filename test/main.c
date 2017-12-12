@@ -50,6 +50,8 @@ void dis_func(void)
 	printf("-----------------------------------------------\n");
 	printf("1. socket client test \n");
 	printf("2. socket server test \n");
+	printf("3. serial send test \n");
+	printf("4. serial receive test \n");
 	printf("input your number: ");
 }
 
@@ -65,6 +67,9 @@ int get_user_input()
 int socket_client(void);
 int socket_server(void);
 
+int serial_receive(void);
+int serial_send(void);
+
 int main(int argc, const char *argv[])
 {
 	dis_func();
@@ -75,6 +80,12 @@ int main(int argc, const char *argv[])
 			break;
 		case 2:
 			socket_server();
+			break;
+		case 3:
+			serial_send();
+			break;
+		case 4:
+			serial_receive();
 			break;
 		default:
 			break;
