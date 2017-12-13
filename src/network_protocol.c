@@ -31,7 +31,7 @@
 
 #include "socket_helper.h"
 #include "hex_helper.h"
-#include "thread_helper.h"
+#include "pthread_helper.h"
 
 #define NETWORK_PROTOCOL_GB
 #include "network_protocol.h"
@@ -163,7 +163,7 @@ static void *client_thread_callback(void *args)
 	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
 	is_client_running = 1;
 
-	thread_create_detached(send_message_thread, args);
+	create_a_attached_thread(NULL, send_message_thread, args);
 
 	while(is_client_running) {
 		unsigned char buf[BUF_LEN] = {0};

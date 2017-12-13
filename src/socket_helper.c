@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "thread_helper.h"
+#include "pthread_helper.h"
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
@@ -202,7 +202,7 @@ int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
 
 			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port);
 
-			thread_create_detached(callback, (void *)client_sk);
+			create_a_attached_thread(NULL, callback, (void *)client_sk);
 		}
 	}
 

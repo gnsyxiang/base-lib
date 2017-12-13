@@ -24,7 +24,7 @@
 
 #include "hex_helper.h"
 #include "network_protocol.h"
-#include "thread_helper.h"
+#include "pthread_helper.h"
 
 int cur_status;
 
@@ -95,7 +95,7 @@ int socket_server(void)
 {
 	int read_timeout_ms = 3000;
 
-	thread_create_detached(handle_send_message_thread, NULL);
+	create_a_attached_thread(NULL, handle_send_message_thread, NULL);
 
 	network_protocol_server_init(handle_recv_message, read_timeout_ms);
 
