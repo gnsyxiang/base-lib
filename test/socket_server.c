@@ -26,6 +26,8 @@
 #include "network_protocol.h"
 #include "thread_helper.h"
 
+int cur_status;
+
 static void handle_recv_message(unsigned char *buf, int len)
 {
 	char cmd_type;
@@ -34,44 +36,56 @@ static void handle_recv_message(unsigned char *buf, int len)
 	print_hex(buf, len);
 
 	switch (cmd_type) {
-		case 1:
-			printf("recv ---1\n");
-			break;
 		case 2:
 			printf("recv ---2\n");
+			cur_status++;
 			break;
-		case 3:
-			printf("recv ---3\n");
+		case 4:
+			printf("recv ---4\n");
+			cur_status++;
 			break;
 		default:
 			break;
 	}
 }
 
-static void handle_send_message(int cmd_type)
+void handle_send_get_config_info(void)
 {
-	unsigned char buf[] = { \
-		0xaa, 0x07, 0x0, 0x1, 0x2, 0x7, 0xbb, 0x55, \
-	};
+	unsigned char cmd_get_config_info[] = {0xaa, 0x06, 0x0, 0x1, 0x1, 0xbb, 0x55};
+	printf("send ------1\n");
 
-	switch (cmd_type) {
-		case 1:
-			send_message(buf, sizeof(buf));
-			break;
-		case 2:
-			break;
-		default:
-			break;
-	}
+	cur_status++;
+	send_message(cmd_get_config_info, sizeof(cmd_get_config_info));
+}
+
+void handle_send_ready(void)
+{
+	unsigned char cmd_ready[] = {0xaa, 0x06, 0x0, 0x1, 0x3, 0xbb, 0x55};
+	printf("send ------3\n");
+
+	cur_status++;
+	send_message(cmd_ready, sizeof(cmd_ready));
 }
 
 void *handle_send_message_thread(void *args)
 {
-	sleep(5);
+	while (!get_client_running_flag())
+		usleep(100);
 
-	while (!get_client_running_flag()) {
+	while (get_client_running_flag()) {
 		sleep(1);
-		handle_send_message(1);
+
+		/*printf("cur_status: %d \n", cur_status);*/
+		switch (cur_status) {
+			case 0:
+				handle_send_get_config_info();
+				break;
+			case 2:
+				handle_send_ready();
+				break;
+			default:
+				break;
+		}
 	}
 	
 	return NULL;
