@@ -143,7 +143,7 @@ static void *send_message_thread(void *args)
 	pthread_mutex_init(&send_mutex, NULL);
 	pthread_cond_init(&send_cond, NULL);
 
-	while (!is_client_running) {
+	while (is_client_running) {
 		send_wait();
 
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
@@ -160,19 +160,18 @@ static void *client_thread_callback(void *args)
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
-	is_client_running = 0;
-
 	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
+	is_client_running = 1;
 
 	thread_create_detached(send_message_thread, args);
 
-	while(!is_client_running) {
+	while(is_client_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
 		ret = socket_read(client_sk, (char *)buf, ++i);
 		if (ret == 0) {
 			printf("client socket close \n");
-			is_client_running = 1;
+			is_client_running = 0;
 			usleep(1 * 1000);
 			break;
 		}
