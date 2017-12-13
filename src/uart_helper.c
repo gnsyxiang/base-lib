@@ -2,7 +2,7 @@
  * Copyright (C) 2017 xxx Co., Ltd.
  * All rights reserved.
  * 
- * @file    serial_helper.c
+ * @file    uart_helper.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    12/12 2017 22:47
@@ -23,11 +23,11 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#define SERIAL_HELPER_GB
-#include "serial_helper.h"
-#undef SERIAL_HELPER_GB
+#define UART_HELPER_GB
+#include "uart_helper.h"
+#undef UART_HELPER_GB
 
-int serial_open(char *port_path)
+int uart_init(char *port_path)
 {
 	int fd;
 

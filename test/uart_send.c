@@ -2,7 +2,7 @@
  * Copyright (C) 2017 xxx Co., Ltd.
  * All rights reserved.
  * 
- * @file    serial_send.c
+ * @file    uart_send.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    12/12 2017 23:02
@@ -27,7 +27,7 @@
 #include<termios.h>
 #include <stdlib.h>
 
-#include "serial_helper.h"
+#include "uart_helper.h"
 
 #define MAX_BUFFER_SIZE512
 #define SERIAL_SEND_PATH "/dev/pts/20"
@@ -40,7 +40,7 @@ int serial_send(void)
     int retv;
     struct termios option;
 
-	fd = serial_open(SERIAL_SEND_PATH);
+	fd = uart_init(SERIAL_SEND_PATH);
     if(fd < 0) {
 		printf("serial open faild \n");
 		exit(1);

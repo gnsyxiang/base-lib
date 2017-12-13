@@ -2,7 +2,7 @@
  * Copyright (C) 2017 xxx Co., Ltd.
  * All rights reserved.
  * 
- * @file    serial_helper.h
+ * @file    uart_helper.h
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    12/12 2017 22:51
@@ -17,24 +17,24 @@
  * 
  *     last modified: 12/12 2017 22:51
  */
-#ifndef _SERIAL_HELPER_H_
-#define _SERIAL_HELPER_H_
+#ifndef _UART_HELPER_H_
+#define _UART_HELPER_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef SERIAL_HELPER_GB
-#define SERIAL_HELPER_EX extern
+#ifndef UART_HELPER_GB
+#define UART_HELPER_EX extern
 #else
-#define SERIAL_HELPER_EX
+#define UART_HELPER_EX
 #endif
 
-SERIAL_HELPER_EX int serial_open(char *port_path);
+UART_HELPER_EX int uart_init(char *port_path);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* end _SERIAL_HELPER_H_ */
+#endif /* end _UART_HELPER_H_ */
 

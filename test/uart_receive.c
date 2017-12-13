@@ -2,7 +2,7 @@
  * Copyright (C) 2017 xxx Co., Ltd.
  * All rights reserved.
  * 
- * @file    serial_receive.c
+ * @file    uart_receive.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    12/12 2017 23:02
@@ -28,7 +28,7 @@
 #include<math.h>
 #include <stdlib.h>
 
-#include "serial_helper.h"
+#include "uart_helper.h"
 
 #define MAX_BUFFER_SIZE 512
 
@@ -42,7 +42,7 @@ int serial_receive(void)
     int flag_close,retv;
     struct termios opt;
 
-	fd = serial_open(SERIAL_RECEIVE_PATH);
+	fd = uart_init(SERIAL_RECEIVE_PATH);
 	if (fd < 0) {
 		printf("serial open faild \n");
 		exit(1);
