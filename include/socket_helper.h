@@ -43,7 +43,13 @@ typedef struct _socket_tag {
 #define MYPORT  8887
 #define BUF_LEN (1024)
 
+typedef void (*handle_message_t)(unsigned char *message, int len);
 typedef void *(*server_handle_message)(void *args);
+
+typedef struct _client_read_args_tag {
+	socket_t *client_sk;
+	handle_message_t handle_read_message;
+}client_read_args_t;
 
 SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
@@ -54,7 +60,7 @@ SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
 
 
-SOCKET_HELPER_EX void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout);
+SOCKET_HELPER_EX void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_t handle_read_message, int timeout);
 SOCKET_HELPER_EX int socket_wait_for_connect(socket_t *sk, server_handle_message callback);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);

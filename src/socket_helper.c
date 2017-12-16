@@ -147,7 +147,7 @@ void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
 	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
 }
 
-void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
+void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_t handle_read_message, int timeout)
 {
 	struct sockaddr_in addr;
 	int status;
@@ -171,7 +171,15 @@ void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
 	}
 	else {
 		printf("connect to server \n");
-		thread_create_detached(read_cb, (void *)sk);
+		client_read_args_t *client_read_args = (client_read_args_t *)malloc(sizeof(client_read_args_t));
+		if (!client_read_args) {
+			printf("%s:%d, malloc faild \n", __func__, __LINE__);
+			exit(-1);
+		}
+		client_read_args->client_sk = sk;
+		client_read_args->handle_read_message = handle_read_message;
+
+		thread_create_detached(read_cb, (void *)client_read_args);
 	}
 }
 
