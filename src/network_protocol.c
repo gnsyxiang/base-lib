@@ -5,7 +5,7 @@
  * @file    network_protocol.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    08/12 2017 22:46
+ * @date    17/12 2017 00:03
  * @version v0.0.1
  * 
  * @since    note
@@ -13,9 +13,9 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        08/12 2017      create the file
+ *     00      zhenquan.qiu        17/12 2017      create the file
  * 
- *     last modified: 08/12 2017 22:46
+ *     last modified: 17/12 2017 00:03
  */
 #include <stdio.h>
 #include <sys/types.h>
@@ -37,16 +37,7 @@
 #include "network_protocol.h"
 #undef NETWORK_PROTOCOL_GB
 
-static handle_message_t handle_message_l;
-static int read_timeout_ms_l;
-static unsigned char *send_buf_l;
-static int send_buf_len_l;
-
-static int is_client_running;
-static pthread_mutex_t send_mutex;
-static pthread_cond_t  send_cond;
-
-static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
+void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
 	int cur_status = 1;
 	int package_len;
@@ -106,101 +97,17 @@ static void check_is_package(unsigned char *buf, int ret, handle_message_t handl
 	}
 }
 
-static void send_wait(void)
+void send_ok(socket_t *sk)
 {
-	pthread_mutex_lock(&send_mutex);
-	pthread_cond_wait(&send_cond, &send_mutex);
-	pthread_mutex_unlock(&send_mutex);
+	pthread_mutex_lock(&sk->mutex);
+	pthread_cond_signal(&sk->cond);
+	pthread_mutex_unlock(&sk->mutex);
 }
 
-static void send_ok(void)
+void send_wait(socket_t *sk)
 {
-	pthread_mutex_lock(&send_mutex);
-	pthread_cond_signal(&send_cond);
-	pthread_mutex_unlock(&send_mutex);
-}
-
-void send_message(unsigned char *buf, int len)
-{
-	send_ok();
-
-	send_buf_l = (unsigned char *)malloc(len + 1);
-	memset(send_buf_l, '\0', len + 1);
-
-	memcpy(send_buf_l, buf, len);
-	send_buf_len_l = len;
-}
-
-int get_client_running_flag(void)
-{
-	return is_client_running;
-}
-
-static void *send_message_thread(void *args)
-{
-	socket_t *client_sk = (socket_t *)args;
-
-	pthread_mutex_init(&send_mutex, NULL);
-	pthread_cond_init(&send_cond, NULL);
-
-	while (is_client_running) {
-		send_wait();
-
-		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
-
-		free(send_buf_l);
-	}
-
-	return NULL;
-}
-
-static void *client_thread_callback(void *args)
-{    
-	int i = 0;
-	int ret;
-	socket_t *client_sk = (socket_t *)args;
-
-	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
-	is_client_running = 1;
-
-	create_a_attached_thread(NULL, send_message_thread, args);
-
-	while(is_client_running) {
-		unsigned char buf[BUF_LEN] = {0};
-
-		ret = socket_read(client_sk, (char *)buf, ++i);
-		if (ret == 0) {
-			printf("client socket close \n");
-			is_client_running = 0;
-			usleep(1 * 1000);
-			break;
-		}
-
-		if (ret > 0)
-			check_is_package(buf, ret, handle_message_l);
-	}
-
-	socket_clean_client(client_sk);
-
-	return NULL;
-}
-
-static int init_server(void)
-{
-	socket_t *sk_server = socket_init_server(MYPORT);
-	socket_wait_for_connect(sk_server, client_thread_callback);
-    close(sk_server->fd);
-
-    return 0;
-}
-
-void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms)
-{
-	assert(handle_message);
-
-	handle_message_l = handle_message;
-	read_timeout_ms_l = read_timeout_ms;
-
-	init_server();
+	pthread_mutex_lock(&sk->mutex);
+	pthread_cond_wait(&sk->cond, &sk->mutex);
+	pthread_mutex_unlock(&sk->mutex);
 }
 

@@ -23,17 +23,17 @@
 #include <unistd.h>
 
 #include "hex_helper.h"
-#include "network_protocol.h"
 #include "pthread_helper.h"
+#include "network_protocol.h"
+#include "network_protocol_server.h"
 
-int cur_status;
+static socket_t *client_sk;
+static int cur_status;
 
 static void handle_recv_message(unsigned char *buf, int len)
 {
 	char cmd_type;
 	cmd_type = buf[4];
-
-	print_hex(buf, len);
 
 	switch (cmd_type) {
 		case 2:
@@ -44,9 +44,17 @@ static void handle_recv_message(unsigned char *buf, int len)
 			printf("recv ---4\n");
 			cur_status++;
 			break;
+		case 5:
+			printf("recv ---5\n");
+			break;
+		case 6:
+			printf("recv ---6\n");
+			break;
 		default:
 			break;
 	}
+
+	print_hex(buf, len);
 }
 
 void handle_send_get_config_info(void)
@@ -55,7 +63,7 @@ void handle_send_get_config_info(void)
 	printf("send ------1\n");
 
 	cur_status++;
-	send_message(cmd_get_config_info, sizeof(cmd_get_config_info));
+	server_send_message(client_sk, cmd_get_config_info, sizeof(cmd_get_config_info));
 }
 
 void handle_send_ready(void)
@@ -64,18 +72,18 @@ void handle_send_ready(void)
 	printf("send ------3\n");
 
 	cur_status++;
-	send_message(cmd_ready, sizeof(cmd_ready));
+	server_send_message(client_sk, cmd_ready, sizeof(cmd_ready));
 }
 
 void *handle_send_message_thread(void *args)
 {
-	while (!get_client_running_flag())
+	while (!get_server_read_running_flag())
 		usleep(100);
 
-	while (get_client_running_flag()) {
-		sleep(1);
+	while (get_server_read_running_flag()) {
+		usleep(1 * 1000 * 1000);
+		printf("cur_status: %d \n", cur_status);
 
-		/*printf("cur_status: %d \n", cur_status);*/
 		switch (cur_status) {
 			case 0:
 				handle_send_get_config_info();
@@ -93,11 +101,17 @@ void *handle_send_message_thread(void *args)
 
 int socket_server(void)
 {
-	int read_timeout_ms = 3000;
+	int read_timeout_ms = 1000;
 
 	create_a_attached_thread(NULL, handle_send_message_thread, NULL);
 
-	network_protocol_server_init(handle_recv_message, read_timeout_ms);
+	client_sk = network_protocol_server_init(handle_recv_message, read_timeout_ms);
+
+	while (1) {
+		usleep(1 * 1000 * 1000);
+	}
+
+	socket_clean_client(client_sk);
 
     return 0;
 }

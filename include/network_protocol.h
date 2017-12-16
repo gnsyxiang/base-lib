@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include "socket_helper.h"
+
 #ifndef NETWORK_PROTOCOL_GB
 #define NETWORK_PROTOCOL_EX extern
 #else
@@ -35,13 +37,11 @@ extern "C" {
 
 #define SOCKET_READ_TIMEOUT_MS (1000)
 
-typedef void (*handle_message_t)(unsigned char *message, int len);
+#define READ_MESSAGE_LEN (7)
 
-
-NETWORK_PROTOCOL_EX void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms);
-NETWORK_PROTOCOL_EX void send_message(unsigned char *buf, int len);
-NETWORK_PROTOCOL_EX int get_client_running_flag(void);
-
+void send_ok(socket_t *sk);
+void send_wait(socket_t *sk);
+void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message);
 
 #ifdef __cplusplus
 }
