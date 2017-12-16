@@ -35,7 +35,7 @@
 #include "socket_helper.h"
 #undef SOCKET_HELPER_GB
 
-static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
+static socket_t *_socket_init_struct(int fd, char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms)
 {
 	socket_t *sk = (socket_t *)malloc(sizeof(socket_t));
 	if (NULL == sk) {
@@ -46,7 +46,12 @@ static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
 
 	sk->fd = fd;
 	sk->port = port;
+
+	sk->handle_read_message = handle_read_message;
+	sk->read_timeout_ms = read_timeout_ms;
+
 	pthread_mutex_init(&sk->lock, NULL);
+	pthread_cond_init(&sk->cond, NULL);
 
 	if (ipaddr) {
 		int ipaddr_len = strlen(ipaddr) + 1;
@@ -75,7 +80,7 @@ static void _socket_clean_struct(socket_t *sk)
 	free(sk);
 }
 
-socket_t *socket_init_client(char *ipaddr, int port)
+socket_t *socket_init_client(char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms)
 {
 	int fd = socket(AF_INET,SOCK_STREAM, 0);
 	if (fd < 0) {
@@ -84,7 +89,7 @@ socket_t *socket_init_client(char *ipaddr, int port)
 		exit(-1);
 	}
 
-	return _socket_init_struct(fd, ipaddr, port);
+	return _socket_init_struct(fd, ipaddr, port, handle_read_message, read_timeout_ms);
 }
 
 void socket_clean_client(socket_t *sk)
@@ -97,12 +102,12 @@ void socket_clean_client(socket_t *sk)
 	_socket_clean_struct(sk);
 }
 
-socket_t *socket_init_server(int port)
+socket_t *socket_init_server(int port, handle_message_t handle_read_message, int read_timeout_ms)
 {
 	socket_t *sk;
 	int ret;
 
-	sk = socket_init_client(NULL, port);
+	sk = socket_init_client(NULL, port, handle_read_message, read_timeout_ms);
 
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
@@ -147,7 +152,7 @@ void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
 	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
 }
 
-void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_t handle_read_message, int read_timeout_ms, int timeout)
+void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
 {
 	struct sockaddr_in addr;
 	int status;
@@ -171,20 +176,12 @@ void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_
 	}
 	else {
 		printf("connect to server \n");
-		client_read_args_t *client_read_args = (client_read_args_t *)malloc(sizeof(client_read_args_t));
-		if (!client_read_args) {
-			printf("%s:%d, malloc faild \n", __func__, __LINE__);
-			exit(-1);
-		}
-		client_read_args->client_sk = sk;
-		client_read_args->handle_read_message = handle_read_message;
-		client_read_args->read_timeout_ms = read_timeout_ms;
 
-		thread_create_detached(read_cb, (void *)client_read_args);
+		thread_create_detached(read_cb, (void *)sk);
 	}
 }
 
-int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle_message_t handle_message, int read_timeout_ms)
+int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
 {
 	int fd = sk->fd;
 
@@ -212,19 +209,9 @@ int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle
 				return -1;
 			}
 
-			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port);
+			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port, NULL, 0);
 
-			client_read_args_t *client_read_args = (client_read_args_t *)malloc(sizeof(client_read_args_t));
-			if (!client_read_args) {
-				printf("%s:%d, malloc faild \n", __func__, __LINE__);
-				exit(-1);
-			}
-
-			client_read_args->client_sk = client_sk;
-			client_read_args->handle_read_message = handle_message;
-			client_read_args->read_timeout_ms = read_timeout_ms;
-
-			thread_create_detached(callback, (void *)client_read_args);
+			thread_create_detached(callback, (void *)client_sk);
 		}
 	}
 

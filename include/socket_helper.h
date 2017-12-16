@@ -33,36 +33,35 @@ extern "C" {
 #define SOCKET_HELPER_EX
 #endif
 
+typedef void (*handle_message_t)(unsigned char *message, int len);
+typedef void *(*server_handle_message)(void *args);
+
 typedef struct _socket_tag {
 	int fd;
 	int port;
 	char *ipaddr;
+
+	handle_message_t handle_read_message;
+	int read_timeout_ms;
+
 	pthread_mutex_t lock;
+	pthread_cond_t cond;
 } socket_t;
 
 #define MYPORT  8887
 #define BUF_LEN (1024)
 
-typedef void (*handle_message_t)(unsigned char *message, int len);
-typedef void *(*server_handle_message)(void *args);
-
-typedef struct _client_read_args_tag {
-	socket_t *client_sk;
-	handle_message_t handle_read_message;
-	int read_timeout_ms;
-}client_read_args_t;
-
-SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port);
+SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms);
 SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
-SOCKET_HELPER_EX socket_t *socket_init_server(int port);
+SOCKET_HELPER_EX socket_t *socket_init_server(int port, handle_message_t handle_read_message, int read_timeout_ms);
 SOCKET_HELPER_EX void socket_clean_server(socket_t *sk);
 
 SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
 
 
-SOCKET_HELPER_EX void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_t handle_read_message, int read_timeout_ms, int timeout);
-SOCKET_HELPER_EX int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle_message_t handle_read_message, int read_timeout_ms);
+SOCKET_HELPER_EX void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout);
+SOCKET_HELPER_EX int socket_wait_for_connect(socket_t *sk, server_handle_message callback);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);
 SOCKET_HELPER_EX int socket_read(socket_t *sk, char *buf, int size);
