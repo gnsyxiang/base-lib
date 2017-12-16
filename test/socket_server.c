@@ -26,7 +26,8 @@
 #include "network_protocol.h"
 #include "thread_helper.h"
 
-int cur_status;
+static socket_t *client_sk;
+static int cur_status;
 
 static void handle_recv_message(unsigned char *buf, int len)
 {
@@ -61,7 +62,7 @@ void handle_send_get_config_info(void)
 	printf("send ------1\n");
 
 	cur_status++;
-	send_message(cmd_get_config_info, sizeof(cmd_get_config_info));
+	send_message(client_sk, cmd_get_config_info, sizeof(cmd_get_config_info));
 }
 
 void handle_send_ready(void)
@@ -70,7 +71,7 @@ void handle_send_ready(void)
 	printf("send ------3\n");
 
 	cur_status++;
-	send_message(cmd_ready, sizeof(cmd_ready));
+	send_message(client_sk, cmd_ready, sizeof(cmd_ready));
 }
 
 void *handle_send_message_thread(void *args)
@@ -103,7 +104,13 @@ int socket_server(void)
 
 	thread_create_detached(handle_send_message_thread, NULL);
 
-	network_protocol_server_init(handle_recv_message, read_timeout_ms);
+	client_sk = network_protocol_server_init(handle_recv_message, read_timeout_ms);
+
+	while (1) {
+		usleep(1 * 1000 * 1000);
+	}
+
+	socket_clean_client(client_sk);
 
     return 0;
 }

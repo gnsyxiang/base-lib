@@ -181,44 +181,30 @@ void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
 	}
 }
 
-int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
+socket_t *socket_wait_for_connect(socket_t *sk, server_handle_message callback)
 {
 	int fd = sk->fd;
 
 	int status = listen(fd, SOMAXCONN);
 	if (status < 0) {
 		printf("%s: failed to listen socket: %s(%d) \n", __func__, strerror(errno), -errno);
-		return -1;
+		return NULL;
 	}
 
-	while (1) {
-		fd_set read_fs;
-		FD_ZERO(&read_fs);
-		FD_SET(fd, &read_fs);
-
-		int ret = select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
-		if (ret < 0) {
-			printf("%s: select error: %s(%d)\n", __func__, strerror(errno), -errno);
-			break;
-		}
-
-		if (FD_ISSET(fd, &read_fs)) {
-			int client_fd = accept(fd, NULL, NULL);
-			if (client_fd < 0) {
-				printf("%s: failed to accept socket: %s(%d) \n", __func__, strerror(errno), -errno);
-				return -1;
-			}
-
-			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port, NULL, 0);
-
-			client_sk->handle_read_message = sk->handle_read_message;
-			client_sk->read_timeout_ms = sk->read_timeout_ms;
-
-			thread_create_detached(callback, (void *)client_sk);
-		}
+	int client_fd = accept(fd, NULL, NULL);
+	if (client_fd < 0) {
+		printf("%s: failed to accept socket: %s(%d) \n", __func__, strerror(errno), -errno);
+		return NULL;
 	}
 
-	return 0;
+	socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port, NULL, 0);
+
+	client_sk->handle_read_message = sk->handle_read_message;
+	client_sk->read_timeout_ms = sk->read_timeout_ms;
+
+	thread_create_detached(callback, (void *)client_sk);
+
+	return client_sk;
 }
 
 
