@@ -54,8 +54,28 @@ void client_send_num_file_name(void)
 	client_send_message(cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
 }
 
+void client_send_play(void)
+{
+	unsigned char cmd_send_play[] = {0xaa, 0x06, 0x0, 0x1, 0x5, 0xbb, 0x55};
+	printf("send ------5\n");
+
+	cur_status++;
+	client_send_message(cmd_send_play, sizeof(cmd_send_play));
+}
+
+void client_send_next(void)
+{
+	unsigned char cmd_send_next[] = {0xaa, 0x06, 0x0, 0x1, 0x6, 0xbb, 0x55};
+	printf("send ------6\n");
+
+	cur_status++;
+	client_send_message(cmd_send_next, sizeof(cmd_send_next));
+}
+
 void *client_send_message_thread(void *args)
 {
+	int sleep_cnt = 0;
+
 	while (!get_client_read_running_flag())
 		usleep(100);
 
@@ -69,6 +89,19 @@ void *client_send_message_thread(void *args)
 				break;
 			case 3:
 				client_send_num_file_name();
+				break;
+			case 4:
+				client_send_play();
+				break;
+			case 5:
+				printf("------play music\n");
+				if (sleep_cnt++ > 5) {
+					sleep_cnt = 0;
+					client_send_next();
+				}
+				break;
+			case 6:
+				cur_status = 4;
 				break;
 			default:
 				break;

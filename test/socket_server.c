@@ -42,6 +42,12 @@ static void handle_recv_message(unsigned char *buf, int len)
 			printf("recv ---4\n");
 			cur_status++;
 			break;
+		case 5:
+			printf("recv ---5\n");
+			break;
+		case 6:
+			printf("recv ---6\n");
+			break;
 		default:
 			break;
 	}
