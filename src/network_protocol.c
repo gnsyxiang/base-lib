@@ -134,17 +134,6 @@ void send_message(unsigned char *buf, int len)
 	send_ok();
 }
 
-void client_send_message(unsigned char *buf, int len)
-{
-	client_send_buf_l = (unsigned char *)malloc(len + 1);
-	memset(client_send_buf_l, '\0', len + 1);
-
-	memcpy(client_send_buf_l, buf, len);
-	client_send_buf_len_l = len;
-
-	send_ok();
-}
-
 int get_client_read_running_flag(void)
 {
 	return is_client_read_running;
@@ -160,10 +149,10 @@ static void *client_send_message_thread(void *args)
 	while (is_client_read_running) {
 		send_wait();
 
-		print_hex(client_send_buf_l, client_send_buf_len_l);
-		socket_write(client_sk, (char *)client_send_buf_l, client_send_buf_len_l);
+		print_hex(send_buf_l, send_buf_len_l);
+		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
 
-		free(client_send_buf_l);
+		free(send_buf_l);
 	}
 
 	return NULL;

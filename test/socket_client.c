@@ -42,7 +42,7 @@ void client_send_config_info(void)
 	printf("send ------2\n");
 
 	cur_status++;
-	client_send_message(cmd_send_config_info, sizeof(cmd_send_config_info));
+	send_message(cmd_send_config_info, sizeof(cmd_send_config_info));
 }
 
 void client_send_num_file_name(void)
@@ -51,7 +51,7 @@ void client_send_num_file_name(void)
 	printf("send ------4\n");
 
 	cur_status++;
-	client_send_message(cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
+	send_message(cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
 }
 
 void client_send_play(void)
@@ -60,7 +60,7 @@ void client_send_play(void)
 	printf("send ------5\n");
 
 	cur_status++;
-	client_send_message(cmd_send_play, sizeof(cmd_send_play));
+	send_message(cmd_send_play, sizeof(cmd_send_play));
 }
 
 void client_send_next(void)
@@ -69,7 +69,7 @@ void client_send_next(void)
 	printf("send ------6\n");
 
 	cur_status++;
-	client_send_message(cmd_send_next, sizeof(cmd_send_next));
+	send_message(cmd_send_next, sizeof(cmd_send_next));
 }
 
 void *client_send_message_thread(void *args)
