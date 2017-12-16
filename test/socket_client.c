@@ -11,8 +11,9 @@
 
 #include "socket_helper.h"
 #include "hex_helper.h"
-#include "network_protocol.h"
 #include "thread_helper.h"
+#include "network_protocol.h"
+#include "network_protocol_client.h"
 
 static socket_t *client_sk;
 static int cur_status;
@@ -43,7 +44,7 @@ void client_send_config_info(void)
 	printf("send ------2\n");
 
 	cur_status++;
-	send_message(client_sk, cmd_send_config_info, sizeof(cmd_send_config_info));
+	client_send_message(client_sk, cmd_send_config_info, sizeof(cmd_send_config_info));
 }
 
 void client_send_num_file_name(void)
@@ -52,7 +53,7 @@ void client_send_num_file_name(void)
 	printf("send ------4\n");
 
 	cur_status++;
-	send_message(client_sk, cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
+	client_send_message(client_sk, cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
 }
 
 void client_send_play(void)
@@ -61,7 +62,7 @@ void client_send_play(void)
 	printf("send ------5\n");
 
 	cur_status++;
-	send_message(client_sk, cmd_send_play, sizeof(cmd_send_play));
+	client_send_message(client_sk, cmd_send_play, sizeof(cmd_send_play));
 }
 
 void client_send_next(void)
@@ -70,7 +71,7 @@ void client_send_next(void)
 	printf("send ------6\n");
 
 	cur_status++;
-	send_message(client_sk, cmd_send_next, sizeof(cmd_send_next));
+	client_send_message(client_sk, cmd_send_next, sizeof(cmd_send_next));
 }
 
 void *client_send_message_thread(void *args)
@@ -81,6 +82,9 @@ void *client_send_message_thread(void *args)
 		usleep(100);
 
 	while (get_client_read_running_flag()) {
+		usleep(1 * 1000 * 1000);
+		printf("cur_status: %d \n", cur_status);
+
 		switch (cur_status) {
 			case 1:
 				client_send_config_info();
@@ -93,8 +97,8 @@ void *client_send_message_thread(void *args)
 				break;
 			case 5:
 				if (sleep_cnt++ > 5) {
-				printf("------play music\n");
-				usleep(1 * 1000 * 1000);
+					printf("------play music\n");
+					usleep(1 * 1000 * 1000);
 					sleep_cnt = 0;
 					client_send_next();
 				}
@@ -103,8 +107,6 @@ void *client_send_message_thread(void *args)
 				cur_status = 4;
 				break;
 			default:
-				usleep(1 * 1000 * 1000);
-				printf("cur_status: %d \n", cur_status);
 				break;
 		}
 	}

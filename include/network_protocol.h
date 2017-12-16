@@ -37,11 +37,11 @@ extern "C" {
 
 #define SOCKET_READ_TIMEOUT_MS (1000)
 
-NETWORK_PROTOCOL_EX socket_t *network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms);
-NETWORK_PROTOCOL_EX socket_t *network_protocol_client_init(handle_message_t handle_server_message, int client_read_timeout_ms);
-NETWORK_PROTOCOL_EX void send_message(socket_t *sk, unsigned char *buf, int len);
-NETWORK_PROTOCOL_EX int get_client_read_running_flag(void);
-NETWORK_PROTOCOL_EX int get_server_read_running_flag(void);
+#define READ_MESSAGE_LEN (7)
+
+void send_ok(socket_t *sk);
+void send_wait(socket_t *sk);
+void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message);
 
 #ifdef __cplusplus
 }

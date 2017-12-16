@@ -23,8 +23,9 @@
 #include <unistd.h>
 
 #include "hex_helper.h"
-#include "network_protocol.h"
 #include "thread_helper.h"
+#include "network_protocol.h"
+#include "network_protocol_server.h"
 
 static socket_t *client_sk;
 static int cur_status;
@@ -62,7 +63,7 @@ void handle_send_get_config_info(void)
 	printf("send ------1\n");
 
 	cur_status++;
-	send_message(client_sk, cmd_get_config_info, sizeof(cmd_get_config_info));
+	server_send_message(client_sk, cmd_get_config_info, sizeof(cmd_get_config_info));
 }
 
 void handle_send_ready(void)
@@ -71,7 +72,7 @@ void handle_send_ready(void)
 	printf("send ------3\n");
 
 	cur_status++;
-	send_message(client_sk, cmd_ready, sizeof(cmd_ready));
+	server_send_message(client_sk, cmd_ready, sizeof(cmd_ready));
 }
 
 void *handle_send_message_thread(void *args)
@@ -80,6 +81,9 @@ void *handle_send_message_thread(void *args)
 		usleep(100);
 
 	while (get_server_read_running_flag()) {
+		usleep(1 * 1000 * 1000);
+		printf("cur_status: %d \n", cur_status);
+
 		switch (cur_status) {
 			case 0:
 				handle_send_get_config_info();
@@ -88,8 +92,6 @@ void *handle_send_message_thread(void *args)
 				handle_send_ready();
 				break;
 			default:
-				usleep(1 * 1000 * 1000);
-				printf("cur_status: %d \n", cur_status);
 				break;
 		}
 	}

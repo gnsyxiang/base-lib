@@ -5,7 +5,7 @@
  * @file    network_protocol.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    08/12 2017 22:46
+ * @date    17/12 2017 00:03
  * @version v0.0.1
  * 
  * @since    note
@@ -13,9 +13,9 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        08/12 2017      create the file
+ *     00      zhenquan.qiu        17/12 2017      create the file
  * 
- *     last modified: 08/12 2017 22:46
+ *     last modified: 17/12 2017 00:03
  */
 #include <stdio.h>
 #include <sys/types.h>
@@ -37,15 +37,7 @@
 #include "network_protocol.h"
 #undef NETWORK_PROTOCOL_GB
 
-#define READ_MESSAGE_LEN (7)
-
-static unsigned char *send_buf_l;
-static int send_buf_len_l;
-
-static int is_server_read_running;
-static int is_client_read_running;
-
-static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
+void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
 	int cur_status = 1;
 	int package_len;
@@ -105,146 +97,17 @@ static void check_is_package(unsigned char *buf, int ret, handle_message_t handl
 	}
 }
 
-static void send_ok(socket_t *sk)
+void send_ok(socket_t *sk)
 {
 	pthread_mutex_lock(&sk->mutex);
 	pthread_cond_signal(&sk->cond);
 	pthread_mutex_unlock(&sk->mutex);
 }
-static void send_wait(socket_t *sk)
+
+void send_wait(socket_t *sk)
 {
 	pthread_mutex_lock(&sk->mutex);
 	pthread_cond_wait(&sk->cond, &sk->mutex);
 	pthread_mutex_unlock(&sk->mutex);
-}
-void send_message(socket_t *sk, unsigned char *buf, int len)
-{
-	send_buf_l = (unsigned char *)malloc(len + 1);
-	memset(send_buf_l, '\0', len + 1);
-
-	memcpy(send_buf_l, buf, len);
-	send_buf_len_l = len;
-
-	send_ok(sk);
-}
-
-int get_server_read_running_flag(void)
-{
-	return is_server_read_running;
-}
-
-static void *server_send_message_thread(void *args)
-{
-	socket_t *client_sk = (socket_t *)args;
-
-	while (is_server_read_running) {
-		send_wait(client_sk);
-
-		print_hex(send_buf_l, send_buf_len_l);
-		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
-
-		free(send_buf_l);
-	}
-
-	return NULL;
-}
-
-static void *server_read_thread(void *args)
-{    
-	int ret;
-	socket_t *client_sk = (socket_t *)args;
-
-	socket_set_recv_timeout(client_sk, client_sk->read_timeout_ms);
-	is_server_read_running = 1;
-
-	thread_create_detached(server_send_message_thread, args);
-
-	while(is_server_read_running) {
-		unsigned char buf[BUF_LEN] = {0};
-
-		ret = socket_read(client_sk, (char *)buf, READ_MESSAGE_LEN);
-		if (ret == 0) {
-			printf("client socket close \n");
-			is_server_read_running = 0;
-			usleep(1 * 1000);
-			break;
-		}
-
-		if (ret > 0)
-			check_is_package(buf, ret, client_sk->handle_read_message);
-	}
-
-	return NULL;
-}
-
-int get_client_read_running_flag(void)
-{
-	return is_client_read_running;
-}
-
-static void *client_send_message_thread(void *args)
-{
-	socket_t *client_sk = (socket_t *)args;
-
-	while (is_client_read_running) {
-		send_wait(client_sk);
-
-		print_hex(send_buf_l, send_buf_len_l);
-		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
-
-		free(send_buf_l);
-	}
-
-	return NULL;
-}
-
-static void *client_read_thread(void *args)
-{    
-	int ret;
-	socket_t *client_sk = (socket_t *)args;
-
-	socket_set_recv_timeout(client_sk, client_sk->read_timeout_ms);
-	is_client_read_running = 1;
-
-	thread_create_detached(client_send_message_thread, args);
-
-	while(is_client_read_running) {
-		unsigned char buf[BUF_LEN] = {0};
-
-		ret = socket_read(client_sk, (char *)buf, READ_MESSAGE_LEN);
-		if (ret == 0) {
-			printf("client socket close \n");
-			is_client_read_running = 0;
-			usleep(1 * 1000);
-			break;
-		}
-
-		if (ret > 0)
-			check_is_package(buf, ret, client_sk->handle_read_message);
-	}
-
-	return NULL;
-}
-
-socket_t *network_protocol_server_init(handle_message_t handle_read_message, int read_timeout_ms)
-{
-	assert(handle_read_message);
-
-	socket_t *sk_server = socket_init_server(MYPORT, handle_read_message, read_timeout_ms);
-	socket_t *client_sk = socket_wait_for_connect(sk_server, server_read_thread);
-
-	socket_clean_client(sk_server);
-
-	return client_sk;
-}
-
-socket_t *network_protocol_client_init(handle_message_t handle_read_message, int read_timeout_ms)
-{
-	assert(handle_read_message);
-	
-	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT, handle_read_message, read_timeout_ms);
-	socket_connect(sk_client, client_read_thread, 3);
-
-	return sk_client;
 }
 
