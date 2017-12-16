@@ -167,17 +167,17 @@ static void *send_message_thread(void *args)
 static void *client_thread_callback(void *args)
 {    
 	int ret;
-	socket_t *client_sk = (socket_t *)args;
+	client_read_args_t *client_read_args = (client_read_args_t *)args;
 
-	socket_set_recv_timeout(client_sk, read_timeout_ms_l);
+	socket_set_recv_timeout(client_read_args->client_sk, read_timeout_ms_l);
 	is_client_running = 1;
 
-	thread_create_detached(send_message_thread, args);
+	thread_create_detached(send_message_thread, (void *)client_read_args->client_sk);
 
 	while(is_client_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
-		ret = socket_read(client_sk, (char *)buf, READ_MESSAGE_LEN);
+		ret = socket_read(client_read_args->client_sk, (char *)buf, READ_MESSAGE_LEN);
 		if (ret == 0) {
 			printf("client socket close \n");
 			is_client_running = 0;
@@ -186,10 +186,11 @@ static void *client_thread_callback(void *args)
 		}
 
 		if (ret > 0)
-			check_is_package(buf, ret, handle_message_l);
+			check_is_package(buf, ret, client_read_args->handle_read_message);
 	}
 
-	socket_clean_client(client_sk);
+	socket_clean_client(client_read_args->client_sk);
+	free(client_read_args);
 
 	return NULL;
 }
@@ -197,7 +198,7 @@ static void *client_thread_callback(void *args)
 static int init_server(void)
 {
 	socket_t *sk_server = socket_init_server(MYPORT);
-	socket_wait_for_connect(sk_server, client_thread_callback);
+	socket_wait_for_connect(sk_server, client_thread_callback, handle_message_l);
     close(sk_server->fd);
 
     return 0;
@@ -264,7 +265,6 @@ static void *client_read_thread(void *args)
 	}
 
 	socket_clean_client(client_read_args->client_sk);
-	free(client_read_args);
 
 	return NULL;
 }

@@ -183,7 +183,7 @@ void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_
 	}
 }
 
-int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
+int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle_message_t handle_message)
 {
 	int fd = sk->fd;
 
@@ -213,7 +213,16 @@ int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
 
 			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port);
 
-			thread_create_detached(callback, (void *)client_sk);
+			client_read_args_t *client_read_args = (client_read_args_t *)malloc(sizeof(client_read_args_t));
+			if (!client_read_args) {
+				printf("%s:%d, malloc faild \n", __func__, __LINE__);
+				exit(-1);
+			}
+
+			client_read_args->client_sk = client_sk;
+			client_read_args->handle_read_message = handle_message;
+
+			thread_create_detached(callback, (void *)client_read_args);
 		}
 	}
 
