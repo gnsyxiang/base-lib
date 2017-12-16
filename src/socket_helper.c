@@ -147,7 +147,7 @@ void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
 	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
 }
 
-void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_t handle_read_message, int timeout)
+void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_t handle_read_message, int read_timeout_ms, int timeout)
 {
 	struct sockaddr_in addr;
 	int status;
@@ -178,12 +178,13 @@ void socket_connect(socket_t *sk, server_handle_message read_cb, handle_message_
 		}
 		client_read_args->client_sk = sk;
 		client_read_args->handle_read_message = handle_read_message;
+		client_read_args->read_timeout_ms = read_timeout_ms;
 
 		thread_create_detached(read_cb, (void *)client_read_args);
 	}
 }
 
-int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle_message_t handle_message)
+int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle_message_t handle_message, int read_timeout_ms)
 {
 	int fd = sk->fd;
 
@@ -221,6 +222,7 @@ int socket_wait_for_connect(socket_t *sk, server_handle_message callback, handle
 
 			client_read_args->client_sk = client_sk;
 			client_read_args->handle_read_message = handle_message;
+			client_read_args->read_timeout_ms = read_timeout_ms;
 
 			thread_create_detached(callback, (void *)client_read_args);
 		}

@@ -155,7 +155,6 @@ static void *send_message_thread(void *args)
 	while (is_client_running) {
 		send_wait();
 
-		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
 
 		free(send_buf_l);
@@ -169,7 +168,7 @@ static void *client_thread_callback(void *args)
 	int ret;
 	client_read_args_t *client_read_args = (client_read_args_t *)args;
 
-	socket_set_recv_timeout(client_read_args->client_sk, read_timeout_ms_l);
+	socket_set_recv_timeout(client_read_args->client_sk, client_read_args->read_timeout_ms);
 	is_client_running = 1;
 
 	thread_create_detached(send_message_thread, (void *)client_read_args->client_sk);
@@ -198,10 +197,24 @@ static void *client_thread_callback(void *args)
 static int init_server(void)
 {
 	socket_t *sk_server = socket_init_server(MYPORT);
-	socket_wait_for_connect(sk_server, client_thread_callback, handle_message_l);
+	socket_wait_for_connect(sk_server, client_thread_callback, handle_message_l, read_timeout_ms_l);
     close(sk_server->fd);
 
     return 0;
+}
+
+static void client_send_wait(void)
+{
+	pthread_mutex_lock(&client_send_mutex);
+	pthread_cond_wait(&client_send_cond, &client_send_mutex);
+	pthread_mutex_unlock(&client_send_mutex);
+}
+
+static void client_send_ok(void)
+{
+	pthread_mutex_lock(&client_send_mutex);
+	pthread_cond_signal(&client_send_cond);
+	pthread_mutex_unlock(&client_send_mutex);
 }
 
 void client_send_message(unsigned char *buf, int len)
@@ -212,7 +225,7 @@ void client_send_message(unsigned char *buf, int len)
 	memcpy(client_send_buf_l, buf, len);
 	client_send_buf_len_l = len;
 
-	send_ok();
+	client_send_ok();
 }
 
 int get_client_read_running_flag(void)
@@ -228,9 +241,8 @@ static void *client_send_message_thread(void *args)
 	pthread_cond_init(&client_send_cond, NULL);
 
 	while (is_client_read_running) {
-		send_wait();
+		client_send_wait();
 
-		print_hex(client_send_buf_l, client_send_buf_len_l);
 		socket_write(client_sk, (char *)client_send_buf_l, client_send_buf_len_l);
 
 		free(client_send_buf_l);
@@ -244,7 +256,7 @@ static void *client_read_thread(void *args)
 	int ret;
 	client_read_args_t *client_read_args = (client_read_args_t *)args;
 
-	socket_set_recv_timeout(client_read_args->client_sk, client_read_timeout_ms_l);
+	socket_set_recv_timeout(client_read_args->client_sk, client_read_args->read_timeout_ms);
 	is_client_read_running = 1;
 
 	thread_create_detached(client_send_message_thread, (void *)client_read_args->client_sk);
@@ -265,6 +277,7 @@ static void *client_read_thread(void *args)
 	}
 
 	socket_clean_client(client_read_args->client_sk);
+	free(client_read_args);
 
 	return NULL;
 }
@@ -272,7 +285,7 @@ static void *client_read_thread(void *args)
 static int init_client(void)
 {
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
-	socket_connect(sk_client, client_read_thread, handle_server_message_l, 3);
+	socket_connect(sk_client, client_read_thread, handle_server_message_l, client_read_timeout_ms_l, 3);
 
 	return 0;
 }
