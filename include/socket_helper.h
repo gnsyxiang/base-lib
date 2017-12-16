@@ -54,7 +54,7 @@ SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
 
 
-SOCKET_HELPER_EX void socket_connect(socket_t *sk, int timeout);
+SOCKET_HELPER_EX void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout);
 SOCKET_HELPER_EX int socket_wait_for_connect(socket_t *sk, server_handle_message callback);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);

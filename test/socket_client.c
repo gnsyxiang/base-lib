@@ -11,34 +11,35 @@
 
 #include "socket_helper.h"
 #include "hex_helper.h"
+#include "network_protocol.h"
+
+void handle_server_message_cb(unsigned char *message, int len)
+{
+	char cmd_type = message[4];
+
+	switch (cmd_type) {
+		case 1:
+			printf("recv ---1\n");
+			break;
+		case 3:
+			printf("recv ---3\n");
+			break;
+		default:
+			break;
+	}
+
+	print_hex(message, len);
+}
 
 int socket_client(void)
 {
-	int cnt = 0;
-	unsigned char buf[BUF_LEN] = { \
-		0x11, 0xaa, 0x07, 0x0, 0x1, 0x1, 0x7, 0xbb, 0x55, \
-		0x11, 0xaa, 0x07, 0x0, 0x1, 0x2, 0x7, 0xbb, 0x55, \
-		0x11, 0xaa, 0x07, 0x0, 0x1, 0x3, 0x7, 0xbb, 0x55 \
-	};
+	int client_read_timeout_ms = 3000;
 
-	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
-	socket_connect(sk_client, 3);
+	network_protocol_client_init(handle_server_message_cb, client_read_timeout_ms);
 
-    while (cnt < 3) {
-		socket_write(sk_client, (char *)(buf + cnt * 9), 9);
-		print_hex(buf + cnt * 9, 9);
-		cnt++;
-    }
-
-	memset(buf, '\0', BUF_LEN);
-	int ret;
 	while (1) {
-		sleep(1);
-		ret = socket_read(sk_client, (char *)buf, 8);
-		print_hex(buf, ret);
+		usleep(1 * 1000 * 1000);
 	}
-
-	socket_clean_client(sk_client);
 
     return 0;
 }

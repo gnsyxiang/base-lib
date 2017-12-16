@@ -38,11 +38,14 @@
 #undef NETWORK_PROTOCOL_GB
 
 static handle_message_t handle_message_l;
+static handle_message_t handle_server_message_l;
 static int read_timeout_ms_l;
+static int client_read_timeout_ms_l;
 static unsigned char *send_buf_l;
 static int send_buf_len_l;
 
 static int is_client_running;
+static int is_client_read_running;
 static pthread_mutex_t send_mutex;
 static pthread_cond_t  send_cond;
 
@@ -146,6 +149,7 @@ static void *send_message_thread(void *args)
 	while (is_client_running) {
 		send_wait();
 
+		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
 
 		free(send_buf_l);
@@ -194,6 +198,42 @@ static int init_server(void)
     return 0;
 }
 
+static void *client_read_thread(void *args)
+{    
+	int i = 0;
+	int ret;
+	socket_t *client_sk = (socket_t *)args;
+
+	socket_set_recv_timeout(client_sk, client_read_timeout_ms_l);
+
+	while(!is_client_read_running) {
+		unsigned char buf[BUF_LEN] = {0};
+
+		ret = socket_read(client_sk, (char *)buf, ++i);
+		if (ret == 0) {
+			printf("client socket close \n");
+			is_client_read_running = 1;
+			usleep(1 * 1000);
+			break;
+		}
+
+		if (ret > 0)
+			check_is_package(buf, ret, handle_server_message_l);
+	}
+
+	socket_clean_client(client_sk);
+
+	return NULL;
+}
+
+static int init_client(void)
+{
+	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
+	socket_connect(sk_client, client_read_thread, 3);
+
+	return 0;
+}
+
 void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms)
 {
 	assert(handle_message);
@@ -202,5 +242,15 @@ void network_protocol_server_init(handle_message_t handle_message, int read_time
 	read_timeout_ms_l = read_timeout_ms;
 
 	init_server();
+}
+
+void network_protocol_client_init(handle_message_t handle_server_message, int client_read_timeout_ms)
+{
+	assert(handle_server_message);
+	
+	handle_server_message_l = handle_server_message;
+	client_read_timeout_ms_l = client_read_timeout_ms;
+
+	init_client();
 }
 

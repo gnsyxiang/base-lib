@@ -147,7 +147,7 @@ void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
 	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
 }
 
-void socket_connect(socket_t *sk, int timeout)
+void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
 {
 	struct sockaddr_in addr;
 	int status;
@@ -166,10 +166,13 @@ void socket_connect(socket_t *sk, int timeout)
 		}
 	} while ((status < 0) && (time++ < timeout));
 
-	if (status < 0)
+	if (status < 0) {
 		printf("wait for connect to server error !!! \n");
-	else
+	}
+	else {
 		printf("connect to server \n");
+		thread_create_detached(read_cb, (void *)sk);
+	}
 }
 
 int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
