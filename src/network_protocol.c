@@ -37,6 +37,8 @@
 #include "network_protocol.h"
 #undef NETWORK_PROTOCOL_GB
 
+#define READ_MESSAGE_LEN (7)
+
 static handle_message_t handle_message_l;
 static handle_message_t handle_server_message_l;
 static int read_timeout_ms_l;
@@ -160,7 +162,6 @@ static void *send_message_thread(void *args)
 
 static void *client_thread_callback(void *args)
 {    
-	int i = 0;
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
@@ -172,7 +173,7 @@ static void *client_thread_callback(void *args)
 	while(is_client_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
-		ret = socket_read(client_sk, (char *)buf, ++i);
+		ret = socket_read(client_sk, (char *)buf, READ_MESSAGE_LEN);
 		if (ret == 0) {
 			printf("client socket close \n");
 			is_client_running = 0;
@@ -200,7 +201,6 @@ static int init_server(void)
 
 static void *client_read_thread(void *args)
 {    
-	int i = 0;
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
@@ -209,7 +209,7 @@ static void *client_read_thread(void *args)
 	while(!is_client_read_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
-		ret = socket_read(client_sk, (char *)buf, ++i);
+		ret = socket_read(client_sk, (char *)buf, READ_MESSAGE_LEN);
 		if (ret == 0) {
 			printf("client socket close \n");
 			is_client_read_running = 1;

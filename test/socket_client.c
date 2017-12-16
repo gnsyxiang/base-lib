@@ -33,7 +33,7 @@ void handle_server_message_cb(unsigned char *message, int len)
 
 int socket_client(void)
 {
-	int client_read_timeout_ms = 3000;
+	int client_read_timeout_ms = 1000;
 
 	network_protocol_client_init(handle_server_message_cb, client_read_timeout_ms);
 

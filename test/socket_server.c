@@ -93,7 +93,7 @@ void *handle_send_message_thread(void *args)
 
 int socket_server(void)
 {
-	int read_timeout_ms = 3000;
+	int read_timeout_ms = 1000;
 
 	thread_create_detached(handle_send_message_thread, NULL);
 
