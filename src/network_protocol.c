@@ -244,30 +244,20 @@ static void *client_read_thread(void *args)
 	return NULL;
 }
 
-static void init_server(handle_message_t handle_read_message, int read_timeout_ms)
-{
-	socket_t *sk_server = socket_init_server(MYPORT);
-	socket_wait_for_connect(sk_server, client_thread_callback, handle_read_message, read_timeout_ms);
-    close(sk_server->fd);
-}
-
-static void init_client(handle_message_t handle_read_message, int client_read_timeout_ms)
-{
-	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
-	socket_connect(sk_client, client_read_thread, handle_read_message, client_read_timeout_ms, 3);
-}
-
 void network_protocol_server_init(handle_message_t handle_read_message, int read_timeout_ms)
 {
 	assert(handle_read_message);
 
-	init_server(handle_read_message, read_timeout_ms);
+	socket_t *sk_server = socket_init_server(MYPORT);
+	socket_wait_for_connect(sk_server, client_thread_callback, handle_read_message, read_timeout_ms);
+    close(sk_server->fd);
 }
 
 void network_protocol_client_init(handle_message_t handle_read_message, int client_read_timeout_ms)
 {
 	assert(handle_read_message);
 	
-	init_client(handle_read_message, client_read_timeout_ms);
+	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
+	socket_connect(sk_client, client_read_thread, handle_read_message, client_read_timeout_ms, 3);
 }
 
