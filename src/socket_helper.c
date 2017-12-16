@@ -50,7 +50,7 @@ static socket_t *_socket_init_struct(int fd, char *ipaddr, int port, handle_mess
 	sk->handle_read_message = handle_read_message;
 	sk->read_timeout_ms = read_timeout_ms;
 
-	pthread_mutex_init(&sk->lock, NULL);
+	pthread_mutex_init(&sk->mutex, NULL);
 	pthread_cond_init(&sk->cond, NULL);
 
 	if (ipaddr) {

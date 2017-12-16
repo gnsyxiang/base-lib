@@ -38,8 +38,9 @@ extern "C" {
 #define SOCKET_READ_TIMEOUT_MS (1000)
 
 NETWORK_PROTOCOL_EX void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms);
-NETWORK_PROTOCOL_EX void network_protocol_client_init(handle_message_t handle_server_message, int client_read_timeout_ms);
+NETWORK_PROTOCOL_EX socket_t *network_protocol_client_init(handle_message_t handle_server_message, int client_read_timeout_ms);
 NETWORK_PROTOCOL_EX void send_message(unsigned char *buf, int len);
+NETWORK_PROTOCOL_EX void send_message_haha(socket_t *sk, unsigned char *buf, int len);
 NETWORK_PROTOCOL_EX int get_client_running_flag(void);
 
 NETWORK_PROTOCOL_EX int get_client_read_running_flag(void);

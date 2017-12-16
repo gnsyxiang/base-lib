@@ -131,6 +131,28 @@ void send_message(unsigned char *buf, int len)
 
 	send_ok();
 }
+static void send_ok_haha(socket_t *sk)
+{
+	pthread_mutex_lock(&sk->mutex);
+	pthread_cond_signal(&sk->cond);
+	pthread_mutex_unlock(&sk->mutex);
+}
+static void send_wait_haha(socket_t *sk)
+{
+	pthread_mutex_lock(&sk->mutex);
+	pthread_cond_wait(&sk->cond, &sk->mutex);
+	pthread_mutex_unlock(&sk->mutex);
+}
+void send_message_haha(socket_t *sk, unsigned char *buf, int len)
+{
+	send_buf_l = (unsigned char *)malloc(len + 1);
+	memset(send_buf_l, '\0', len + 1);
+
+	memcpy(send_buf_l, buf, len);
+	send_buf_len_l = len;
+
+	send_ok_haha(sk);
+}
 
 int get_client_read_running_flag(void)
 {
@@ -141,11 +163,8 @@ static void *client_send_message_thread(void *args)
 {
 	socket_t *client_sk = (socket_t *)args;
 
-	pthread_mutex_init(&send_mutex, NULL);
-	pthread_cond_init(&send_cond, NULL);
-
 	while (is_client_read_running) {
-		send_wait();
+		send_wait_haha(client_sk);
 
 		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
@@ -235,8 +254,6 @@ static void *client_read_thread(void *args)
 			check_is_package(buf, ret, client_sk->handle_read_message);
 	}
 
-	socket_clean_client(client_sk);
-
 	return NULL;
 }
 
@@ -249,11 +266,13 @@ void network_protocol_server_init(handle_message_t handle_read_message, int read
     close(sk_server->fd);
 }
 
-void network_protocol_client_init(handle_message_t handle_read_message, int read_timeout_ms)
+socket_t *network_protocol_client_init(handle_message_t handle_read_message, int read_timeout_ms)
 {
 	assert(handle_read_message);
 	
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT, handle_read_message, read_timeout_ms);
 	socket_connect(sk_client, client_read_thread, 3);
+
+	return sk_client;
 }
 

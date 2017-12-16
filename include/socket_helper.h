@@ -44,7 +44,7 @@ typedef struct _socket_tag {
 	handle_message_t handle_read_message;
 	int read_timeout_ms;
 
-	pthread_mutex_t lock;
+	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 } socket_t;
 

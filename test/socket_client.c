@@ -14,6 +14,7 @@
 #include "network_protocol.h"
 #include "thread_helper.h"
 
+static socket_t *client_sk;
 int cur_status;
 
 void handle_server_message_cb(unsigned char *message, int len)
@@ -42,7 +43,7 @@ void client_send_config_info(void)
 	printf("send ------2\n");
 
 	cur_status++;
-	send_message(cmd_send_config_info, sizeof(cmd_send_config_info));
+	send_message_haha(client_sk, cmd_send_config_info, sizeof(cmd_send_config_info));
 }
 
 void client_send_num_file_name(void)
@@ -51,7 +52,7 @@ void client_send_num_file_name(void)
 	printf("send ------4\n");
 
 	cur_status++;
-	send_message(cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
+	send_message_haha(client_sk, cmd_send_num_file_name, sizeof(cmd_send_num_file_name));
 }
 
 void client_send_play(void)
@@ -60,7 +61,7 @@ void client_send_play(void)
 	printf("send ------5\n");
 
 	cur_status++;
-	send_message(cmd_send_play, sizeof(cmd_send_play));
+	send_message_haha(client_sk, cmd_send_play, sizeof(cmd_send_play));
 }
 
 void client_send_next(void)
@@ -69,7 +70,7 @@ void client_send_next(void)
 	printf("send ------6\n");
 
 	cur_status++;
-	send_message(cmd_send_next, sizeof(cmd_send_next));
+	send_message_haha(client_sk, cmd_send_next, sizeof(cmd_send_next));
 }
 
 void *client_send_message_thread(void *args)
@@ -117,11 +118,13 @@ int socket_client(void)
 
 	thread_create_detached(client_send_message_thread, NULL);
 
-	network_protocol_client_init(handle_server_message_cb, client_read_timeout_ms);
+	client_sk = network_protocol_client_init(handle_server_message_cb, client_read_timeout_ms);
 
 	while (1) {
 		usleep(1 * 1000 * 1000);
 	}
+
+	socket_clean_client(client_sk);
 
     return 0;
 }
