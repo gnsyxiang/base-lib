@@ -125,13 +125,13 @@ static void send_ok(void)
 
 void send_message(unsigned char *buf, int len)
 {
-	send_ok();
-
 	send_buf_l = (unsigned char *)malloc(len + 1);
 	memset(send_buf_l, '\0', len + 1);
 
 	memcpy(send_buf_l, buf, len);
 	send_buf_len_l = len;
+
+	send_ok();
 }
 
 int get_client_running_flag(void)
