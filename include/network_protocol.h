@@ -43,6 +43,8 @@ NETWORK_PROTOCOL_EX void network_protocol_client_init(handle_message_t handle_se
 NETWORK_PROTOCOL_EX void send_message(unsigned char *buf, int len);
 NETWORK_PROTOCOL_EX int get_client_running_flag(void);
 
+NETWORK_PROTOCOL_EX void client_send_message(unsigned char *buf, int len);
+NETWORK_PROTOCOL_EX int get_client_read_running_flag(void);
 
 #ifdef __cplusplus
 }

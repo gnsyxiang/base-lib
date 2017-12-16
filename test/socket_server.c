@@ -33,8 +33,6 @@ static void handle_recv_message(unsigned char *buf, int len)
 	char cmd_type;
 	cmd_type = buf[4];
 
-	print_hex(buf, len);
-
 	switch (cmd_type) {
 		case 2:
 			printf("recv ---2\n");
@@ -47,6 +45,8 @@ static void handle_recv_message(unsigned char *buf, int len)
 		default:
 			break;
 	}
+
+	print_hex(buf, len);
 }
 
 void handle_send_get_config_info(void)

@@ -45,11 +45,15 @@ static int read_timeout_ms_l;
 static int client_read_timeout_ms_l;
 static unsigned char *send_buf_l;
 static int send_buf_len_l;
+static unsigned char *client_send_buf_l;
+static int client_send_buf_len_l;
 
 static int is_client_running;
 static int is_client_read_running;
 static pthread_mutex_t send_mutex;
 static pthread_cond_t  send_cond;
+static pthread_mutex_t client_send_mutex;
+static pthread_cond_t  client_send_cond;
 
 static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
@@ -199,20 +203,58 @@ static int init_server(void)
     return 0;
 }
 
+void client_send_message(unsigned char *buf, int len)
+{
+	client_send_buf_l = (unsigned char *)malloc(len + 1);
+	memset(client_send_buf_l, '\0', len + 1);
+
+	memcpy(client_send_buf_l, buf, len);
+	client_send_buf_len_l = len;
+
+	send_ok();
+}
+
+int get_client_read_running_flag(void)
+{
+	return is_client_read_running;
+}
+
+static void *client_send_message_thread(void *args)
+{
+	socket_t *client_sk = (socket_t *)args;
+
+	pthread_mutex_init(&client_send_mutex, NULL);
+	pthread_cond_init(&client_send_cond, NULL);
+
+	while (is_client_read_running) {
+		send_wait();
+
+		print_hex(client_send_buf_l, client_send_buf_len_l);
+		socket_write(client_sk, (char *)client_send_buf_l, client_send_buf_len_l);
+
+		free(client_send_buf_l);
+	}
+
+	return NULL;
+}
+
 static void *client_read_thread(void *args)
 {    
 	int ret;
 	socket_t *client_sk = (socket_t *)args;
 
 	socket_set_recv_timeout(client_sk, client_read_timeout_ms_l);
+	is_client_read_running = 1;
 
-	while(!is_client_read_running) {
+	thread_create_detached(client_send_message_thread, args);
+
+	while(is_client_read_running) {
 		unsigned char buf[BUF_LEN] = {0};
 
 		ret = socket_read(client_sk, (char *)buf, READ_MESSAGE_LEN);
 		if (ret == 0) {
 			printf("client socket close \n");
-			is_client_read_running = 1;
+			is_client_read_running = 0;
 			usleep(1 * 1000);
 			break;
 		}
