@@ -123,7 +123,6 @@ static void send_ok(void)
 
 void send_message(unsigned char *buf, int len)
 {
-	printf("-----------1\n");
 	send_buf_l = (unsigned char *)malloc(len + 1);
 	memset(send_buf_l, '\0', len + 1);
 
@@ -131,7 +130,6 @@ void send_message(unsigned char *buf, int len)
 	send_buf_len_l = len;
 
 	send_ok();
-	printf("-----------2\n");
 }
 
 int get_client_read_running_flag(void)
@@ -146,11 +144,8 @@ static void *client_send_message_thread(void *args)
 	pthread_mutex_init(&send_mutex, NULL);
 	pthread_cond_init(&send_cond, NULL);
 
-	printf("-----------3\n");
 	while (is_client_read_running) {
-	printf("-----------4\n");
 		send_wait();
-	printf("-----------5\n");
 
 		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
@@ -173,11 +168,8 @@ static void *send_message_thread(void *args)
 	pthread_mutex_init(&send_mutex, NULL);
 	pthread_cond_init(&send_cond, NULL);
 
-	printf("-----------6\n");
 	while (is_client_running) {
-	printf("-----------7\n");
 		send_wait();
-	printf("-----------8\n");
 
 		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);

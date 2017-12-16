@@ -211,6 +211,9 @@ int socket_wait_for_connect(socket_t *sk, server_handle_message callback)
 
 			socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port, NULL, 0);
 
+			client_sk->handle_read_message = sk->handle_read_message;
+			client_sk->read_timeout_ms = sk->read_timeout_ms;
+
 			thread_create_detached(callback, (void *)client_sk);
 		}
 	}
