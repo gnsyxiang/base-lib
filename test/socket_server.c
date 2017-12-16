@@ -76,13 +76,10 @@ void handle_send_ready(void)
 
 void *handle_send_message_thread(void *args)
 {
-	while (!get_client_running_flag())
+	while (!get_server_read_running_flag())
 		usleep(100);
 
-	while (get_client_running_flag()) {
-		sleep(1);
-
-		/*printf("cur_status: %d \n", cur_status);*/
+	while (get_server_read_running_flag()) {
 		switch (cur_status) {
 			case 0:
 				handle_send_get_config_info();
@@ -91,6 +88,8 @@ void *handle_send_message_thread(void *args)
 				handle_send_ready();
 				break;
 			default:
+				usleep(1 * 1000 * 1000);
+				printf("cur_status: %d \n", cur_status);
 				break;
 		}
 	}

@@ -15,7 +15,7 @@
 #include "thread_helper.h"
 
 static socket_t *client_sk;
-int cur_status;
+static int cur_status;
 
 void handle_server_message_cb(unsigned char *message, int len)
 {
@@ -81,9 +81,6 @@ void *client_send_message_thread(void *args)
 		usleep(100);
 
 	while (get_client_read_running_flag()) {
-		sleep(1);
-
-		/*printf("cur_status: %d \n", cur_status);*/
 		switch (cur_status) {
 			case 1:
 				client_send_config_info();
@@ -95,8 +92,9 @@ void *client_send_message_thread(void *args)
 				client_send_play();
 				break;
 			case 5:
-				printf("------play music\n");
 				if (sleep_cnt++ > 5) {
+				printf("------play music\n");
+				usleep(1 * 1000 * 1000);
 					sleep_cnt = 0;
 					client_send_next();
 				}
@@ -105,6 +103,8 @@ void *client_send_message_thread(void *args)
 				cur_status = 4;
 				break;
 			default:
+				usleep(1 * 1000 * 1000);
+				printf("cur_status: %d \n", cur_status);
 				break;
 		}
 	}
