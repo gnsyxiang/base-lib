@@ -39,10 +39,6 @@
 
 #define READ_MESSAGE_LEN (7)
 
-static handle_message_t handle_message_l;
-static handle_message_t handle_server_message_l;
-static int read_timeout_ms_l;
-static int client_read_timeout_ms_l;
 static unsigned char *send_buf_l;
 static int send_buf_len_l;
 static unsigned char *client_send_buf_l;
@@ -155,6 +151,7 @@ static void *send_message_thread(void *args)
 	while (is_client_running) {
 		send_wait();
 
+		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);
 
 		free(send_buf_l);
@@ -192,15 +189,6 @@ static void *client_thread_callback(void *args)
 	free(client_read_args);
 
 	return NULL;
-}
-
-static int init_server(void)
-{
-	socket_t *sk_server = socket_init_server(MYPORT);
-	socket_wait_for_connect(sk_server, client_thread_callback, handle_message_l, read_timeout_ms_l);
-    close(sk_server->fd);
-
-    return 0;
 }
 
 static void client_send_wait(void)
@@ -243,6 +231,7 @@ static void *client_send_message_thread(void *args)
 	while (is_client_read_running) {
 		client_send_wait();
 
+		print_hex(client_send_buf_l, client_send_buf_len_l);
 		socket_write(client_sk, (char *)client_send_buf_l, client_send_buf_len_l);
 
 		free(client_send_buf_l);
@@ -282,31 +271,30 @@ static void *client_read_thread(void *args)
 	return NULL;
 }
 
-static int init_client(void)
+static void init_server(handle_message_t handle_read_message, int read_timeout_ms)
+{
+	socket_t *sk_server = socket_init_server(MYPORT);
+	socket_wait_for_connect(sk_server, client_thread_callback, handle_read_message, read_timeout_ms);
+    close(sk_server->fd);
+}
+
+static void init_client(handle_message_t handle_read_message, int client_read_timeout_ms)
 {
 	socket_t *sk_client = socket_init_client("127.0.0.1", MYPORT);
-	socket_connect(sk_client, client_read_thread, handle_server_message_l, client_read_timeout_ms_l, 3);
-
-	return 0;
+	socket_connect(sk_client, client_read_thread, handle_read_message, client_read_timeout_ms, 3);
 }
 
-void network_protocol_server_init(handle_message_t handle_message, int read_timeout_ms)
+void network_protocol_server_init(handle_message_t handle_read_message, int read_timeout_ms)
 {
-	assert(handle_message);
+	assert(handle_read_message);
 
-	handle_message_l = handle_message;
-	read_timeout_ms_l = read_timeout_ms;
-
-	init_server();
+	init_server(handle_read_message, read_timeout_ms);
 }
 
-void network_protocol_client_init(handle_message_t handle_server_message, int client_read_timeout_ms)
+void network_protocol_client_init(handle_message_t handle_read_message, int client_read_timeout_ms)
 {
-	assert(handle_server_message);
+	assert(handle_read_message);
 	
-	handle_server_message_l = handle_server_message;
-	client_read_timeout_ms_l = client_read_timeout_ms;
-
-	init_client();
+	init_client(handle_read_message, client_read_timeout_ms);
 }
 
