@@ -48,8 +48,6 @@ static int is_client_running;
 static int is_client_read_running;
 static pthread_mutex_t send_mutex;
 static pthread_cond_t  send_cond;
-static pthread_mutex_t client_send_mutex;
-static pthread_cond_t  client_send_cond;
 
 static void check_is_package(unsigned char *buf, int ret, handle_message_t handle_message)
 {
@@ -136,6 +134,41 @@ void send_message(unsigned char *buf, int len)
 	send_ok();
 }
 
+void client_send_message(unsigned char *buf, int len)
+{
+	client_send_buf_l = (unsigned char *)malloc(len + 1);
+	memset(client_send_buf_l, '\0', len + 1);
+
+	memcpy(client_send_buf_l, buf, len);
+	client_send_buf_len_l = len;
+
+	send_ok();
+}
+
+int get_client_read_running_flag(void)
+{
+	return is_client_read_running;
+}
+
+static void *client_send_message_thread(void *args)
+{
+	socket_t *client_sk = (socket_t *)args;
+
+	pthread_mutex_init(&send_mutex, NULL);
+	pthread_cond_init(&send_cond, NULL);
+
+	while (is_client_read_running) {
+		send_wait();
+
+		print_hex(client_send_buf_l, client_send_buf_len_l);
+		socket_write(client_sk, (char *)client_send_buf_l, client_send_buf_len_l);
+
+		free(client_send_buf_l);
+	}
+
+	return NULL;
+}
+
 int get_client_running_flag(void)
 {
 	return is_client_running;
@@ -187,55 +220,6 @@ static void *client_thread_callback(void *args)
 
 	socket_clean_client(client_read_args->client_sk);
 	free(client_read_args);
-
-	return NULL;
-}
-
-static void client_send_wait(void)
-{
-	pthread_mutex_lock(&client_send_mutex);
-	pthread_cond_wait(&client_send_cond, &client_send_mutex);
-	pthread_mutex_unlock(&client_send_mutex);
-}
-
-static void client_send_ok(void)
-{
-	pthread_mutex_lock(&client_send_mutex);
-	pthread_cond_signal(&client_send_cond);
-	pthread_mutex_unlock(&client_send_mutex);
-}
-
-void client_send_message(unsigned char *buf, int len)
-{
-	client_send_buf_l = (unsigned char *)malloc(len + 1);
-	memset(client_send_buf_l, '\0', len + 1);
-
-	memcpy(client_send_buf_l, buf, len);
-	client_send_buf_len_l = len;
-
-	client_send_ok();
-}
-
-int get_client_read_running_flag(void)
-{
-	return is_client_read_running;
-}
-
-static void *client_send_message_thread(void *args)
-{
-	socket_t *client_sk = (socket_t *)args;
-
-	pthread_mutex_init(&client_send_mutex, NULL);
-	pthread_cond_init(&client_send_cond, NULL);
-
-	while (is_client_read_running) {
-		client_send_wait();
-
-		print_hex(client_send_buf_l, client_send_buf_len_l);
-		socket_write(client_sk, (char *)client_send_buf_l, client_send_buf_len_l);
-
-		free(client_send_buf_l);
-	}
 
 	return NULL;
 }
