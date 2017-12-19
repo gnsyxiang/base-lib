@@ -20,7 +20,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include <time.h>
+
+#include "time_helper.h"
 
 #define BASE_LIB_LOG_GB
 #include "log_helper.h"
@@ -29,14 +30,6 @@
 #define LOG_BUF_SIZE 2048
 
 static int log_debug_level = LOG_VERBOSE;
-
-static double get_clock(void)
-{
-    struct timespec ts;
-
-    clock_gettime(CLOCK_BOOTTIME, &ts);
-    return (double) ts.tv_sec + (double) (ts.tv_nsec) / 1000000000;
-}
 
 static void log_output(char *buffer)
 {
@@ -51,9 +44,9 @@ void log_debug(int level, const char *file, int line, const char *fmt, ...)
     if (!((level <= LOG_VERBOSE) && (level <= log_debug_level)))
         return ;
 
-    size = sprintf(buffer, "[%.03f] ", get_clock());
+    size = sprintf(buffer, "[%.03f]", get_sec_clk_with_boottime());
 
-    sz = sprintf(buffer + size, "%s:%d: ", file, line);
+    sz = sprintf(buffer + size, "[%s +%d]: ", file, line);
     size += sz;
 
     va_list var_args;

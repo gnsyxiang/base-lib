@@ -72,6 +72,15 @@ struct timespec cur_delay_ms(uint32_t timeout_ms)
  *        CLOCK_MONOTONIC_RAW: 
  *        CLOCK_BOOTTIME: 与CLOCK_MONOTONIC类似，但是当suspend时，会依然增加
  */
+
+double get_sec_clk_with_boottime(void)
+{
+    struct timespec ts;
+
+    clock_gettime(CLOCK_BOOTTIME, &ts);
+    return (double) ts.tv_sec + (double) (ts.tv_nsec) / 1000000000;
+}
+
 void get_tm_time(struct tm *tm)
 {
     struct timespec ts;

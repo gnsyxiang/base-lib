@@ -53,6 +53,14 @@ TIME_HELPER_EX struct timespec cur_delay_ms(uint32_t timeout_ms);
 TIME_HELPER_EX void get_tm_time(struct tm *tm);
 
 /**
+ * get sec from CLOCK_BOOTTIME to now
+ *
+ * @param void
+ * @return return sec from CLOCK_BOOTTIME
+ */
+TIME_HELPER_EX double get_sec_clk_with_boottime(void);
+
+/**
  * format time as required
  *
  * @param time: a pointer to storing formatting time

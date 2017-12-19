@@ -42,8 +42,13 @@ enum {
 
 BASE_LIB_LOG_EX void log_debug(int level, const char *file, int line, const char *fmt, ...);
 
+/*
 #define LOG_DEBUG(level, ...) \
 	log_debug(level, basename(__FILE__), __LINE__, __VA_ARGS__)
+*/
+
+#define LOG_DEBUG(level, ...) \
+	log_debug(level, __FILE__, __LINE__, __VA_ARGS__)
 
 #define log_d(...)      LOG_DEBUG(LOG_DEBUG,	__VA_ARGS__)
 #define log_i(...)      LOG_DEBUG(LOG_INFO,		__VA_ARGS__)
