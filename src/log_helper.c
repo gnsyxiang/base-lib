@@ -33,7 +33,7 @@ static int log_debug_level = LOG_VERBOSE;
 
 static void log_output(char *buffer)
 {
-    printf("%s", buffer);
+    printf("%s\n", buffer);
 }
 
 void log_debug(int level, const char *file, int line, const char *fmt, ...)
