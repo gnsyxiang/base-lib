@@ -50,6 +50,7 @@ void dis_func(void)
 	printf("-----------------------------------------------\n");
 	printf("1. socket client test \n");
 	printf("2. socket server test \n");
+	printf("3. heap memory test \n");
 	printf("input your number: ");
 }
 
@@ -64,6 +65,7 @@ int get_user_input()
 
 int socket_client(void);
 int socket_server(void);
+int heap_memory_test(void);
 
 int main(int argc, const char *argv[])
 {
@@ -75,6 +77,9 @@ int main(int argc, const char *argv[])
 			break;
 		case 2:
 			socket_server();
+			break;
+		case 3:
+			heap_memory_test();
 			break;
 		default:
 			break;
