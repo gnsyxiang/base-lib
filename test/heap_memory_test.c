@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include "heap_memory_helper.h"
 #include "log_helper.h"
+#include "parse_cmd.h"
 
 int heap_memory_test(void)
 {
@@ -34,4 +35,14 @@ int heap_memory_test(void)
 	safer_free(p);
 
 	return 0;
+}
+
+
+void memory_test_init(void)
+{
+	handle_test_cmd_t memory_test_cmd[] = {
+		{"3", heap_memory_test},
+	};
+
+	register_test_cmd(memory_test_cmd, ARRAY_NUM(memory_test_cmd));
 }

@@ -12,9 +12,12 @@
  * 00	zhenquan.qiu	23/09 2017
  ****************************************************************/
 #include <stdio.h>
+#include <string.h>
 
 #include "time_helper.h"
 #include "misc_helper.h"
+#include "log_helper.h"
+#include "parse_cmd.h"
 
 void time_test(void)
 {
@@ -63,28 +66,16 @@ int get_user_input()
 	return a;
 }
 
-int socket_client(void);
-int socket_server(void);
-int heap_memory_test(void);
+void memory_test_init(void);
 
 int main(int argc, const char *argv[])
 {
 	dis_func();
 
-	switch (get_user_input()) {
-		case 1:
-			socket_client();
-			break;
-		case 2:
-			socket_server();
-			break;
-		case 3:
-			heap_memory_test();
-			break;
-		default:
-			break;
-	}
+	memory_test_init();
 
+	match_test_cmd("3");
+	/*match_test_cmd(get_user_input() + '0');*/
 
     return 0;
 }
