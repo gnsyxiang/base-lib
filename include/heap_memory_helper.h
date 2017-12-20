@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 BASE_LIB_HEAP_MEMORY_HELPER_EX void _safer_free(void **pp);
-BASE_LIB_HEAP_MEMORY_HELPER_EX void *safer_malloc(size_t size);
+BASE_LIB_HEAP_MEMORY_HELPER_EX void *safer_malloc(size_t len);
 
 #define safer_free(p) _safer_free((void **)&p)
 

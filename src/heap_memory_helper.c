@@ -19,6 +19,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "log_helper.h"
 
@@ -26,14 +27,16 @@
 #include "heap_memory_helper.h"
 #undef BASE_LIB_HEAP_MEMORY_HELPER_GB
 
-void *safer_malloc(size_t size)
+void *safer_malloc(size_t len)
 {
-	void *pi = malloc(size);
-	if (!pi) {
+	void *p = malloc(len);
+	if (!p) {
 		log_e("malloc faild");
 		exit(-1);
-	} else
-		return pi;
+	} else {
+		memset(p, '\0', len);
+		return p;
+	}
 }
 
 void _safer_free(void **pp)
