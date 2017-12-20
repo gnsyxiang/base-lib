@@ -16,6 +16,17 @@
 #include "parse_cmd.h"
 #include "log_helper.h"
 
+static char usr_input[10];
+
+void memory_test_init(void);
+void time_test_init(void);
+
+void init(void)
+{
+	memory_test_init();
+	time_test_init();
+}
+
 void dis_func(void)
 {
 	printf("-----------------------------------------------\n");
@@ -28,32 +39,15 @@ void dis_func(void)
 	printf("input your number: ");
 }
 
-int get_user_input()
-{
-	int a;
-
-	scanf("%d", &a);
-
-	return a;
-}
-
-void memory_test_init(void);
-void time_test_init(void);
-
-void init(void)
-{
-	memory_test_init();
-	time_test_init();
-}
-
 int main(int argc, const char *argv[])
 {
 	dis_func();
 
 	init();
 
-	match_test_cmd("3");
-	/*match_test_cmd(get_user_input() + '0');*/
+	scanf("%s", usr_input);
+
+	match_test_cmd(usr_input);
 
     return 0;
 }

@@ -36,8 +36,6 @@ void match_test_cmd(const char *str)
 	} 
 
 	for (int i = 0; i < handle_test_cmd_list.num; i++) {
-		log_i("name: %s", handle_test_cmd_list.handle_test_cmd[i].test_cmd_name);
-
 		if (!strcmp(handle_test_cmd_list.handle_test_cmd[i].test_cmd_name, str))
 			handle_test_cmd_list.handle_test_cmd[i].test_func();
 	}
@@ -51,7 +49,6 @@ void register_test_cmd(handle_test_cmd_t *cmd_array, int num)
 	}
 
 	for (int i = 0; i < num; i++) {
-		log_i("num: %d", num);
 		strcpy(handle_test_cmd_list.handle_test_cmd[handle_test_cmd_list.num].test_cmd_name, cmd_array[i].test_cmd_name);
 		handle_test_cmd_list.handle_test_cmd[handle_test_cmd_list.num].test_func = cmd_array[i].test_func;
 		handle_test_cmd_list.num++;
