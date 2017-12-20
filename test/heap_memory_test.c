@@ -22,7 +22,7 @@
 #include "log_helper.h"
 #include "parse_cmd.h"
 
-int heap_memory_test(void)
+static int heap_memory_test(void)
 {
 	char *p = safer_malloc(10);	
 
@@ -46,3 +46,4 @@ void memory_test_init(void)
 
 	register_test_cmd(memory_test_cmd, ARRAY_NUM(memory_test_cmd));
 }
+
