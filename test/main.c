@@ -20,11 +20,13 @@ static char usr_input[10];
 
 void memory_test_init(void);
 void time_test_init(void);
+void wav_test_init(void);
 
 void init(void)
 {
 	memory_test_init();
 	time_test_init();
+	wav_test_init();
 }
 
 void dis_func(void)
@@ -36,6 +38,7 @@ void dis_func(void)
 	printf("2. socket server test \n");
 	printf("3. heap memory test \n");
 	printf("4. time test \n");
+	printf("5. wav test \n");
 	printf("input your number: ");
 }
 

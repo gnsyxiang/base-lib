@@ -57,6 +57,7 @@ tags
 main
 objs/html/
 objs/latex/
+*.wav
 
 
 
