@@ -46,6 +46,9 @@ static int wav_test(void)
 		wav_file_write(wav_file, &a, 1);
 	}
 
+	wav_file_flush(wav_file);
+
+	wav_header_dump(wav_file);
 
 	wav_file_clean(wav_file);
 

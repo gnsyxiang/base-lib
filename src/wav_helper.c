@@ -61,14 +61,46 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	return wav_header;
 }
 
-void wav_header_write(wav_file_t *wav_file, int len)
+void wav_header_dump(wav_file_t *wav_file)
+{
+	char riff_id[5] = {0};
+	char riff_fmt[5] = {0};
+	char fmt_id[5] = {0};
+	char data_id[5] = {0};
+	wav_header_t wav_header;
+
+	fseek(wav_file->file, 0, SEEK_SET);
+
+	fread(&wav_header, 1, WAV_HEADER_LEN, wav_file->file);
+
+	strncpy(riff_id, wav_header.riff_id, 4);
+	strncpy(riff_fmt, wav_header.riff_fmt, 4);
+	strncpy(fmt_id, wav_header.fmt_id, 4);
+	strncpy(data_id, wav_header.data_id, 4);
+
+	log_i("---------------------------");
+	log_i("riff_id: %s", riff_id);
+	log_i("riff_sz: %d", wav_header.riff_sz);
+	log_i("riff_fmt: %s\n", riff_fmt);
+
+	log_i("fmt_id: %s", fmt_id);
+	log_i("fmt_sz: %d", wav_header.fmt_sz);
+	log_i("fmt_audio_format: %d", wav_header.fmt_audio_format);
+	log_i("fmt_channels: %d", wav_header.fmt_channels);
+	log_i("fmt_sample_rate: %d", wav_header.fmt_sample_rate);
+	log_i("fmt_byte_rate: %d", wav_header.fmt_byte_rate);
+	log_i("fmt_block_align: %d", wav_header.fmt_block_align);
+	log_i("fmt_bits_per_sample: %d\n", wav_header.fmt_bits_per_sample);
+
+	log_i("data_id: %s", data_id);
+	log_i("data_sz: %d", wav_header.data_sz);
+	log_i("---------------------------");
+}
+
+static void wav_header_write(wav_file_t *wav_file, int len)
 {
 	wav_file->wav_header->riff_sz += len;
 	wav_file->wav_header->data_sz += len;
-
-	log_i("riff_sz: %d, data_sz: %d", \
-			wav_file->wav_header->riff_sz, \
-			wav_file->wav_header->data_sz);
 }
 
 void wav_file_flush(wav_file_t *wav_file)

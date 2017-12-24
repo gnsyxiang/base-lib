@@ -72,16 +72,13 @@ typedef struct _wav_file_param_tag {
 wav_file_t *wav_file_init(wav_file_param_t *wav_file_param);
 void wav_file_clean(wav_file_t *wav_file);
 
-void wav_header_write(wav_file_t *wav_file, int len);
-void wav_header_read(wav_file_t *wav_file);
-void wav_header_dump(wav_header_t *wav_file);
-
 void wav_file_write(wav_file_t *wav_file, void *data, int len);
 void wav_file_read(wav_file_t *wav_file, void *data, int len);
 
-void wav_file_flust(wav_file_t *wav_file);
+void wav_header_dump(wav_file_t *wav_file);
 void wav_file_rewind(wav_file_t *wav_file);
 int wav_file_over(wav_file_t *wav_file);
+void wav_file_flush(wav_file_t *wav_file);
 
 #ifdef  __cplusplus
 }
