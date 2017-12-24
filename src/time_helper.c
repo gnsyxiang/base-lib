@@ -65,6 +65,22 @@ struct timespec cur_delay_ms(uint32_t timeout_ms)
     return ts;
 }
 
+/* int clock_gettime(clockid_t clk_id, struct timespec *tp);
+ * param: clockid_t
+ *        CLOCK_REALTIME: 实际时间, 用户可以通过date或系统调用去修改, 系统休眠，仍然会运行(系统恢复时，kernel去作补偿)
+ *        CLOCK_MONTONIC: 单调时间，从某个时间开始到现在过去的时间。用户不能修改这个时间，系统休眠, 该时间不会增加
+ *        CLOCK_MONOTONIC_RAW: 
+ *        CLOCK_BOOTTIME: 与CLOCK_MONOTONIC类似，但是当suspend时，会依然增加
+ */
+
+double get_sec_clk_with_boottime(void)
+{
+    struct timespec ts;
+
+    clock_gettime(CLOCK_BOOTTIME, &ts);
+    return (double) ts.tv_sec + (double) (ts.tv_nsec) / 1000000000;
+}
+
 void get_tm_time(struct tm *tm)
 {
     struct timespec ts;

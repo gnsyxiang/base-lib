@@ -49,7 +49,10 @@ extern "C" {
 #define BYTE_ALIGN(len, align) (((len) + (align) - 1) & ~((align) - 1))
 
 #define ALIGN_INT(len)  BYTE_ALIGN(len, sizeof(uint32_t))
+
 #define ALIGN4(len)     BYTE_ALIGN(len, 4)
+#define ALIGN3(len)     BYTE_ALIGN(len, 3)
+#define ALIGN2(len)     BYTE_ALIGN(len, 2)
 
 #ifndef TYPE_HELPER_GB
 #define TYPE_HELPER_EX extern
