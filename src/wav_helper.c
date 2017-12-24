@@ -132,14 +132,17 @@ void wav_file_clean(wav_file_t *wav_file)
 	safer_free(wav_file);
 }
 
-void wav_file_write(wav_file_t *wav_file, void *data, int len)
+int wav_file_write(wav_file_t *wav_file, void *data, int len)
 {
-	if (wav_file && data && len > 0) {
-		int ret;
-		ret = fwrite(data, 1, len, wav_file->file);
-		if (ret > 0) {
-			wav_header_write(wav_file, ret);
-		}
-	}	
+	int ret;
+
+	if (!(wav_file && data && len > 0))
+		return -1;
+
+	ret = fwrite(data, 1, len, wav_file->file);
+	if (ret > 0)
+		wav_header_write(wav_file, ret);
+
+	return ret;
 }
 
