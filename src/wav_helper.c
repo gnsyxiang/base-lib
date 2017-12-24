@@ -25,9 +25,10 @@
 #undef BASE_LIB_WAV_HELPER_GB
 
 #include "heap_memory_helper.h"
+#include "log_helper.h"
 
 #define ID_RIFF "RIFF"
-#define ID_WAVE "ID_WAVE"
+#define ID_WAVE "WAVE"
 #define ID_FMT  "fmt "
 #define ID_DATA "data"
 
@@ -42,7 +43,7 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	wav_header_t *wav_header = safer_malloc(WAV_HEADER_LEN);	
 
 	strcpy(wav_header->riff_id, ID_RIFF);
-	wav_header->riff_sz = 0;
+	wav_header->riff_sz = WAV_HEADER_LEN - 8;
 	strcpy(wav_header->riff_fmt, ID_WAVE);
 
 	strcpy(wav_header->fmt_id, ID_FMT);
@@ -60,28 +61,53 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	return wav_header;
 }
 
+void wav_header_write(wav_file_t *wav_file, int len)
+{
+	wav_file->wav_header->riff_sz += len;
+	wav_file->wav_header->data_sz += len;
+
+	log_i("riff_sz: %d, data_sz: %d", \
+			wav_file->wav_header->riff_sz, \
+			wav_file->wav_header->data_sz);
+}
+
+void wav_file_flush(wav_file_t *wav_file)
+{
+	fseek(wav_file->file, 0, SEEK_SET);
+	fwrite(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
+	fflush(wav_file->file);
+}
+
 wav_file_t *wav_file_init(wav_file_param_t *wav_file_param)
 {
 	wav_file_t *wav_file = safer_malloc(WAV_FILE_LEN);
 
-	wav_file->wav_header = wav_header_init(wav_file_param);
-	wav_file->play_ms = 0;
 	wav_file->file = fopen(wav_file_param->path, "w+");
+	wav_file->play_ms = 0;
+
+	wav_file->wav_header = wav_header_init(wav_file_param);
+	fwrite(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
 
 	return wav_file;
 }
 
 void wav_file_clean(wav_file_t *wav_file)
 {
+	wav_file_flush(wav_file);
+
 	safer_free(wav_file->wav_header);
 	fclose(wav_file->file);
 	safer_free(wav_file);
 }
 
-void wav_header_write(wav_file_t *wav_file, int riff_sz, int data_sz)
+void wav_file_write(wav_file_t *wav_file, void *data, int len)
 {
-	wav_file->wav_header->riff_sz = riff_sz;
-	wav_file->wav_header->data_sz = data_sz;
+	if (wav_file && data && len > 0) {
+		int ret;
+		ret = fwrite(data, 1, len, wav_file->file);
+		if (ret > 0) {
+			wav_header_write(wav_file, ret);
+		}
+	}	
 }
-
 

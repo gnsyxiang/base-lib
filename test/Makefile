@@ -35,7 +35,7 @@ CC := $(CROSS_TOOL)gcc
 # ------
 # cflags
 # ------
-CFLAGS := -Wall
+CFLAGS := -Wall -g
 CFLAGS += -I. -I$(INC_DIR)
 
 MSG_CC := CC

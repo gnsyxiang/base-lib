@@ -36,6 +36,17 @@ static int wav_test(void)
 
 	wav_file = wav_file_init(&wav_file_param);
 
+	char a = 0x55;
+	for (int i = 0; i < 5000; i++) {
+		wav_file_write(wav_file, &a, 1);
+	}
+		
+	a = 0xc5;
+	for (int i = 0; i < 5000; i++) {
+		wav_file_write(wav_file, &a, 1);
+	}
+
+
 	wav_file_clean(wav_file);
 
 	log_i("wav test");
