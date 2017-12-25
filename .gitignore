@@ -58,6 +58,7 @@ main
 objs/html/
 objs/latex/
 *.wav
+.*.swp
 
 
 

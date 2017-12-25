@@ -21,12 +21,16 @@ static char usr_input[10];
 void memory_test_init(void);
 void time_test_init(void);
 void wav_test_init(void);
+void uart_recv_init(void);
+void uart_send_init(void);
 
 void init(void)
 {
 	memory_test_init();
 	time_test_init();
 	wav_test_init();
+	uart_recv_init();
+	uart_send_init();
 }
 
 void dis_func(void)
@@ -39,8 +43,8 @@ void dis_func(void)
 	printf("3. heap memory test \n");
 	printf("4. time test \n");
 	printf("5. wav test \n");
-	printf("6. serial send test \n");
-	printf("7. serial receive test \n");
+	printf("6. uart send test \n");
+	printf("7. uart receive test \n");
 	printf("input your number: ");
 }
 
