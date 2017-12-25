@@ -34,7 +34,7 @@ static int wav_test(void)
 	wav_file_param.sample_rate = 16000;
 	wav_file_param.bit_per_sample = 16;
 
-	wav_file = wav_file_init(&wav_file_param);
+	wav_file = wav_file_create(&wav_file_param);
 
 	char a = 0x55;
 	for (int i = 0; i < 5000; i++) {

@@ -61,6 +61,17 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	return wav_header;
 }
 
+static wav_file_t *new_wav_file_t(wav_file_param_t *wav_file_param)
+{
+	wav_file_t *wav_file = safer_malloc(WAV_FILE_LEN);
+
+	wav_file->wav_header = wav_header_init(wav_file_param);
+	wav_file->play_ms = 0;
+	wav_file->file = fopen(wav_file_param->path, "w+");
+
+	return wav_file;
+}
+
 void wav_header_dump(wav_file_t *wav_file)
 {
 	char riff_id[5] = {0};
@@ -110,15 +121,20 @@ void wav_file_flush(wav_file_t *wav_file)
 	fflush(wav_file->file);
 }
 
-wav_file_t *wav_file_init(wav_file_param_t *wav_file_param)
+wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
 {
-	wav_file_t *wav_file = safer_malloc(WAV_FILE_LEN);
+	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
 
-	wav_file->file = fopen(wav_file_param->path, "w+");
-	wav_file->play_ms = 0;
-
-	wav_file->wav_header = wav_header_init(wav_file_param);
 	fwrite(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
+
+	return wav_file;
+}
+
+wav_file_t *wav_file_open(wav_file_param_t *wav_file_param)
+{
+	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
+
+	fread(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
 
 	return wav_file;
 }
@@ -126,9 +142,9 @@ wav_file_t *wav_file_init(wav_file_param_t *wav_file_param)
 void wav_file_clean(wav_file_t *wav_file)
 {
 	wav_file_flush(wav_file);
+	fclose(wav_file->file);
 
 	safer_free(wav_file->wav_header);
-	fclose(wav_file->file);
 	safer_free(wav_file);
 }
 
