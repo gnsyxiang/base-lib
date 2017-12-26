@@ -41,6 +41,10 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	int bits_per_sample = wav_file_param->bit_per_sample;
 
 	wav_header_t *wav_header = safer_malloc(WAV_HEADER_LEN);	
+	
+	if (!channels || !sample_rate || !bits_per_sample) {
+		return wav_header;
+	}
 
 	strcpy(wav_header->riff_id, ID_RIFF);
 	wav_header->riff_sz = WAV_HEADER_LEN - 8;
@@ -59,6 +63,17 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	wav_header->data_sz = 0;
 
 	return wav_header;
+}
+
+static wav_file_t *new_wav_file_t(wav_file_param_t *wav_file_param)
+{
+	wav_file_t *wav_file = safer_malloc(WAV_FILE_LEN);
+
+	wav_file->wav_header = wav_header_init(wav_file_param);
+	wav_file->play_ms = 0;
+	wav_file->file = fopen(wav_file_param->path, wav_file_param->file_mode);
+
+	return wav_file;
 }
 
 void wav_header_dump(wav_file_t *wav_file)
@@ -110,15 +125,29 @@ void wav_file_flush(wav_file_t *wav_file)
 	fflush(wav_file->file);
 }
 
-wav_file_t *wav_file_init(wav_file_param_t *wav_file_param)
+void wav_file_seek(wav_file_t *wav_file, long offset, int whence)
 {
-	wav_file_t *wav_file = safer_malloc(WAV_FILE_LEN);
+	fseek(wav_file->file, offset, whence);
+}
 
-	wav_file->file = fopen(wav_file_param->path, "w+");
-	wav_file->play_ms = 0;
+wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
+{
+	strcpy(wav_file_param->file_mode, "w+");
 
-	wav_file->wav_header = wav_header_init(wav_file_param);
+	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
+
 	fwrite(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
+
+	return wav_file;
+}
+
+wav_file_t *wav_file_open(wav_file_param_t *wav_file_param)
+{
+	strcpy(wav_file_param->file_mode, "r");
+
+	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
+
+	fread(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
 
 	return wav_file;
 }
@@ -126,9 +155,9 @@ wav_file_t *wav_file_init(wav_file_param_t *wav_file_param)
 void wav_file_clean(wav_file_t *wav_file)
 {
 	wav_file_flush(wav_file);
+	fclose(wav_file->file);
 
 	safer_free(wav_file->wav_header);
-	fclose(wav_file->file);
 	safer_free(wav_file);
 }
 
@@ -142,6 +171,18 @@ int wav_file_write(wav_file_t *wav_file, void *data, int len)
 	ret = fwrite(data, 1, len, wav_file->file);
 	if (ret > 0)
 		wav_header_write(wav_file, ret);
+
+	return ret;
+}
+
+int wav_file_read(wav_file_t *wav_file, void *data, int len)
+{
+	int ret;
+
+	if (!(wav_file && data && len > 0))
+		return -1;
+
+	ret = fread(data, 1, len, wav_file->file);
 
 	return ret;
 }
