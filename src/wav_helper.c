@@ -41,6 +41,11 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	int bits_per_sample = wav_file_param->bit_per_sample;
 
 	wav_header_t *wav_header = safer_malloc(WAV_HEADER_LEN);	
+	
+	if (!channels || !sample_rate || !bits_per_sample) {
+		log_i("new a wav_header_t");
+		return wav_header;
+	}
 
 	strcpy(wav_header->riff_id, ID_RIFF);
 	wav_header->riff_sz = WAV_HEADER_LEN - 8;
@@ -67,7 +72,7 @@ static wav_file_t *new_wav_file_t(wav_file_param_t *wav_file_param)
 
 	wav_file->wav_header = wav_header_init(wav_file_param);
 	wav_file->play_ms = 0;
-	wav_file->file = fopen(wav_file_param->path, "w+");
+	wav_file->file = fopen(wav_file_param->path, wav_file_param->file_mode);
 
 	return wav_file;
 }
@@ -123,6 +128,8 @@ void wav_file_flush(wav_file_t *wav_file)
 
 wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
 {
+	strcpy(wav_file_param->file_mode, "w+");
+
 	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
 
 	fwrite(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
@@ -132,6 +139,8 @@ wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
 
 wav_file_t *wav_file_open(wav_file_param_t *wav_file_param)
 {
+	strcpy(wav_file_param->file_mode, "r");
+
 	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
 
 	fread(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
