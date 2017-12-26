@@ -29,6 +29,7 @@
 #include "dir_helper.h"
 #include "wav_helper.h"
 #include "type_helper.h"
+#include "heap_memory_helper.h"
 
 int add_blank_time_to_wav(void);
 
@@ -89,12 +90,66 @@ int add_blank_time_to_wav(void)
     return 0;
 }
 
-void wav_handle(const char *base_path, const char *name)
+int read_wav_to_buf(char *wav_path, char **voice)
 {
 	wav_file_t *wav_file;
+	wav_file_param_t wav_file_param;
+	int len;
+
+	memset(&wav_file_param, '\0', sizeof(wav_file_param));
+	strcpy(wav_file_param.path, wav_path);
+
+	wav_file = wav_file_open(&wav_file_param);
+
+	*voice = safer_malloc(wav_file->wav_header->data_sz);
+
+	len = wav_file_read(wav_file, *voice, wav_file->wav_header->data_sz);
+
+	wav_file_clean(wav_file);
+
+	return len;
+}
+
+void write_buf_to_wav(char *wav_path, char *voice, int len, int wav_ms)
+{
 	wav_file_t *new_wav_file;
 	wav_file_param_t wav_file_param;
-	
+
+	memset(&wav_file_param, '\0', sizeof(wav_file_param));
+	strcpy(wav_file_param.path, wav_path);
+	wav_file_param.channels = 1;
+	wav_file_param.sample_rate = 16000;
+	wav_file_param.bit_per_sample = 16;
+
+	new_wav_file = wav_file_create(&wav_file_param);
+
+    int total_bytes;
+    total_bytes = 15 * 16000 * 2;
+
+    int bps = wav_file_param.bit_per_sample / 8;
+    int blank_bytes;
+    blank_bytes = (total_bytes - len) / 2;
+    if (bps == 2)
+        blank_bytes = ALIGN2(blank_bytes);
+    else if (bps == 3)
+        blank_bytes = ALIGN3(blank_bytes);
+    else if (bps == 4)
+        blank_bytes = ALIGN4(blank_bytes);
+
+    char buf[blank_bytes];
+
+    memset(buf, '\0', blank_bytes);
+
+	wav_file_write(new_wav_file, buf, blank_bytes);
+	wav_file_write(new_wav_file, voice, len);
+	wav_file_write(new_wav_file, buf, blank_bytes);
+
+	wav_file_clean(new_wav_file);
+}
+
+void wav_handle(const char *base_path, const char *name)
+{
+	char *voice;
     char src_name[256] = {0};
     char dst_name[256] = {0};
     char dst_dir[256] = {0};
@@ -107,47 +162,11 @@ void wav_handle(const char *base_path, const char *name)
         mkdir(dst_dir, S_IRWXU);
     }
 
-	memset(&wav_file_param, '\0', sizeof(wav_file_param));
-	strcpy(wav_file_param.path, src_name);
+	int wav_ms = 10;
+	int len = read_wav_to_buf(src_name, &voice);
+	write_buf_to_wav(dst_name, voice, len, wav_ms);
 
-	wav_file = wav_file_open(&wav_file_param);
-
-	memset(&wav_file_param, '\0', sizeof(wav_file_param));
-	strcpy(wav_file_param.path, dst_name);
-	wav_file_param.channels = 1;
-	wav_file_param.sample_rate = 16000;
-	wav_file_param.bit_per_sample = 16;
-
-	new_wav_file = wav_file_create(&wav_file_param);
-
-    int total_bytes;
-    total_bytes = 15 * 16000 * 2;
-
-    int bps = wav_file->wav_header->fmt_bits_per_sample / 8;
-    int blank_bytes;
-    blank_bytes = (total_bytes - wav_file->wav_header->data_sz) / 2;
-    if (bps == 2)
-        blank_bytes = ALIGN2(blank_bytes);
-    else if (bps == 3)
-        blank_bytes = ALIGN3(blank_bytes);
-    else if (bps == 4)
-        blank_bytes = ALIGN4(blank_bytes);
-
-    char buf[blank_bytes];
-    char voice[wav_file->wav_header->data_sz];
-
-    memset(buf, '\0', blank_bytes);
-
-	wav_file_write(new_wav_file, buf, blank_bytes);
-
-	wav_file_seek(new_wav_file, WAV_HEADER_LEN + blank_bytes, SEEK_SET);
-	wav_file_read(wav_file, voice, wav_file->wav_header->data_sz);
-	wav_file_write(new_wav_file, voice, wav_file->wav_header->data_sz);
-
-	wav_file_write(new_wav_file, buf, blank_bytes);
-
-	wav_file_clean(new_wav_file);
-	wav_file_clean(wav_file);
+	safer_free(voice);
 }
 
 void wav_test_init(void)
