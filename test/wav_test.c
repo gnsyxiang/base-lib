@@ -31,114 +31,81 @@
 #include "type_helper.h"
 #include "heap_memory_helper.h"
 
-int add_blank_time_to_wav(void);
+#define CHANNELS		(1)
+#define SAMPLE_RATE		(16000)
+#define BIT_PER_SAMPLE	(16)
+
+#define WAV_MS_LEN		(5)
+
+#define NEW_WAV_PATH "new_wav"
 
 static int wav_test(void)
 {
 	wav_file_param_t wav_file_param;
 	wav_file_t *wav_file;
 	
-	strcpy(wav_file_param.path, "./wav_test.wav");
-	wav_file_param.channels = 2;
-	wav_file_param.sample_rate = 16000;
-	wav_file_param.bit_per_sample = 16;
+	strcpy(wav_file_param.path, "test.wav");
+	wav_file_param.channels = CHANNELS;
+	wav_file_param.sample_rate = SAMPLE_RATE;
+	wav_file_param.bit_per_sample = BIT_PER_SAMPLE;
 
 	wav_file = wav_file_create(&wav_file_param);
 
 	char a = 0x55;
-	for (int i = 0; i < 5000; i++) {
+	for (int i = 0; i < 5000; i++)
 		wav_file_write(wav_file, &a, 1);
-	}
 		
 	a = 0xc5;
-	for (int i = 0; i < 5000; i++) {
+	for (int i = 0; i < 5000; i++)
 		wav_file_write(wav_file, &a, 1);
-	}
 
 	wav_file_flush(wav_file);
-
 	wav_header_dump(wav_file);
-
 	wav_file_clean(wav_file);
 
-	log_i("wav test");
-
-	add_blank_time_to_wav();
+	log_i("wav test OK");
 
 	return 0;
 }
 
-#define NEW_WAV_PATH "new_wav"
-
-
-extern void wav_handle(const char *base_path, const char *name);
-
-int add_blank_time_to_wav(void)
-{
-    char basePath[1000];
-
-    memset(basePath,'\0',sizeof(basePath));
-    getcwd(basePath, 999);
-    printf("the current dir is : %s\n",basePath);
-
-    ///get the file list
-    memset(basePath,'\0',sizeof(basePath));
-    strcpy(basePath,"./wav");
-
-    read_file_list(basePath, wav_handle);
-
-    return 0;
-}
 
 int read_wav_to_buf(char *wav_path, char **voice)
 {
 	wav_file_t *wav_file;
-	wav_file_param_t wav_file_param;
-	int len;
+	wav_file_param_t wav_file_param = {0};
 
-	memset(&wav_file_param, '\0', sizeof(wav_file_param));
 	strcpy(wav_file_param.path, wav_path);
 
 	wav_file = wav_file_open(&wav_file_param);
 
 	*voice = safer_malloc(wav_file->wav_header->data_sz);
 
-	len = wav_file_read(wav_file, *voice, wav_file->wav_header->data_sz);
+	int len = wav_file_read(wav_file, *voice, wav_file->wav_header->data_sz);
 
 	wav_file_clean(wav_file);
 
 	return len;
 }
 
-void write_buf_to_wav(char *wav_path, char *voice, int len, int wav_ms)
+void write_buf_to_wav(wav_file_param_t *wav_file_param, char *voice, int len, int wav_ms)
 {
 	wav_file_t *new_wav_file;
-	wav_file_param_t wav_file_param;
 
-	memset(&wav_file_param, '\0', sizeof(wav_file_param));
-	strcpy(wav_file_param.path, wav_path);
-	wav_file_param.channels = 1;
-	wav_file_param.sample_rate = 16000;
-	wav_file_param.bit_per_sample = 16;
+	new_wav_file = wav_file_create(wav_file_param);
 
-	new_wav_file = wav_file_create(&wav_file_param);
+    int total_bytes = wav_ms * SAMPLE_RATE * 2;
+    int blank_bytes = (total_bytes - len) / 2;
 
-    int total_bytes;
-    total_bytes = 15 * 16000 * 2;
+	switch (wav_file_param->bit_per_sample / 8) {
+		case 2: blank_bytes = ALIGN2(blank_bytes); break;
+		case 3: blank_bytes = ALIGN3(blank_bytes); break;
+		case 4: blank_bytes = ALIGN4(blank_bytes); break;
 
-    int bps = wav_file_param.bit_per_sample / 8;
-    int blank_bytes;
-    blank_bytes = (total_bytes - len) / 2;
-    if (bps == 2)
-        blank_bytes = ALIGN2(blank_bytes);
-    else if (bps == 3)
-        blank_bytes = ALIGN3(blank_bytes);
-    else if (bps == 4)
-        blank_bytes = ALIGN4(blank_bytes);
+		default: log_i("bsp is error"); break;
+	}
 
     char buf[blank_bytes];
-
-    memset(buf, '\0', blank_bytes);
+	memset(buf, '\0', blank_bytes);
 
 	wav_file_write(new_wav_file, buf, blank_bytes);
 	wav_file_write(new_wav_file, voice, len);
@@ -153,6 +120,7 @@ void wav_handle(const char *base_path, const char *name)
     char src_name[256] = {0};
     char dst_name[256] = {0};
     char dst_dir[256] = {0};
+	wav_file_param_t wav_file_param = {0};
 
     sprintf(src_name, "%s/%s", base_path, name);
     sprintf(dst_dir, "%s/%s", base_path, NEW_WAV_PATH);
@@ -162,17 +130,37 @@ void wav_handle(const char *base_path, const char *name)
         mkdir(dst_dir, S_IRWXU);
     }
 
-	int wav_ms = 10;
+	strcpy(wav_file_param.path, dst_name);
+
+	wav_file_param.channels = CHANNELS;
+	wav_file_param.sample_rate = SAMPLE_RATE;
+	wav_file_param.bit_per_sample = BIT_PER_SAMPLE;
+
 	int len = read_wav_to_buf(src_name, &voice);
-	write_buf_to_wav(dst_name, voice, len, wav_ms);
+	write_buf_to_wav(&wav_file_param, voice, len, WAV_MS_LEN);
 
 	safer_free(voice);
+}
+
+static int add_blank_time_to_wav(void)
+{
+    char base_path[1000] = {0};
+
+    getcwd(base_path, 999);
+	strcat(base_path, "/wav");
+
+    read_file_list(base_path, wav_handle);
+
+	log_i("add blank time to wav OK");
+
+    return 0;
 }
 
 void wav_test_init(void)
 {
 	handle_test_cmd_t wav_test_cmd[] = {
 		{"5", wav_test},
+		{"6", add_blank_time_to_wav},
 	};
 
 	register_test_cmd(wav_test_cmd, ARRAY_NUM(wav_test_cmd));

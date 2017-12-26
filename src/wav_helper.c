@@ -43,7 +43,6 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	wav_header_t *wav_header = safer_malloc(WAV_HEADER_LEN);	
 	
 	if (!channels || !sample_rate || !bits_per_sample) {
-		log_i("new a wav_header_t");
 		return wav_header;
 	}
 
