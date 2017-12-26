@@ -126,6 +126,11 @@ void wav_file_flush(wav_file_t *wav_file)
 	fflush(wav_file->file);
 }
 
+void wav_file_seek(wav_file_t *wav_file, long offset, int whence)
+{
+	fseek(wav_file->file, offset, whence);
+}
+
 wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
 {
 	strcpy(wav_file_param->file_mode, "w+");
@@ -167,6 +172,18 @@ int wav_file_write(wav_file_t *wav_file, void *data, int len)
 	ret = fwrite(data, 1, len, wav_file->file);
 	if (ret > 0)
 		wav_header_write(wav_file, ret);
+
+	return ret;
+}
+
+int wav_file_read(wav_file_t *wav_file, void *data, int len)
+{
+	int ret;
+
+	if (!(wav_file && data && len > 0))
+		return -1;
+
+	ret = fread(data, 1, len, wav_file->file);
 
 	return ret;
 }

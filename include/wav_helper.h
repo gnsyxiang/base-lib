@@ -75,13 +75,14 @@ BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_open(wav_file_param_t *wav_file_para
 BASE_LIB_WAV_HELPER_EX void wav_file_clean(wav_file_t *wav_file);
 
 BASE_LIB_WAV_HELPER_EX int wav_file_write(wav_file_t *wav_file, void *data, int len);
+BASE_LIB_WAV_HELPER_EX int wav_file_read(wav_file_t *wav_file, void *data, int len);
 
 BASE_LIB_WAV_HELPER_EX void wav_header_dump(wav_file_t *wav_file);
 BASE_LIB_WAV_HELPER_EX void wav_file_flush(wav_file_t *wav_file);
+BASE_LIB_WAV_HELPER_EX void wav_file_seek(wav_file_t *wav_file, long offset, int whence);
 
 BASE_LIB_WAV_HELPER_EX void wav_file_rewind(wav_file_t *wav_file);
 BASE_LIB_WAV_HELPER_EX int wav_file_over(wav_file_t *wav_file);
-BASE_LIB_WAV_HELPER_EX void wav_file_read(wav_file_t *wav_file, void *data, int len);
 
 #ifdef  __cplusplus
 }
