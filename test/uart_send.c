@@ -42,11 +42,7 @@ static int uart_send(void)
     int retv;
     struct termios option;
 
-	fd = uart_init(SERIAL_SEND_PATH);
-    if(fd < 0) {
-		printf("serial open faild \n");
-		exit(1);
-    }
+	uart_open(&fd, SERIAL_SEND_PATH);
 
     printf("Ready for sendingdata...\n");
 

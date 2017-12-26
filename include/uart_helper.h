@@ -30,7 +30,15 @@ extern "C" {
 #define UART_HELPER_EX
 #endif
 
-UART_HELPER_EX int uart_init(char *port_path);
+typedef struct _uart_param_tag {
+	int fd;
+	int baud_rate;
+	int parity_check;
+	int bsize;
+	int stop;
+} uart_param_t;
+
+UART_HELPER_EX void uart_open(int *fd, char *port_path);
 
 #ifdef __cplusplus
 }

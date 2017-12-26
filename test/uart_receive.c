@@ -44,11 +44,7 @@ static int uart_recv(void)
     int flag_close,retv;
     struct termios opt;
 
-	fd = uart_init(SERIAL_RECEIVE_PATH);
-	if (fd < 0) {
-		printf("serial open faild \n");
-		exit(1);
-	}
+	uart_open(&fd, SERIAL_RECEIVE_PATH);
 
     tcgetattr(fd,&opt);
     cfmakeraw(&opt);

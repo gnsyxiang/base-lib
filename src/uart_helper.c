@@ -27,16 +27,32 @@
 #include "uart_helper.h"
 #undef UART_HELPER_GB
 
-int uart_init(char *port_path)
+int uart_open(char *port_path)
 {
 	int fd;
 
-    fd = open(port_path, O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if(fd == -1) {
+	if (!port_path)
+		return -1;
+
+    fd = open(port_path, O_RDWR | O_NOCTTY | O_NDELAY);
+    if(fd < 0) {
         perror("open serial porterror!\n");
 		exit(1);
     }
 
-    return fd;
+	if (fcntl(fd, F_GETFL, 0) < 0) {
+		log_i("fcntl faild");
+		return -1;
+	} else {
+		log_i("fcntl: %d", fcntl(fd, F_GETFL, 0));
+	}
+
+	if (0 == isatty(STDIN_FILENO)) {
+		
+	}
+}
+
+int uart_init(uart_param_t uart_param)
+{
 }
 
