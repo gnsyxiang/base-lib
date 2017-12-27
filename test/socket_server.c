@@ -26,80 +26,34 @@
 #include "pthread_helper.h"
 #include "network_protocol.h"
 #include "network_protocol_server.h"
+#include "parse_cmd.h"
 
 static socket_t *client_sk;
-static int cur_status;
 
-static void handle_recv_message(unsigned char *buf, int len)
+static void handle_recv_message(unsigned char *message, int len)
 {
-	char cmd_type;
-	cmd_type = buf[4];
+	print_hex(message, len);
+	printf("cmd_type: %d \n\n", message[4]);
 
-	switch (cmd_type) {
-		case 2:
-			printf("recv ---2\n");
-			cur_status++;
-			break;
-		case 4:
-			printf("recv ---4\n");
-			cur_status++;
-			break;
-		case 5:
-			printf("recv ---5\n");
-			break;
-		case 6:
-			printf("recv ---6\n");
-			break;
-		default:
-			break;
-	}
-
-	print_hex(buf, len);
 }
 
-void handle_send_get_config_info(void)
+static void *handle_send_message_thread(void *args)
 {
-	unsigned char cmd_get_config_info[] = {0xaa, 0x06, 0x0, 0x1, 0x1, 0xbb, 0x55};
-	printf("send ------1\n");
+	unsigned char buf[] = {0xaa, 0x06, 0x00, 0x01, 0x02, 0xbb, 0x55};
 
-	cur_status++;
-	server_send_message(client_sk, cmd_get_config_info, sizeof(cmd_get_config_info));
-}
-
-void handle_send_ready(void)
-{
-	unsigned char cmd_ready[] = {0xaa, 0x06, 0x0, 0x1, 0x3, 0xbb, 0x55};
-	printf("send ------3\n");
-
-	cur_status++;
-	server_send_message(client_sk, cmd_ready, sizeof(cmd_ready));
-}
-
-void *handle_send_message_thread(void *args)
-{
 	while (!get_server_read_running_flag())
 		usleep(100);
 
 	while (get_server_read_running_flag()) {
 		usleep(1 * 1000 * 1000);
-		printf("cur_status: %d \n", cur_status);
 
-		switch (cur_status) {
-			case 0:
-				handle_send_get_config_info();
-				break;
-			case 2:
-				handle_send_ready();
-				break;
-			default:
-				break;
-		}
+		server_send_message(client_sk, buf, sizeof(buf));
 	}
 	
 	return NULL;
 }
 
-int socket_server(void)
+static int socket_server(void)
 {
 	int read_timeout_ms = 1000;
 
@@ -114,5 +68,14 @@ int socket_server(void)
 	socket_clean_client(client_sk);
 
     return 0;
+}
+
+void socket_server_test_init(void)
+{
+	handle_test_cmd_t socket_server_test_cmd[] = {
+		{"2", socket_server},
+	};
+
+	register_test_cmd(socket_server_test_cmd, ARRAY_NUM(socket_server_test_cmd));
 }
 

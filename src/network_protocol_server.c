@@ -66,9 +66,7 @@ static void *server_send_message_thread(void *args)
 	socket_t *client_sk = (socket_t *)args;
 
 	while (is_server_read_running) {
-		printf("--------------1\n");
 		send_wait(client_sk);
-		printf("--------------2\n");
 
 		print_hex(send_buf_l, send_buf_len_l);
 		socket_write(client_sk, (char *)send_buf_l, send_buf_len_l);

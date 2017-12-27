@@ -18,6 +18,8 @@
 
 static char usr_input[10];
 
+void socket_server_test_init(void);
+void socket_client_test_init(void);
 void memory_test_init(void);
 void time_test_init(void);
 
@@ -25,6 +27,8 @@ void init(void)
 {
 	memory_test_init();
 	time_test_init();
+	socket_client_test_init();
+	socket_server_test_init();
 }
 
 void dis_func(void)
