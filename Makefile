@@ -50,7 +50,7 @@ CC := $(Q)$(CROSS_TOOL)gcc
 # ------
 # cflags
 # ------
-CFLAGS := -Wall -I$(INC_DIR) -fPIC
+CFLAGS := -Wall -I$(INC_DIR) -fPIC -std=gnu99
 
 MSG_CC := CC
 
