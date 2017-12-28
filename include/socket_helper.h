@@ -33,6 +33,9 @@ extern "C" {
 #define SOCKET_HELPER_EX
 #endif
 
+#undef offsetof
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+
 struct socket {
     int fd;
     const char *name;
@@ -51,8 +54,7 @@ struct link_ops {
 	void (*delete)(void *connection);
 
 	int (*connect)(void *connection, int timeout);
-	int (*wait_for_connect)(void *connection,
-			void *user, link_connect_callback_t cb);
+	int (*wait_for_connect)(void *connection, void *user, link_connect_callback_t cb);
 
 	int (*read)(void *connection, void *buf, int size);
 	int (*write)(void *connection, const void *buf, int size);
