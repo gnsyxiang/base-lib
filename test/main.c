@@ -28,6 +28,8 @@ void memory_test_init(void);
 void time_test_init(void);
 void wav_test_init(void);
 void file_test_init(void);
+void socket_client_init(void);
+void socket_server_init(void);
 
 void init(void)
 {
@@ -35,6 +37,8 @@ void init(void)
 	time_test_init();
 	wav_test_init();
 	file_test_init();
+	socket_client_init();
+	socket_server_init();
 }
 
 void dis_func(void)
