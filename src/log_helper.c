@@ -31,12 +31,17 @@
 
 static int log_debug_level = LOG_VERBOSE;
 
-static void log_output(char *buffer)
+static inline void log_output(char *buffer)
+{
+    printf("%s\n", buffer);
+}
+
+static inline void log_output_n(char *buffer)
 {
     printf("%s", buffer);
 }
 
-void log_debug(int level, const char *file, int line, const char *fmt, ...)
+void log_debug(int new_line, int level, const char *file, int line, const char *fmt, ...)
 {
     char buffer[LOG_BUF_SIZE];
     int size = 0, sz;
@@ -55,7 +60,11 @@ void log_debug(int level, const char *file, int line, const char *fmt, ...)
     vsnprintf(buffer + size, LOG_BUF_SIZE - size, fmt, var_args);
     va_end(var_args);
 
-    log_output(buffer);
+	if (new_line)
+		log_output(buffer);
+	else
+		log_output_n(buffer);
+
 }
 
 void log_set_debug_level(int level)
