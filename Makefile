@@ -40,10 +40,10 @@ MSG_LIB := LIB_COPY
 # --------
 # compiler
 # --------
-GCC_PATH := ~/Desktop/mips-gcc520-32bit/bin
+GCC_PATH := ~/office/ingenic/gcc/mips-gcc520-32bit/bin
 GCC_NAME := mips-linux-gnu-
 
-# CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
+CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
 
 CC := $(Q)$(CROSS_TOOL)gcc
 
