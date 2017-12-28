@@ -21,12 +21,14 @@ static char usr_input[10];
 void memory_test_init(void);
 void time_test_init(void);
 void wav_test_init(void);
+void file_test_init(void);
 
 void init(void)
 {
 	memory_test_init();
 	time_test_init();
 	wav_test_init();
+	file_test_init();
 }
 
 void dis_func(void)
@@ -42,6 +44,7 @@ void dis_func(void)
 	printf("6. add blank to wav \n");
 	printf("7. serial send test \n");
 	printf("8. serial receive test \n");
+	printf("9. file test \n");
 
 	printf("input your number: ");
 }
