@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2017 xxx Co., Ltd.
+ * Release under GPLv2.
+ * 
+ * @file    socket_client.c
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    28/12 2017 16:40
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        28/12 2017      create the file
+ * 
+ *     last modified: 28/12 2017 16:40
+ */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>

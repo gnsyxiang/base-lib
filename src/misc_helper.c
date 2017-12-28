@@ -1,16 +1,22 @@
-/****************************************************************
- * Filename: misc_helper.c
- * -------------------------------
- * Copyright(C),
- * Author: zhenquan.qiu
- * Version: V1.0.0
- * Last modified: 22/09 2017 21:54
- * Description:
- *
- * Change Log:
- * NO.	Author		    Date		Modified
- * 00	zhenquan.qiu	22/09 2017
- ****************************************************************/
+/**
+ * Copyright (C) 2017 xxx Co., Ltd.
+ * Release under GPLv2.
+ * 
+ * @file    misc_helper.c
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    28/12 2017 16:36
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        28/12 2017      create the file
+ * 
+ *     last modified: 28/12 2017 16:36
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
