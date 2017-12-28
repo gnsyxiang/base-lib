@@ -31,7 +31,10 @@ extern "C" {
 #endif
 
 
-FILE_HELPER_EX void close_on_exec(int fd);
+FILE_HELPER_EX int file_close_on_exec(int fd);
+FILE_HELPER_EX int file_set_nonblocking(int fd);
+FILE_HELPER_EX int file_read(int fd, char *buf, int size);
+FILE_HELPER_EX int file_write(int fd, const char *buf, int size);
 
 
 #ifdef __cplusplus
