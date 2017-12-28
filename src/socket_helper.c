@@ -19,236 +19,251 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <linux/un.h>
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
-#include <string.h>
+#include <assert.h>
 #include <errno.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <unistd.h>
-#include <fcntl.h>
 
-#include "pthread_helper.h"
+#include "log_helper.h"
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
 #undef SOCKET_HELPER_GB
 
-static socket_t *_socket_init_struct(int fd, char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms)
-{
-	socket_t *sk = (socket_t *)malloc(sizeof(socket_t));
-	if (NULL == sk) {
-		printf("%s: malloc faild: %s(%d) \n",
-				__func__, strerror(errno), -errno);
-		exit(-1);
-	}
+#undef offsetof
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
-	sk->fd = fd;
-	sk->port = port;
 
-	sk->handle_read_message = handle_read_message;
-	sk->read_timeout_ms = read_timeout_ms;
+static struct socket *create_socket_struct(
+        const char *name, int fd) {
+    struct socket *sok =
+            (struct socket *)malloc(sizeof(struct socket));
 
-	pthread_mutex_init(&sk->mutex, NULL);
-	pthread_cond_init(&sk->cond, NULL);
+    sok->fd = fd;
+    sok->name = name;
+    pthread_mutex_init(&sok->lock, NULL);
 
-	if (ipaddr) {
-		int ipaddr_len = strlen(ipaddr) + 1;
-		sk->ipaddr = (char *)malloc(ipaddr_len);
-		if (NULL == sk->ipaddr) {
-			printf("%s: malloc faild: %s(%d) \n",
-					__func__, strerror(errno), -errno);
-			exit(-1);
-		}
-
-		memset(sk->ipaddr, '\0', ipaddr_len);
-		strcpy(sk->ipaddr, ipaddr);
-	}
-
-	return sk;
+    return sok;
 }
 
-static void _socket_clean_struct(socket_t *sk)
-{
-	if (!sk)
-		return;
+static void *create_socket_client(const char *name) {
+    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (fd < 0) {
+        log_e("%s: failed to create socket: %s(%d), name: %s",
+                        __func__, strerror(errno), -errno, name);
 
-	if (sk->ipaddr)
-		free(sk->ipaddr);
+        return NULL;
+    }
 
-	free(sk);
+    int ret = fcntl(fd, FD_CLOEXEC, 1);
+    assert(ret == 0);
+
+    return (void *)create_socket_struct(name, fd);
 }
 
-socket_t *socket_init_client(char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms)
-{
-	int fd = socket(AF_INET,SOCK_STREAM, 0);
-	if (fd < 0) {
-		printf("%s: failed to create socket: %s(%d) \n",
-				__func__, strerror(errno), -errno);
-		exit(-1);
-	}
+static void *create_socket_server(const char *name) {
+    int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (fd < 0) {
+        log_e("%s: failed to create socket: %s(%d), name: %s",
+                        __func__, strerror(errno), -errno, name);
 
-	return _socket_init_struct(fd, ipaddr, port, handle_read_message, read_timeout_ms);
+        return NULL;
+    }
+
+    struct sockaddr_un addr;
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, name);
+    addr.sun_path[0] = 0;
+
+    int addrLen = strlen(name)
+            + offsetof(struct sockaddr_un, sun_path);
+    int status = bind(fd, (const struct sockaddr *)&addr, addrLen);
+    if (status < 0) {
+        log_e("%s: failed to bind socket: %s(%d), name: %s",
+                        __func__, strerror(errno), -errno, name);
+
+        close(fd);
+        return NULL;
+    }
+
+    return (void *)create_socket_struct(name, fd);
 }
 
-void socket_clean_client(socket_t *sk)
-{
-	if (NULL == sk)
-		return;
+static void delete_socket(void *socket) {
+    struct socket *sok = socket;
 
-	close(sk->fd);
+    close(sok->fd);
+    pthread_mutex_destroy(&sok->lock);
 
-	_socket_clean_struct(sk);
+    free(sok);
 }
 
-socket_t *socket_init_server(int port, handle_message_t handle_read_message, int read_timeout_ms)
-{
-	socket_t *sk;
-	int ret;
+static int write_buffer(int fd, const char *buf, int size) {
+    int offset = 0;
+    int sz = size;
 
-	sk = socket_init_client(NULL, port, handle_read_message, read_timeout_ms);
+    while (sz > 0) {
+        int bytes = write(fd, buf + offset, sz);
+        if (bytes <= 0) {
+			log_d("%s: write error, size: %d, %s(%d)",
+					__func__, size, strerror(errno), -errno);
+            return bytes;
+        }
 
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+        sz -= bytes;
+        offset += bytes;
+    }
 
-	int val = 1;
-	ret = setsockopt(sk->fd, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(int));
-
-    ret = bind(sk->fd, (struct sockaddr *)&addr, sizeof(addr));
-	if (ret < 0) {
-		printf("%s: failed to create socket: %s(%d) \n",
-				__func__, strerror(errno), -errno);
-		exit(-1);
-	}
-
-	return sk;
+    return size;
 }
 
-void socket_clean_server(socket_t *sk)
-{
-	return socket_clean_client(sk);
+static int read_buffer(int fd, char *buf, int size) {
+    int offset = 0;
+    int sz = size;
+
+    while (sz > 0) {
+        int bytes = read(fd, buf + offset, sz);
+        if (bytes <= 0) {
+			log_d("%s: read error, size: %d, %s(%d)",
+					__func__, size, strerror(errno), -errno);
+            return bytes;
+        }
+
+        sz -= bytes;
+        offset += bytes;
+    }
+
+    return size;
 }
 
-int socket_set_nonblocking(socket_t *sk)
-{
-	int flags;
+static int socket_write(void *socket, const void *buf, int size) {
+    struct socket *sok = socket;
 
-	if ((flags = fcntl(sk->fd, F_GETFL, 0)) == -1)
-		flags = 0;
+    pthread_mutex_lock(&sok->lock);
 
-	return fcntl(sk->fd, F_SETFL, flags | O_NONBLOCK);
+    int ret = write_buffer(sok->fd, buf, size);
+
+    pthread_mutex_unlock(&sok->lock);
+
+    return ret;
 }
 
-void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
-{
-	struct timeval timeout;
+static int socket_read(void *socket, void *buf, int size) {
+    struct socket *sok = socket;
 
-	timeout.tv_sec = timeout_ms / 1000;
-	timeout.tv_usec = (timeout_ms % 1000) * 1000;
+    pthread_mutex_lock(&sok->lock);
 
-	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
+    int ret = read_buffer(sok->fd, buf, size);
+
+    pthread_mutex_unlock(&sok->lock);
+
+    return ret;
 }
 
-void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
-{
-	struct sockaddr_in addr;
-	int status;
-	int time = 0;
+static int socket_connect(void *socket, int timeout) {
+    struct socket *sok = socket;
 
-	memset(&addr, '\0', sizeof(addr));
+    struct sockaddr_un addr;
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, sok->name);
+    addr.sun_path[0] = 0;
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(sk->port);
-	addr.sin_addr.s_addr = inet_addr(sk->ipaddr);
+    int addrLen = strlen(sok->name) + offsetof(struct sockaddr_un, sun_path);
+    int status;
+    int time = 0;
 
-	do {
-		status = connect(sk->fd, (const struct sockaddr *)&addr, sizeof(addr));
-		if (status < 0) {
-			sleep(1);
-		}
-	} while ((status < 0) && (time++ < timeout));
+    log_e("%s: wait for connect to server", sok->name);
 
-	if (status < 0) {
-		printf("wait for connect to server error !!! \n");
-	} else {
-		printf("connect to server \n");
+    do {
+        status = connect(sok->fd, (const struct sockaddr *)&addr, addrLen);
+        if (status < 0) {
+            sleep(1);
+        }
+    } while ((status < 0) && (time++ < timeout));
 
-		create_a_attached_thread(NULL, read_cb, (void *)sk);
-	}
+    if (status < 0)
+        log_e("%s: wait for connect to server error !!!", sok->name);
+    else
+        log_e("%s: connect to server", sok->name);
+
+    return 0;
 }
 
-socket_t *socket_wait_for_connect(socket_t *sk, server_handle_message callback)
-{
-	int fd = sk->fd;
+static int socket_wait_for_connect(
+        void *socket,
+        void *user,
+        link_connect_callback_t callback) {
+    struct socket *sok = socket;
+    int fd = sok->fd;
 
-	int status = listen(fd, SOMAXCONN);
-	if (status < 0) {
-		printf("%s: failed to listen socket: %s(%d) \n", __func__, strerror(errno), -errno);
-		return NULL;
-	}
+    int status = listen(fd, SOMAXCONN);
+    if (status < 0) {
+        log_e("%s: failed to listen socket: %s(%d), name: %s",
+                __func__, strerror(errno), -errno, sok->name);
 
-	int client_fd = accept(fd, NULL, NULL);
-	if (client_fd < 0) {
-		printf("%s: failed to accept socket: %s(%d) \n", __func__, strerror(errno), -errno);
-		return NULL;
-	}
+        return -1;
+    }
 
-	socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port, NULL, 0);
+    while (1) {
+        fd_set read_fs;
+        FD_ZERO(&read_fs);
+        FD_SET(sok->fd, &read_fs);
 
-	client_sk->handle_read_message = sk->handle_read_message;
-	client_sk->read_timeout_ms = sk->read_timeout_ms;
+        int ret = select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
+        if (ret < 0) {
+            log_e("%s: select error: %s(%d)",
+                    __func__, strerror(errno), -errno);
+            break;
+        }
 
-	create_a_attached_thread(NULL, callback, (void *)client_sk);
+        if (FD_ISSET(sok->fd, &read_fs)) {
+            int fd = accept(sok->fd, NULL, NULL);
+            if (fd < 0) {
+                log_e("%s: failed to accept socket: %s(%d), name: %s",
+                            __func__, strerror(errno), -errno, sok->name);
+                return -1;
+            }
 
-	return client_sk;
+            struct socket *new_sok =
+                    create_socket_struct(sok->name, fd);
+
+            /**
+             * callback to link manager
+             */
+			callback(user, new_sok);
+        }
+    }
+
+    return 0;
 }
 
+int socket_get_fd(void *socket) {
+    struct socket *sok = (struct socket *)socket;
 
-int socket_write(socket_t *sk, const char *buf, int size)
-{
-	int offset = 0;
-	int sz = size;
+    if (sok == NULL)
+        return -1;
 
-	while (sz > 0) {
-		int bytes = send(sk->fd, buf + offset, sz, 0);
-		if (bytes <= 0) {
-			return bytes;
-		}
-
-		sz -= bytes;
-		offset += bytes;
-	}
-
-	return size;
+    return sok->fd;
 }
 
-int socket_read(socket_t *sk, char *buf, int size)
-{
-	int offset = 0;
-	int sz = size;
+static struct link_ops link_ops = {
+        .create_client = create_socket_client,
+        .create_server = create_socket_server,
+        .delete = delete_socket,
+        .connect = socket_connect,
+        .wait_for_connect = socket_wait_for_connect,
+        .read = socket_read,
+        .write = socket_write,
+        .get_fd = socket_get_fd,
+};
 
-	while (sz > 0) {
-		int bytes = recv(sk->fd, buf + offset, sz, 0);
-		if (bytes == 0) {
-			printf("%s: client close fd: %s(%d) \n",
-					__func__, strerror(errno), -errno);
-			break;
-		} else if (bytes == -1) {
-			if (offset == 0)
-				offset = -1;
-			break;
-		}
-
-		sz -= bytes;
-		offset += bytes;
-	}
-
-	return offset;
+struct link_ops *get_link_ops(void) {
+    return &link_ops;
 }
-
 
 
 
