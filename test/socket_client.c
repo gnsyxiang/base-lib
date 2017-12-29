@@ -22,6 +22,7 @@
 #include "log_helper.h"
 #include "parse_cmd.h"
 #include "socket_helper.h"
+#include "link.h"
 
 static int socket_client_test(void)
 {
@@ -34,10 +35,25 @@ static int socket_client_test(void)
 	return 0;
 }
 
+static int link_client_test(void)
+{
+	char buf[] = "link client test";
+
+	struct link *link = create_link("ipc-link", CONNECTION_CLIENT);
+	link_connect(link);
+
+	link_write(link, buf, sizeof(buf));
+
+	delete_link(link);
+
+	return 0;
+}
+
 void socket_client_init(void)
 {
 	handle_test_cmd_t socket_client_test_cmd[] = {
-		{"1", socket_client_test},
+		/*{"1", socket_client_test},*/
+		{"1", link_client_test},
 	};
 
 	register_test_cmd(socket_client_test_cmd, ARRAY_NUM(socket_client_test_cmd));

@@ -30,6 +30,7 @@
 
 #include "file_helper.h"
 #include "log_helper.h"
+#include "hex_helper.h"
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
@@ -103,6 +104,8 @@ static int socket_write(void *socket, const void *buf, int size)
 
     pthread_mutex_lock(&sok->lock);
     int ret = file_write(sok->fd, buf, size);
+	print_hex((unsigned char *)buf, size);
+	log_i("ret: %d ", ret);
     pthread_mutex_unlock(&sok->lock);
 
     return ret;
