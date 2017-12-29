@@ -24,17 +24,11 @@
 extern "C" {
 #endif
 
-#include <stdio.h>
-#include <pthread.h>
-
 #ifndef SOCKET_HELPER_GB
 #define SOCKET_HELPER_EX extern
 #else
 #define SOCKET_HELPER_EX
 #endif
-
-#undef offsetof
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
 struct socket {
     int fd;
@@ -42,8 +36,7 @@ struct socket {
     pthread_mutex_t lock;
 };
 
-typedef void (*link_connect_callback_t)(
-        void *user, void *connection);
+typedef void (*link_connect_callback_t)(void *user, void *connection);
 
 /**
  * for socket implement
@@ -62,10 +55,11 @@ struct link_ops {
 	int (*get_fd)(void *connection);
 };
 
-struct link_ops *get_link_ops(void);
+SOCKET_HELPER_EX struct link_ops *get_link_ops(void);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* end _SOCKET_HELPER_H_ */
+

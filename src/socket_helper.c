@@ -19,18 +19,20 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <linux/un.h>
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
-#include <assert.h>
+#include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <linux/un.h>
+#include <assert.h>
+#include <pthread.h>
+
 
 #include "file_helper.h"
 #include "log_helper.h"
-#include "hex_helper.h"
+#include "type_helper.h"
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
@@ -40,8 +42,9 @@ static struct socket *create_socket_struct(const char *name, int fd)
 {
     struct socket *sok = (struct socket *)malloc(sizeof(struct socket));
 
-    sok->fd = fd;
+    sok->fd   = fd;
     sok->name = name;
+
     pthread_mutex_init(&sok->lock, NULL);
 
     return sok;
@@ -51,8 +54,7 @@ static void *create_socket_client(const char *name)
 {
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) {
-        log_e("%s: failed to create socket: %s(%d), name: %s",
-                        __func__, strerror(errno), -errno, name);
+        log_e("%s: failed to create socket: %s(%d), name: %s", __func__, strerror(errno), -errno, name);
         return NULL;
     }
 
@@ -66,12 +68,12 @@ static void *create_socket_server(const char *name)
 {
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) {
-        log_e("%s: failed to create socket: %s(%d), name: %s",
-                        __func__, strerror(errno), -errno, name);
+        log_e("%s: failed to create socket: %s(%d), name: %s", __func__, strerror(errno), -errno, name);
         return NULL;
     }
 
     struct sockaddr_un addr;
+
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, name);
     addr.sun_path[0] = 0;
@@ -79,8 +81,7 @@ static void *create_socket_server(const char *name)
     int addrLen = strlen(name) + offsetof(struct sockaddr_un, sun_path);
     int status = bind(fd, (const struct sockaddr *)&addr, addrLen);
     if (status < 0) {
-        log_e("%s: failed to bind socket: %s(%d), name: %s",
-                        __func__, strerror(errno), -errno, name);
+        log_e("%s: failed to bind socket: %s(%d), name: %s", __func__, strerror(errno), -errno, name);
         close(fd);
         return NULL;
     }
@@ -103,9 +104,9 @@ static int socket_write(void *socket, const void *buf, int size)
     struct socket *sok = socket;
 
     pthread_mutex_lock(&sok->lock);
+
     int ret = file_write(sok->fd, buf, size);
-	print_hex((unsigned char *)buf, size);
-	log_i("ret: %d ", ret);
+
     pthread_mutex_unlock(&sok->lock);
 
     return ret;
@@ -116,7 +117,9 @@ static int socket_read(void *socket, void *buf, int size)
     struct socket *sok = socket;
 
     pthread_mutex_lock(&sok->lock);
+
     int ret = file_read(sok->fd, buf, size);
+
     pthread_mutex_unlock(&sok->lock);
 
     return ret;
@@ -127,6 +130,7 @@ static int socket_connect(void *socket, int timeout)
     struct socket *sok = socket;
 
     struct sockaddr_un addr;
+
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, sok->name);
     addr.sun_path[0] = 0;
@@ -174,8 +178,7 @@ static int socket_wait_for_connect(
 
         int ret = select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
         if (ret < 0) {
-            log_e("%s: select error: %s(%d)",
-                    __func__, strerror(errno), -errno);
+            log_e("%s: select error: %s(%d)", __func__, strerror(errno), -errno);
             break;
         }
 
@@ -199,7 +202,7 @@ static int socket_wait_for_connect(
     return 0;
 }
 
-int socket_get_fd(void *socket)
+static int socket_get_fd(void *socket)
 {
     struct socket *sok = (struct socket *)socket;
 
@@ -209,24 +212,22 @@ int socket_get_fd(void *socket)
     return sok->fd;
 }
 
-static struct link_ops link_ops =
-{
-        .create_client = create_socket_client,
-        .create_server = create_socket_server,
-        .delete = delete_socket,
-        .connect = socket_connect,
-        .wait_for_connect = socket_wait_for_connect,
-        .read = socket_read,
-        .write = socket_write,
-        .get_fd = socket_get_fd,
+static struct link_ops link_ops = {
+	.create_client	  = create_socket_client,
+	.create_server	  = create_socket_server,
+	.delete			  = delete_socket,
+
+	.connect		  = socket_connect,
+	.wait_for_connect = socket_wait_for_connect,
+
+	.read			  = socket_read,
+	.write			  = socket_write,
+
+	.get_fd			  = socket_get_fd,
 };
 
 struct link_ops *get_link_ops(void)
 {
     return &link_ops;
 }
-
-
-
-
 

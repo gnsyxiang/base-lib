@@ -20,6 +20,18 @@
 #ifndef _TYPE_HELPER_H_
 #define _TYPE_HELPER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "data_type.h"
+
+#ifndef TYPE_HELPER_GB
+#define TYPE_HELPER_EX extern
+#else
+#define TYPE_HELPER_EX
+#endif
+
 #if defined _WIN32 || defined __CYGWIN__
     #ifdef BUILDING_DLL
         #ifdef __GNUC__
@@ -45,13 +57,6 @@
     #endif
 #endif
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "data_type.h"
-
 #define BYTE_ALIGN(len, align) (((len) + (align) - 1) & ~((align) - 1))
 
 #define ALIGN_INT(len)  BYTE_ALIGN(len, sizeof(uint32_t))
@@ -60,12 +65,8 @@ extern "C" {
 #define ALIGN3(len)     BYTE_ALIGN(len, 3)
 #define ALIGN2(len)     BYTE_ALIGN(len, 2)
 
-#ifndef TYPE_HELPER_GB
-#define TYPE_HELPER_EX extern
-#else
-#define TYPE_HELPER_EX
-#endif
-
+#undef offsetof
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
 
 #ifdef __cplusplus
