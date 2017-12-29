@@ -18,11 +18,13 @@
  *     last modified: 28/12 2017 17:40
  */
 #include <stdio.h>
+#include <unistd.h>
 
 #include "log_helper.h"
 #include "parse_cmd.h"
 #include "socket_helper.h"
 #include "link.h"
+#include "link_manager.h"
 
 static void server_connect_cb(void *user, void *connection)
 {
@@ -56,11 +58,34 @@ static int link_server_test(void)
 	return 0;
 }
 
+void link_manager_connect_cb(struct link_manager *lm, struct link *link)
+{
+	int len;
+	link_read(link, &len, 4);
+	log_i("len: %d", len);
+
+	char buf[256];
+	link_read(link, buf, 17);
+	log_i("buf: %s", buf);
+}
+
+static int link_manager_test(void)
+{
+	struct link_manager *link_manager = create_link_manager("ipc-link", link_manager_connect_cb, 0);
+
+	while(1) {
+		sleep(1);
+	}
+
+	return 0;
+}
+
 void socket_server_init(void)
 {
 	handle_test_cmd_t socket_server_test_cmd[] = {
 		/*{"2", socket_server_test},*/
-		{"2", link_server_test},
+		/*{"2", link_server_test},*/
+		{"2", link_manager_test},
 	};
 
 	register_test_cmd(socket_server_test_cmd, ARRAY_NUM(socket_server_test_cmd));

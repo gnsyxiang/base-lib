@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdlib.h>
+#include "little_things.h"
 
 struct list_head {
     struct list_head *next, *prev;
