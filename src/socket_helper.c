@@ -27,8 +27,6 @@
 #include <fcntl.h>
 #include <linux/un.h>
 #include <assert.h>
-#include <pthread.h>
-
 
 #include "file_helper.h"
 #include "log_helper.h"

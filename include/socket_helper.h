@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include <pthread.h>
+
 #ifndef SOCKET_HELPER_GB
 #define SOCKET_HELPER_EX extern
 #else
