@@ -128,4 +128,9 @@ int array_get_capacity(struct array *array) {
     return array->capacity;
 }
 
+int array_is_empty(struct array *array)
+{
+	return (array->offset == array->capacity) ? 1 : 0;
+}
+
 

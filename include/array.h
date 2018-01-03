@@ -57,6 +57,7 @@ int array_get_offset(struct array *array);
 int array_skip_offset(struct array *array, int offset);
 int array_set_offset(struct array *array, int offset);
 int array_get_capacity(struct array *array);
+int array_is_empty(struct array *array);
 
 #ifdef __cplusplus
 }
