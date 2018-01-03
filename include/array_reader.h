@@ -34,6 +34,7 @@ const char *array_reader_get_buffer(struct array_reader *reader);
 int array_reader_get_offset(struct array_reader *reader);
 int array_reader_skip_offset(struct array_reader *reader, int offset);
 int array_reader_get_size(struct array_reader *reader);
+int array_reader_is_empty(struct array_reader *reader);
 
 int array_reader_peek_type(struct array_reader *reader);
 int array_reader_peek_string_size(struct array_reader *reader);

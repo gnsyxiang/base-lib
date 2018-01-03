@@ -49,6 +49,11 @@ void array_reader_dump_buffer(struct array_reader *reader) {
     log_e("\n=========================\n");
 }
 
+int array_reader_is_empty(struct array_reader *reader)
+{
+	return array_is_empty((struct array *)reader);
+}
+
 const char *array_reader_get_buffer(struct array_reader *reader) {
     return array_get_buffer((struct array *)reader);
 }
