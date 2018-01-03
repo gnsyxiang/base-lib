@@ -23,6 +23,7 @@
 
 #include "array_reader.h"
 #include "array.h"
+#include "hex_helper.h"
 
 struct array_reader *create_array_reader(const char *buf, int size) {
     return (struct array_reader *) create_array_by_buffer(buf, size);
@@ -33,20 +34,12 @@ void delete_array_reader(struct array_reader *reader) {
 }
 
 void array_reader_dump_buffer(struct array_reader *reader) {
-    int i;
-    const unsigned char *buf =
-            (const unsigned char *)array_reader_get_buffer(reader);
+    const unsigned char *buf = (const unsigned char *)array_reader_get_buffer(reader);
     int size = array_reader_get_size(reader);
 
-    log_e("==============%s==========\n", __func__);
-
-    for (i = 0; i < size; i++) {
-        log_e("0x%02x, ", buf[i]);
-        if (!(i % 16))
-            log_e("0x%02x\n", buf[i]);
-    }
-
-    log_e("\n=========================\n");
+    printf("==============%s==========\n", __func__);
+	print_hex_16cnt_of_line(buf, size);
+    printf("==========================\n");
 }
 
 int array_reader_is_empty(struct array_reader *reader)
