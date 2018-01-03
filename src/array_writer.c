@@ -22,6 +22,7 @@
 
 #include "array_writer.h"
 #include "array.h"
+#include "hex_helper.h"
 
 struct array_writer *create_array_writer(int capacity) {
     return (struct array_writer *) create_array(capacity);
@@ -31,21 +32,14 @@ void delete_array_writer(struct array_writer *writer) {
     delete_array((struct array *)writer);
 }
 
-void array_writer_dump_buffer(struct array_writer *writer) {
-    int i;
-    const unsigned char *buf =
-            (const unsigned char *)array_writer_get_buffer(writer);
+void array_writer_dump_buffer(struct array_writer *writer)
+{
+    const unsigned char *buf = (const unsigned char *)array_writer_get_buffer(writer);
     int size = array_writer_get_size(writer);
 
-    log_e("==============%s==========\n", __func__);
-
-    for (i = 0; i < size; i++) {
-        log_e("0x%02x, ", buf[i]);
-        if (!(i % 16))
-            log_e("0x%02x\n", buf[i]);
-    }
-
-    log_e("\n=========================\n");
+    printf("==============%s==========\n", __func__);
+	print_hex_16cnt_of_line(buf, size);
+    printf("==============%s==========\n", __func__);
 }
 
 const char *array_writer_get_buffer(struct array_writer *writer) {
