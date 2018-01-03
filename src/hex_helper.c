@@ -23,9 +23,11 @@
 #include "hex_helper.h"
 #undef HEX_HELPER_GB
 
-void print_hex(unsigned char *buf, int len)
+void print_hex(const unsigned char *buf, int len, int cnt_of_line)
 {
 	for (int i = 0; i < len; i++) {
+		if (i && i % cnt_of_line == 0)
+			printf("\n");
 		printf("%02x ", buf[i]);
 	}
 	printf("\n");
