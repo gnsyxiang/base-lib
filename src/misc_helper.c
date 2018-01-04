@@ -26,6 +26,27 @@
 #include "misc_helper.h"
 #undef MISC_HELPER_GB
 
+/* 栈的开口方向：
+ * 开口向下的栈先分配大地址，从下到上地址编号依次变大
+ * 开口向上的栈先分配小地址
+ *
+ * 一般情况下，操作系统提供的栈都是向下的
+ *
+ * 不管栈的开口朝向，数组buf的内存地址buf+1永远向上
+ */
+void stacks_detection(void)
+{
+	int a;
+	int b;
+	char buf[3];
+
+	printf("%p \n", &a);
+	printf("%p \n", &b);
+
+	for (int i = 0; i < 3; i++)
+		printf("%p \n", &buf[i]);
+}
+
 uint32_t random_num(uint32_t range)
 {
     struct timeval tv;
