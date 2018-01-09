@@ -32,6 +32,10 @@ static int str_test(void)
 	str_insert_char(str, 'd');
 	str_dump(str);
 
+	char buf1[] = "efg";
+	str_insert_buf(str, buf1);
+	str_dump(str);
+
 	str_free(str);
 
 	return 0;

@@ -46,7 +46,7 @@ void str_free(str_t *str);
 void str_dump(str_t *str);
 
 int str_insert_char(str_t *str, char c);
-
+int str_insert_buf(str_t *str, char *buf);
 
 #ifdef __cplusplus
 }
