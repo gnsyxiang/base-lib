@@ -28,6 +28,7 @@ void memory_test_init(void);
 void time_test_init(void);
 void wav_test_init(void);
 void file_test_init(void);
+void str_test_init(void);
 
 void init(void)
 {
@@ -35,6 +36,7 @@ void init(void)
 	time_test_init();
 	wav_test_init();
 	file_test_init();
+	str_test_init();
 }
 
 void dis_func(void)
@@ -42,15 +44,16 @@ void dis_func(void)
 	printf("-----------------------------------------------\n");
 	printf("enter the sequence number, select the function \n");
 	printf("-----------------------------------------------\n");
-	printf("1. socket client test \n");
-	printf("2. socket server test \n");
-	printf("3. heap memory test \n");
-	printf("4. time test \n");
-	printf("5. wav test \n");
-	printf("6. add blank to wav \n");
-	printf("7. serial send test \n");
-	printf("8. serial receive test \n");
-	printf("9. file test \n");
+	printf(" 1. socket client test \n");
+	printf(" 2. socket server test \n");
+	printf(" 3. heap memory test \n");
+	printf(" 4. time test \n");
+	printf(" 5. wav test \n");
+	printf(" 6. add blank to wav \n");
+	printf(" 7. serial send test \n");
+	printf(" 8. serial receive test \n");
+	printf(" 9. file test \n");
+	printf("10. str test \n");
 
 	printf("input your number: ");
 }
