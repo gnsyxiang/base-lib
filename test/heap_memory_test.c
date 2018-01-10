@@ -18,13 +18,13 @@
  *     last modified: 20/12 2017 13:54
  */
 #include <stdio.h>
-#include "heap_memory_helper.h"
+#include "mem_helper.h"
 #include "log_helper.h"
 #include "parse_cmd.h"
 
 static int heap_memory_test(void)
 {
-	char *p = safer_malloc(10);	
+	char *p = malloc_mem(10);	
 
 	for (int i = 0; i < 10; i++)
 		*(p + i) = i;
@@ -32,7 +32,7 @@ static int heap_memory_test(void)
 	for (int i = 0; i < 10; i++)
 		log_i("p[%d]: %d ", i, p[i]);
 
-	safer_free(p);
+	free_mem(p);
 
 	return 0;
 }

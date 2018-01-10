@@ -24,7 +24,7 @@
 #include "wav_helper.h"
 #undef BASE_LIB_WAV_HELPER_GB
 
-#include "heap_memory_helper.h"
+#include "mem_helper.h"
 #include "log_helper.h"
 
 #define ID_RIFF "RIFF"
@@ -40,7 +40,7 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 	int sample_rate = wav_file_param->sample_rate;
 	int bits_per_sample = wav_file_param->bit_per_sample;
 
-	wav_header_t *wav_header = safer_malloc(WAV_HEADER_LEN);	
+	wav_header_t *wav_header = malloc_mem(WAV_HEADER_LEN);	
 	
 	if (!channels || !sample_rate || !bits_per_sample) {
 		return wav_header;
@@ -67,7 +67,7 @@ static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 
 static wav_file_t *new_wav_file_t(wav_file_param_t *wav_file_param)
 {
-	wav_file_t *wav_file = safer_malloc(WAV_FILE_LEN);
+	wav_file_t *wav_file = malloc_mem(WAV_FILE_LEN);
 
 	wav_file->wav_header = wav_header_init(wav_file_param);
 	wav_file->play_ms = 0;
@@ -157,8 +157,8 @@ void wav_file_clean(wav_file_t *wav_file)
 	wav_file_flush(wav_file);
 	fclose(wav_file->file);
 
-	safer_free(wav_file->wav_header);
-	safer_free(wav_file);
+	free_mem(wav_file->wav_header);
+	free_mem(wav_file);
 }
 
 int wav_file_write(wav_file_t *wav_file, void *data, int len)

@@ -31,44 +31,11 @@
 #include <stdlib.h>
 
 #include "log_helper.h"
+#include "mem_helper.h"
 
 #define STR_HELPER_GB
 #include "str_helper.h"
 #undef STR_HELPER_GB
-
-static void *alloc_mem(int len)
-{
-	void *buf = calloc(1, len);
-	if (NULL == buf) {
-		log_e("calloc faild");
-		return NULL;
-	}
-
-	return buf;
-}
-
-#define REALLOC_SIZE (32)
-
-static int realloc_mem(void *buf, int len, int size)
-{
-	for (size = size < REALLOC_SIZE ? REALLOC_SIZE : size; size < len; size <<= 1);	
-
-	char *new_buf = realloc(buf, size);
-	if (NULL == new_buf) {
-		log_e("realloc faild");
-		return -1;
-	}
-
-	return size;
-}
-
-static void free_mem(void *buf)
-{
-	if (buf) {
-		free(buf);
-		buf = NULL;
-	}
-}
 
 str_t *str_create(void)
 {
@@ -158,12 +125,4 @@ int str_insert_buf(str_t *str, char *buf)
 	
 	return 0;
 }
-
-
-
-
-
-
-
-
 

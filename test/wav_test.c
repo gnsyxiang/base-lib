@@ -29,7 +29,7 @@
 #include "dir_helper.h"
 #include "wav_helper.h"
 #include "type_helper.h"
-#include "heap_memory_helper.h"
+#include "mem_helper.h"
 
 #define CHANNELS		(1)
 #define SAMPLE_RATE		(16000)
@@ -78,7 +78,7 @@ int read_wav_to_buf(char *wav_path, char **voice)
 
 	wav_file = wav_file_open(&wav_file_param);
 
-	*voice = safer_malloc(wav_file->wav_header->data_sz);
+	*voice = malloc_mem(wav_file->wav_header->data_sz);
 
 	int len = wav_file_read(wav_file, *voice, wav_file->wav_header->data_sz);
 
@@ -139,7 +139,7 @@ void wav_handle(const char *base_path, const char *name)
 	int len = read_wav_to_buf(src_name, &voice);
 	write_buf_to_wav(&wav_file_param, voice, len, WAV_MS_LEN);
 
-	safer_free(voice);
+	free_mem(voice);
 }
 
 static int add_blank_time_to_wav(void)
