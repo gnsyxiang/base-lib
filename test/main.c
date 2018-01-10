@@ -24,7 +24,7 @@
 
 static char usr_input[10];
 
-void memory_test_init(void);
+void mem_test_init(void);
 void time_test_init(void);
 void wav_test_init(void);
 void file_test_init(void);
@@ -32,7 +32,7 @@ void str_test_init(void);
 
 void init(void)
 {
-	memory_test_init();
+	mem_test_init();
 	time_test_init();
 	wav_test_init();
 	file_test_init();

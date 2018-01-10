@@ -1,8 +1,8 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
- * @file    heap_memory_test.c
+ * @file    mem_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    20/12 2017 13:54
@@ -18,11 +18,12 @@
  *     last modified: 20/12 2017 13:54
  */
 #include <stdio.h>
+
 #include "mem_helper.h"
 #include "log_helper.h"
 #include "parse_cmd.h"
 
-static int heap_memory_test(void)
+static int mem_test(void)
 {
 	char *p = malloc_mem(10);	
 
@@ -38,12 +39,12 @@ static int heap_memory_test(void)
 }
 
 
-void memory_test_init(void)
+void mem_test_init(void)
 {
-	handle_test_cmd_t memory_test_cmd[] = {
-		{"3", heap_memory_test},
+	handle_test_cmd_t mem_test_cmd[] = {
+		{"3", mem_test},
 	};
 
-	register_test_cmd(memory_test_cmd, ARRAY_NUM(memory_test_cmd));
+	register_test_cmd(mem_test_cmd, ARRAY_NUM(mem_test_cmd));
 }
 
