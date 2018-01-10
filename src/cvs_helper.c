@@ -53,6 +53,81 @@
 
 #include <stdio.h>
 
+#include "mem_helper.h"
+#include "file_helper.h"
+
+typedef struct csv_tag {
+	FILE *fp;
+	int row;
+	int col;
+	const char *data[];
+}csv_t;
+
+#define CSV_TAG_LEN (sizeof(csv_t))
+
+csv_t *csv_create_struct(void)
+{
+	csv_t *csv = alloc_mem(CSV_TAG_LEN);
+
+	csv->row = 0;
+	csv->col = 0;
+
+	csv->fp = NULL;
+	//csv->data = NULL;
+
+	return csv;
+}
+
+enum {
+	STATUS_SEMICOLON = '"',
+	STATUS_COMMA = ',',
+	STATUS_WRAP_R = '\r',
+	STATUS_WRAP_N = '\n',
+
+	STATUS_OK,
+};
+
+void parse_csv(csv_t *csv)
+{
+	int ch, c;
+	int rl, cl;
+
+	while ((ch = fgetc(csv->fp)) != EOF) {
+		switch (ch) {
+			case STATUS_SEMICOLON:
+				break;
+			case STATUS_COMMA:
+				break;
+			case STATUS_WRAP_R:
+				break;
+			case STATUS_WRAP_N:
+				break;
+			case STATUS_OK:
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+csv_t *csv_new(const char *path)
+{
+	csv_t *csv = csv_create_struct();
+
+	csv->fp = fopen_l(path, "r");
+
+	return csv;
+}
+
+void csv_clean(csv_t *csv)
+{
+}
+
+const char *csv_get_data(csv_t *csv, int row, int col)
+{
+	return NULL;
+}
+
 
 
 
