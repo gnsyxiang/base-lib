@@ -30,6 +30,7 @@ extern "C" {
 #define FILE_HELPER_EX
 #endif
 
+FILE_HELPER_EX FILE *fopen_l(const char *path, const char *mode);
 
 FILE_HELPER_EX int file_close_on_exec(int fd);
 FILE_HELPER_EX int file_set_nonblocking(int fd);
