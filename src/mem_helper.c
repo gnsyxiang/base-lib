@@ -1,8 +1,8 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
- * @file    heap_memory_helper.c
+ * @file    mem_helper.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    19/12 2017 11:24
@@ -23,9 +23,9 @@
 
 #include "log_helper.h"
 
-#define BASE_LIB_HEAP_MEMORY_HELPER_GB
-#include "heap_memory_helper.h"
-#undef BASE_LIB_HEAP_MEMORY_HELPER_GB
+#define BASE_LIB_MEM_HELPER_GB
+#include "mem_helper.h"
+#undef BASE_LIB_MEM_HELPER_GB
 
 void *safer_malloc(size_t len)
 {
