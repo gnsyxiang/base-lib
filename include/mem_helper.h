@@ -30,10 +30,14 @@ extern "C" {
 #define BASE_LIB_MEM_HELPER_EX
 #endif
 
-BASE_LIB_MEM_HELPER_EX void _safer_free(void **pp);
-BASE_LIB_MEM_HELPER_EX void *safer_malloc(size_t len);
+#define REALLOC_SIZE (32)
 
-#define safer_free(p) _safer_free((void **)&p)
+void *malloc_mem(size_t len);
+void *alloc_mem(int len);
+int realloc_mem(void *buf, int len, int size);
+void _free_mem(void **pp);
+
+#define free_mem(p) _free_mem((void **)&p)
 
 #ifdef __cplusplus
 }

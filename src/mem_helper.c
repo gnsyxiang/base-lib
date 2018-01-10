@@ -27,7 +27,39 @@
 #include "mem_helper.h"
 #undef BASE_LIB_MEM_HELPER_GB
 
-void *safer_malloc(size_t len)
+void *alloc_mem(int len)
+{
+	void *p= calloc(1, len);
+	if (NULL == p) {
+		log_e("calloc faild");
+		return NULL;
+	}
+
+	return p;
+}
+
+int realloc_mem(void *p, int len, int size)
+{
+	for (size = size < REALLOC_SIZE ? REALLOC_SIZE : size; size < len; size <<= 1);	
+
+	char *new_p= realloc(p, size);
+	if (NULL == new_p) {
+		log_e("realloc faild");
+		return -1;
+	}
+
+	return size;
+}
+
+void _free_mem(void **pp)
+{
+	if (pp != NULL && *pp != NULL) {
+		free(*pp);
+		*pp = NULL;
+	}
+}
+
+void *malloc_mem(size_t len)
 {
 	void *p = malloc(len);
 	if (!p) {
@@ -39,10 +71,3 @@ void *safer_malloc(size_t len)
 	}
 }
 
-void _safer_free(void **pp)
-{
-	if (pp != NULL && *pp != NULL) {
-		free(*pp);
-		*pp = NULL;
-	}
-}
