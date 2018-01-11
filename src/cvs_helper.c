@@ -56,15 +56,6 @@
 #include "mem_helper.h"
 #include "file_helper.h"
 
-typedef struct csv_tag {
-	FILE *fp;
-	int row;
-	int col;
-	const char *data[];
-}csv_t;
-
-#define CSV_TAG_LEN (sizeof(csv_t))
-
 csv_t *csv_create_struct(void)
 {
 	csv_t *csv = alloc_mem(CSV_TAG_LEN);
@@ -87,27 +78,79 @@ enum {
 	STATUS_OK,
 };
 
-void parse_csv(csv_t *csv)
+#define insert_valid_char(csv, ch)					\
+	do {											\
+		if (0 != str_insert_char(&csv->data, ch)) { \
+			free(csv->data);						\
+			return -1;								\
+		}											\
+	} while(0)
+
+#define invalid_csv_format(csv)						\
+	do {											\
+		log_e("the CSV file is invalid one");		\
+		free(csv->data);							\
+		return -1;									\
+	} while(0)
+
+int parse_semicolon(csv_t *csv)
 {
 	int ch, c;
+
+	while ((ch = fgetc(csv->fp)) != EOF) {
+		if (STATUS_SEMICOLON == ch) {
+			if ((c = fgetc(csv->fp)) != EOF) {
+				invalid_csv_format(csv);
+			}
+			if (STATUS_SEMICOLON != n) {
+				ungetc(n, csv->fp);
+				break;
+			}
+			insert_valid_char(csv, ch);
+		}
+
+		if (STATUS_SEMICOLON != ch) {
+			invalid_csv_format(csv);
+		}
+	}
+
+	return 0;
+}
+
+int parse_csv(csv_t *csv)
+{
+	int ch;
 	int rl, cl;
 
 	while ((ch = fgetc(csv->fp)) != EOF) {
 		switch (ch) {
 			case STATUS_SEMICOLON:
+				if (!parse_semicolon(csv))
+					return -1;
 				break;
 			case STATUS_COMMA:
+				insert_valid_char(csv, ch);
+				++cl;
 				break;
 			case STATUS_WRAP_R:
-				break;
+				continue;
 			case STATUS_WRAP_N:
+				insert_valid_char(csv, ch);
+				++cl;
+				++rl;
 				break;
 			case STATUS_OK:
+				insert_valid_char(csv, ch);
 				break;
 			default:
 				break;
 		}
 	}
+
+	csv->row = cl;
+	csv->col = rl;
+
+	return 0;
 }
 
 csv_t *csv_new(const char *path)
@@ -127,21 +170,4 @@ const char *csv_get_data(csv_t *csv, int row, int col)
 {
 	return NULL;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
