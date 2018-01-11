@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    wav_test.c
@@ -71,12 +71,7 @@ static int wav_test(void)
 
 int read_wav_to_buf(char *wav_path, char **voice)
 {
-	wav_file_t *wav_file;
-	wav_file_param_t wav_file_param = {0};
-
-	strcpy(wav_file_param.path, wav_path);
-
-	wav_file = wav_file_open(&wav_file_param);
+	wav_file_t *wav_file = wav_file_open(wav_path);
 
 	*voice = malloc_mem(wav_file->wav_header->data_sz);
 

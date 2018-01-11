@@ -141,11 +141,14 @@ wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
 	return wav_file;
 }
 
-wav_file_t *wav_file_open(wav_file_param_t *wav_file_param)
+wav_file_t *wav_file_open(const char *path)
 {
-	strcpy(wav_file_param->file_mode, "r");
+	wav_file_param_t wav_file_param;
 
-	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
+	strcpy(wav_file_param.file_mode, "r");
+	strcpy(wav_file_param.path, path);
+
+	wav_file_t *wav_file = new_wav_file_t(&wav_file_param);
 
 	fread(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
 
