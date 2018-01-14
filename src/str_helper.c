@@ -76,7 +76,7 @@ void str_free(str_t *str)
 	free_mem(str);
 }
 
-void str_dump(str_t *str)
+void str_dump_buf(str_t *str)
 {
 	if (!str || !str->buf)
 		return;
@@ -86,6 +86,13 @@ void str_dump(str_t *str)
 	}
 
 	printf("\n");
+}
+
+void str_dump(str_t *str)
+{
+	printf("buf: %p \n",	str->buf);
+	printf("len: %d \n",	str->len);
+	printf("size: %d \n",	str->size);
 }
 
 int str_insert_char(str_t *str, char c)

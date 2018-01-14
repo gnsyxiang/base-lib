@@ -28,13 +28,13 @@ static int str_test(void)
 	char buf[] = "abc";
 	str_t *str = str_create_by_buf(buf);
 
-	str_dump(str);
+	str_dump_buf(str);
 	str_insert_char(str, 'd');
-	str_dump(str);
+	str_dump_buf(str);
 
 	char buf1[] = "efg";
 	str_insert_buf(str, buf1);
-	str_dump(str);
+	str_dump_buf(str);
 
 	str_free(str);
 
