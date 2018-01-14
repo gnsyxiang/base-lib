@@ -32,7 +32,7 @@
 FILE *fopen_l(const char *path, const char *mode)
 {
 	FILE *fp = fopen(path, mode);
-	if (NULL != fp) {
+	if (NULL == fp) {
 		log_e("fopen faild");
 		return NULL;
 	}
