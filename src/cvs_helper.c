@@ -55,13 +55,16 @@
 
 #include "mem_helper.h"
 #include "file_helper.h"
+#include "csv_helper.h"
+#include "str_helper.h"
+#include "log_helper.h"
 
 csv_t *csv_create_struct(void)
 {
 	csv_t *csv = alloc_mem(CSV_TAG_LEN);
 
-	csv->row = 0;
-	csv->col = 0;
+	csv->csv_matrix.row = 0;
+	csv->csv_matrix.col = 0;
 
 	csv->fp = NULL;
 	//csv->data = NULL;
@@ -78,86 +81,106 @@ enum {
 	STATUS_OK,
 };
 
-#define insert_valid_char(csv, ch)					\
+#define insert_valid_char(str, ch)					\
 	do {											\
-		if (0 != str_insert_char(&csv->data, ch)) { \
-			free(csv->data);						\
-			return -1;								\
+		if (0 != str_insert_char(str, ch)) { \
+			free_mem(str->buf);						\
+			return NULL;								\
 		}											\
 	} while(0)
 
-#define invalid_csv_format(csv)						\
+#define invalid_csv_format(str)						\
 	do {											\
 		log_e("the CSV file is invalid one");		\
-		free(csv->data);							\
-		return -1;									\
+		free_mem(str->buf);							\
+		return NULL;									\
 	} while(0)
 
-int parse_semicolon(csv_t *csv)
+int a;
+void *parse_semicolon(FILE *fp, str_t *str)
 {
 	int ch, c;
 
-	while ((ch = fgetc(csv->fp)) != EOF) {
+	while ((ch = fgetc(fp)) != EOF) {
 		if (STATUS_SEMICOLON == ch) {
-			if ((c = fgetc(csv->fp)) != EOF) {
-				invalid_csv_format(csv);
+			if ((c = fgetc(fp)) != EOF) {
+				invalid_csv_format(str);
 			}
-			if (STATUS_SEMICOLON != n) {
-				ungetc(n, csv->fp);
+			if (STATUS_SEMICOLON != c) {
+				ungetc(c, fp);
 				break;
 			}
-			insert_valid_char(csv, ch);
+			insert_valid_char(str, ch);
 		}
 
 		if (STATUS_SEMICOLON != ch) {
-			invalid_csv_format(csv);
+			invalid_csv_format(str);
 		}
 	}
 
-	return 0;
+	//TODO handle it
+	return (void *)&a;
 }
 
-int parse_csv(csv_t *csv)
+str_t *parse_csv(csv_t *csv)
 {
 	int ch;
-	int rl, cl;
+	int row = 0, col = 0;
+	FILE *fp = csv->fp;
+	str_t *str = str_create_by_len(0);
 
-	while ((ch = fgetc(csv->fp)) != EOF) {
+	while ((ch = fgetc(fp)) != EOF) {
 		switch (ch) {
 			case STATUS_SEMICOLON:
-				if (!parse_semicolon(csv))
-					return -1;
+				if (!parse_semicolon(fp, str))
+					return NULL;
 				break;
 			case STATUS_COMMA:
-				insert_valid_char(csv, ch);
-				++cl;
+				insert_valid_char(str, '\0');
+				++col;
 				break;
 			case STATUS_WRAP_R:
 				continue;
 			case STATUS_WRAP_N:
-				insert_valid_char(csv, ch);
-				++cl;
-				++rl;
-				break;
-			case STATUS_OK:
-				insert_valid_char(csv, ch);
+				insert_valid_char(str, '\0');
+				++col;
+				++row;
 				break;
 			default:
+				insert_valid_char(str, ch);
 				break;
 		}
 	}
 
-	csv->row = cl;
-	csv->col = rl;
+	csv->csv_matrix.col = col;
+	csv->csv_matrix.row = row;
 
-	return 0;
+	return str;
 }
 
-csv_t *csv_new(const char *path)
+void parse_csv_data(csv_t *csv, str_t *str)
+{
+	int i = 0;
+	char *buf = str->buf;
+	int col = csv->csv_matrix.col;
+	int row = csv->csv_matrix.row;
+
+	csv->csv_matrix.col = col / row;
+
+	do {
+		csv->data[i] = buf;
+		while (*buf++);
+	} while(++i < col);
+}
+
+
+csv_t *csv_file_open(const char *path)
 {
 	csv_t *csv = csv_create_struct();
 
 	csv->fp = fopen_l(path, "r");
+	str_t *str = parse_csv(csv);
+	parse_csv_data(csv, str);
 
 	return csv;
 }
@@ -166,8 +189,11 @@ void csv_clean(csv_t *csv)
 {
 }
 
-const char *csv_get_data(csv_t *csv, int row, int col)
+const char *csv_file_read_by_row_col(csv_t *csv, csv_matrix_t csv_matrix)
 {
-	return NULL;
+	int row = csv_matrix.row;
+	int col = csv_matrix.col;
+
+	return csv->data[row * csv->csv_matrix.col + col];
 }
 

@@ -29,6 +29,7 @@ void time_test_init(void);
 void wav_test_init(void);
 void file_test_init(void);
 void str_test_init(void);
+void csv_test_init(void);
 
 void init(void)
 {
@@ -37,6 +38,7 @@ void init(void)
 	wav_test_init();
 	file_test_init();
 	str_test_init();
+	csv_test_init();
 }
 
 void dis_func(void)
@@ -54,6 +56,7 @@ void dis_func(void)
 	printf(" 8. serial receive test \n");
 	printf(" 9. file test \n");
 	printf("10. str test \n");
+	printf("11. csv test \n");
 
 	printf("input your number: ");
 }
