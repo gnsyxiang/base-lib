@@ -35,11 +35,14 @@ extern "C" {
 
 #define ARRAY_NUM(array) (sizeof(array) / sizeof(array[0]))
 
-typedef int (*test_func_t)(void);
+typedef int (*init_call)(void);
+
+#define _init __attribute__((unused, section(".myinit")))
+#define DECLARE_INIT(func) init_call _fn_##func _init = func
 
 typedef struct _handle_test_cmd_tag{
 	char test_cmd_name[MAX_TEST_CMD_NAME_LEN + 1];
-	test_func_t test_func;
+	init_call test_func;
 }handle_test_cmd_t;
 
 typedef struct _handle_test_cmd_list_tag {
@@ -47,6 +50,7 @@ typedef struct _handle_test_cmd_list_tag {
 	handle_test_cmd_t handle_test_cmd[MAX_TEST_CMD];
 }handle_test_cmd_list_t;
 
+BASE_LIB_PARSE_CMD_EX void do_initcalls(void);
 BASE_LIB_PARSE_CMD_EX void match_test_cmd(const char *str);
 BASE_LIB_PARSE_CMD_EX void register_test_cmd(handle_test_cmd_t *cmd_array, int num);
 

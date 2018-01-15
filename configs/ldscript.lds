@@ -154,6 +154,9 @@ SECTIONS
   .data1          : { *(.data1) }
   _edata = .; PROVIDE (edata = .);
   . = .;
+  _init_start = .;
+  .myinit : { *(.myinit) }
+  _init_end = .;
   __bss_start = .;
   .bss            :
   {

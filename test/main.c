@@ -24,23 +24,6 @@
 
 static char usr_input[10];
 
-void mem_test_init(void);
-void time_test_init(void);
-void wav_test_init(void);
-void file_test_init(void);
-void str_test_init(void);
-void csv_test_init(void);
-
-void init(void)
-{
-	mem_test_init();
-	time_test_init();
-	wav_test_init();
-	file_test_init();
-	str_test_init();
-	csv_test_init();
-}
-
 void dis_func(void)
 {
 	printf("-----------------------------------------------\n");
@@ -65,7 +48,7 @@ int main(int argc, const char *argv[])
 {
 	dis_func();
 
-	init();
+	do_initcalls();
 
 	scanf("%s", usr_input);
 
