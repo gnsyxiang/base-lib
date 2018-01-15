@@ -62,7 +62,7 @@ MSG_CC := CC
 # -------
 SO_NAME := -Wl,-soname,lib$(TARGET).so.$(MAJOR_VERSION)
 
-LDFLAGS := -lbase_lib -lpthread -L./lib -Wl,-rpath=./lib
+LDFLAGS := -T configs/ldscript.lds -lbase_lib -lpthread -L./lib -Wl,-rpath=./lib
 LIB_LDFLAGS := $(SO_NAME) -shared
 
 MSG_LD := LD
