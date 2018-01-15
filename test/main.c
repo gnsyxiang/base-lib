@@ -46,9 +46,9 @@ void dis_func(void)
 
 int main(int argc, const char *argv[])
 {
-	dis_func();
-
 	do_initcalls();
+
+	dis_func();
 
 	scanf("%s", usr_input);
 

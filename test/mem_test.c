@@ -23,7 +23,7 @@
 #include "log_helper.h"
 #include "parse_cmd.h"
 
-static int mem_test(void)
+static void mem_test(void)
 {
 	char *p = malloc_mem(10);	
 
@@ -34,12 +34,9 @@ static int mem_test(void)
 		log_i("p[%d]: %d ", i, p[i]);
 
 	free_mem(p);
-
-	return 0;
 }
 
-
-void mem_test_init(void)
+static void mem_test_init(void)
 {
 	handle_test_cmd_t mem_test_cmd[] = {
 		{"3", mem_test},
@@ -47,4 +44,5 @@ void mem_test_init(void)
 
 	register_test_cmd(mem_test_cmd, ARRAY_NUM(mem_test_cmd));
 }
+DECLARE_INIT(mem_test_init);
 

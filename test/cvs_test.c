@@ -24,7 +24,7 @@
 #include "log_helper.h"
 #include "csv_helper.h"
 
-int csv_test(void)
+static void csv_test(void)
 {
 	csv_matrix_t csv_matrix;
 	csv_t *csv = csv_file_open("./test.csv");
@@ -36,10 +36,9 @@ int csv_test(void)
 			printf("<%d, %d> => [%s]\n", i, j, csv_file_read_by_row_col(csv, csv_matrix));
 		}
 	}
-	return 0;
 }
 
-void csv_test_init(void)
+static void csv_test_init(void)
 {
 	handle_test_cmd_t csv_test_cmd[] = {
 		{"11", csv_test},
@@ -47,4 +46,5 @@ void csv_test_init(void)
 
 	register_test_cmd(csv_test_cmd, ARRAY_NUM(csv_test_cmd));
 }
+DECLARE_INIT(csv_test_init);
 

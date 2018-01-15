@@ -23,7 +23,7 @@
 #include "parse_cmd.h"
 #include "str_helper.h"
 
-static int str_test(void)
+static void str_test(void)
 {
 	char buf[] = "abc";
 	str_t *str = str_create_by_buf(buf);
@@ -37,11 +37,9 @@ static int str_test(void)
 	str_dump_buf(str);
 
 	str_free(str);
-
-	return 0;
 }
 
-void str_test_init(void)
+static void str_test_init(void)
 {
 	handle_test_cmd_t str_test_cmd[] = {
 		{"10", str_test},
@@ -49,4 +47,5 @@ void str_test_init(void)
 
 	register_test_cmd(str_test_cmd, ARRAY_NUM(str_test_cmd));
 }
+DECLARE_INIT(str_test_init);
 

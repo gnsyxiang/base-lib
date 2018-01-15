@@ -29,7 +29,7 @@
 
 #define FILE_CONTENT_LEN (10)
 
-static int file_test(void)
+static void file_test(void)
 {
 	int fd;
 	char buf[FILE_CONTENT_LEN];
@@ -42,11 +42,9 @@ static int file_test(void)
 	log_i("buf: %s", buf);
 
 	close(fd);
-
-	return 0;
 }
 
-void file_test_init(void)
+static void file_test_init(void)
 {
 	handle_test_cmd_t file_test_cmd[] = {
 		{"9", file_test},
@@ -54,4 +52,5 @@ void file_test_init(void)
 
 	register_test_cmd(file_test_cmd, ARRAY_NUM(file_test_cmd));
 }
+DECLARE_INIT(file_test_init);
 

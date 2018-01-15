@@ -39,7 +39,7 @@
 
 #define NEW_WAV_PATH "new_wav"
 
-static int wav_test(void)
+static void wav_test(void)
 {
 	wav_file_param_t wav_file_param;
 	wav_file_t *wav_file;
@@ -64,8 +64,6 @@ static int wav_test(void)
 	wav_file_clean(wav_file);
 
 	log_i("wav test OK");
-
-	return 0;
 }
 
 
@@ -137,7 +135,7 @@ void wav_handle(const char *base_path, const char *name)
 	free_mem(voice);
 }
 
-static int add_blank_time_to_wav(void)
+static void add_blank_time_to_wav(void)
 {
     char base_path[1000] = {0};
 
@@ -147,11 +145,9 @@ static int add_blank_time_to_wav(void)
     read_file_list(base_path, wav_handle);
 
 	log_i("add blank time to wav OK");
-
-    return 0;
 }
 
-void wav_test_init(void)
+static void wav_test_init(void)
 {
 	handle_test_cmd_t wav_test_cmd[] = {
 		{"5", wav_test},
@@ -160,4 +156,5 @@ void wav_test_init(void)
 
 	register_test_cmd(wav_test_cmd, ARRAY_NUM(wav_test_cmd));
 }
+DECLARE_INIT(wav_test_init);
 

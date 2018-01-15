@@ -35,7 +35,7 @@ extern "C" {
 
 #define ARRAY_NUM(array) (sizeof(array) / sizeof(array[0]))
 
-typedef int (*init_call)(void);
+typedef void (*init_call)(void);
 
 #define _init __attribute__((unused, section(".myinit")))
 #define DECLARE_INIT(func) init_call _fn_##func _init = func
