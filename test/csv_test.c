@@ -38,6 +38,8 @@ static void csv_test(void)
 			printf("<%d, %d> => [%s]\n", i, j, csv_file_read_by_row_col(csv, csv_matrix));
 		}
 	}
+
+	csv_file_clean(csv);
 }
 
 static void csv_test_init(void)

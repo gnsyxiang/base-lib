@@ -185,8 +185,10 @@ csv_t *csv_file_open(const char *path)
 	return csv;
 }
 
-void csv_clean(csv_t *csv)
+void csv_file_clean(csv_t *csv)
 {
+	fclose_l(csv->fp);
+	free_mem(csv);
 }
 
 const char *csv_file_read_by_row_col(csv_t *csv, csv_matrix_t csv_matrix)

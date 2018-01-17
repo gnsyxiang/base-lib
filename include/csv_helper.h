@@ -40,7 +40,7 @@ typedef struct csv_tag {
 
 csv_t *csv_file_create(const char *path, csv_matrix_t csv_matrix);
 csv_t *csv_file_open(const char *path);
-void csv_file_clen(csv_t *csv);
+void csv_file_clean(csv_t *csv);
 
 const char *csv_file_read_by_row_col(csv_t *csv, csv_matrix_t csv_matrix);
 int csv_file_write_by_row_col(csv_t *csv, const char *buf, csv_matrix_t csv_matrix);

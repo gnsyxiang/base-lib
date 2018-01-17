@@ -52,7 +52,7 @@ CC := $(Q)$(CROSS_TOOL)gcc
 # ------
 # cflags
 # ------
-CFLAGS := -Wall -g -I$(INC_DIR) -std=gnu99
+CFLAGS := -Wall -Werror -g -I$(INC_DIR) -std=gnu99
 LIB_CFLAGS := $(CFLAGS) -fPIC
 
 MSG_CC := CC
