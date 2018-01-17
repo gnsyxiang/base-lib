@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    file_helper.h
@@ -24,13 +24,33 @@
 extern "C" {
 #endif
 
+#include "log_helper.h"
+
 #ifndef FILE_HELPER_GB
 #define FILE_HELPER_EX extern
 #else
 #define FILE_HELPER_EX
 #endif
 
-FILE_HELPER_EX FILE *fopen_l(const char *path, const char *mode);
+static inline void _fclose_l(FILE **fp)
+{
+	if(*fp) {
+		fclose(*fp);
+		*fp = NULL;
+	}
+}
+#define fclose_l(fp) _fclose_l(&fp)
+
+static inline FILE *fopen_l(const char *path, const char *mode)
+{
+	FILE *fp = fopen(path, mode);
+	if (NULL == fp) {
+		log_e("fopen faild");
+		return NULL;
+	}
+
+	return fp;
+}
 
 FILE_HELPER_EX int file_close_on_exec(int fd);
 FILE_HELPER_EX int file_set_nonblocking(int fd);

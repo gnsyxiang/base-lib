@@ -29,17 +29,6 @@
 #include "file_helper.h"
 #undef FILE_HELPER_GB
 
-FILE *fopen_l(const char *path, const char *mode)
-{
-	FILE *fp = fopen(path, mode);
-	if (NULL == fp) {
-		log_e("fopen faild");
-		return NULL;
-	}
-
-	return fp;
-}
-
 static int _set_fcntl(int fd, long arg)
 {
 	int flags;
