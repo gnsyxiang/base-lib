@@ -2,7 +2,7 @@
  * 
  * Release under GPLv2.
  * 
- * @file    cvs_test.c
+ * @file    csv_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    12/01 2018 23:22
@@ -24,10 +24,12 @@
 #include "log_helper.h"
 #include "csv_helper.h"
 
+#define CSV_TEST_PATH "./test/test.csv"
+
 static void csv_test(void)
 {
 	csv_matrix_t csv_matrix;
-	csv_t *csv = csv_file_open("./test.csv");
+	csv_t *csv = csv_file_open(CSV_TEST_PATH);
 
 	for (int i = 0; i < csv->csv_matrix.row; i++) {
 		csv_matrix.row = i;
