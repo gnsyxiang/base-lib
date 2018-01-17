@@ -95,6 +95,16 @@ void str_dump(str_t *str)
 	printf("size: %d \n",	str->size);
 }
 
+#define str_realloc_mem(len, str)								\
+	do {														\
+		if (len > str->size) {									\
+			int size = realloc_mem(str->buf, len, str->size);	\
+			if (-1 == size)										\
+				return -1;										\
+			str->size = size;									\
+		}														\
+	}while(0)
+
 int str_insert_char(str_t *str, char c)
 {
 	if (!str) {
@@ -102,16 +112,13 @@ int str_insert_char(str_t *str, char c)
 		return -1;
 	}
 
-	int size;
 	/*str->len指向实际的长度，这里要考虑增加字符和字符结束符(\0)*/
 	int len = str->len + 2;
-	if ((len > str->size) && -1 == (size = realloc_mem(str->buf, len, str->size)))
-		return -1;
+	str_realloc_mem(len, str);
 
 	str->len = --len;
 	str->buf[len - 1] = c;
 	str->buf[len] = '\0';
-	str->size = size;
 
 	return 0;
 }
@@ -123,15 +130,12 @@ int str_insert_buf(str_t *str, char *buf)
 		return -1;
 	}
 
-	int size;
 	int len = str->len + strlen(buf) + 1;
-	if ((len > str->size) && -1 == (size = realloc_mem(str->buf, len, str->size)))
-		return -1;
+	str_realloc_mem(len, str);
 
 	strcpy(str->buf + str->len, buf);
 	str->buf[len] = '\0';
 	str->len = len - 1;
-	str->size = size;
 	
 	return 0;
 }
