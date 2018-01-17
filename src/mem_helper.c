@@ -38,12 +38,12 @@ void *alloc_mem(int len)
 	return p;
 }
 
-int realloc_mem(void *p, int len, int size)
+int _realloc_mem(void **pp, int len, int size)
 {
 	for (size = size < REALLOC_SIZE ? REALLOC_SIZE : size; size < len; size <<= 1);	
 
-	char *new_p= realloc(p, size);
-	if (NULL == new_p) {
+	*pp = realloc(*pp, size);
+	if (NULL == *pp) {
 		log_e("realloc faild");
 		return -1;
 	}
