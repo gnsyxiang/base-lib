@@ -103,7 +103,7 @@ void *parse_semicolon(FILE *fp, str_t *str)
 
 	while ((ch = fgetc(fp)) != EOF) {
 		if (STATUS_SEMICOLON == ch) {
-			if ((c = fgetc(fp)) != EOF) {
+			if ((c = fgetc(fp)) == EOF) {
 				invalid_csv_format(str);
 			}
 			if (STATUS_SEMICOLON != c) {
@@ -114,7 +114,7 @@ void *parse_semicolon(FILE *fp, str_t *str)
 		}
 
 		if (STATUS_SEMICOLON != ch) {
-			invalid_csv_format(str);
+			insert_valid_char(str, ch);
 		}
 	}
 
