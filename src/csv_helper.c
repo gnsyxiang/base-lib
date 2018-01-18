@@ -59,15 +59,17 @@
 #include "str_helper.h"
 #include "log_helper.h"
 
-csv_t *csv_create_struct(void)
+/*#define XIA_DEBUG*/
+
+static FILE *fp;
+static str_t *str;
+
+csv_t *csv_create_struct(int len)
 {
-	csv_t *csv = alloc_mem(CSV_TAG_LEN);
+	csv_t *csv = alloc_mem(CSV_TAG_LEN + len);
 
-	csv->csv_matrix.row = 0;
-	csv->csv_matrix.col = 0;
-
-	csv->fp = NULL;
-	//csv->data = NULL;
+	csv->row = 0;
+	csv->col = 0;
 
 	return csv;
 }
@@ -122,11 +124,10 @@ void *parse_semicolon(FILE *fp, str_t *str)
 	return (void *)&a;
 }
 
-str_t *parse_csv(csv_t *csv)
+str_t *parse_csv(int *prow, int *pcol)
 {
 	int ch;
 	int row = 0, col = 0;
-	FILE *fp = csv->fp;
 	str_t *str = str_create_by_len(0);
 
 	while ((ch = fgetc(fp)) != EOF) {
@@ -152,50 +153,56 @@ str_t *parse_csv(csv_t *csv)
 		}
 	}
 
-	csv->csv_matrix.col = col;
-	csv->csv_matrix.row = row;
+	*prow = row;
+	*pcol = col;
 
 	return str;
 }
 
-void parse_csv_data(csv_t *csv, str_t *str)
+csv_t *parse_csv_data(str_t *str, int row, int col)
 {
+#ifdef XIA_DEBUG
+	log_i("row: %d", row);
+	log_i("col: %d", col);
+#endif
+
 	int i = 0;
 	char *buf = str->buf;
-	int col = csv->csv_matrix.col;
-	int row = csv->csv_matrix.row;
+	csv_t *csv = csv_create_struct(col * DATA_POINT_LEN);
 
-	csv->csv_matrix.col = col / row;
+	csv->row = row;
+	csv->col = col / row;
 
 	do {
 		csv->data[i] = buf;
 		while (*buf++);
 	} while(++i < col);
-}
-
-
-csv_t *csv_file_open(const char *path)
-{
-	csv_t *csv = csv_create_struct();
-
-	csv->fp = fopen_l(path, "r");
-	str_t *str = parse_csv(csv);
-	parse_csv_data(csv, str);
 
 	return csv;
 }
 
+csv_t *csv_file_open(const char *path)
+{
+	int row = 0, col = 0;
+
+	fp = fopen_l(path, "r");
+	str = parse_csv(&row, &col);
+
+	return parse_csv_data(str, row, col);
+}
+
 void csv_file_clean(csv_t *csv)
 {
-	fclose_l(csv->fp);
+	fclose_l(fp);
+
+	free_mem(str->buf);
+	free_mem(str);
+
 	free_mem(csv);
 }
 
-const char *csv_file_read_by_row_col(csv_t *csv, csv_matrix_t csv_matrix)
+const char *csv_file_read_by_row_col(csv_t *csv, int row, int col)
 {
-	int row = csv_matrix.row;
-	int col = csv_matrix.col;
-
-	return csv->data[row * csv->csv_matrix.col + col];
+	return csv->data[row * csv->col + col];
 }
 

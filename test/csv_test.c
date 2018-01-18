@@ -28,14 +28,11 @@
 
 static void csv_test(void)
 {
-	csv_matrix_t csv_matrix;
 	csv_t *csv = csv_file_open(CSV_TEST_PATH);
 
-	for (int i = 0; i < csv->csv_matrix.row; i++) {
-		csv_matrix.row = i;
-		for (int j = 0; j< csv->csv_matrix.col; j++) {
-			csv_matrix.col = j;
-			printf("<%d, %d> => [%s]\n", i, j, csv_file_read_by_row_col(csv, csv_matrix));
+	for (int i = 0; i < csv->row; i++) {
+		for (int j = 0; j< csv->col; j++) {
+			printf("<%d, %d> => [%s]\n", i, j, csv_file_read_by_row_col(csv, i, j));
 		}
 	}
 
