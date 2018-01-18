@@ -24,9 +24,13 @@
 extern "C" {
 #endif
 
+#include "str_helper.h"
+
 typedef struct csv_tag {
+	FILE *fp;
 	int row;
 	int col;
+	str_t *str;
 	const char *data[];
 }csv_t;
 

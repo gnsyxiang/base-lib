@@ -56,38 +56,27 @@
 #include "mem_helper.h"
 #include "file_helper.h"
 #include "csv_helper.h"
-#include "str_helper.h"
 #include "log_helper.h"
 
 /*#define XIA_DEBUG*/
-
-static FILE *fp;
-static str_t *str;
-
-csv_t *csv_create_struct(int len)
-{
-	csv_t *csv = alloc_mem(CSV_TAG_LEN + len);
-
-	csv->row = 0;
-	csv->col = 0;
-
-	return csv;
-}
 
 enum {
 	STATUS_SEMICOLON = '"',
 	STATUS_COMMA = ',',
 	STATUS_WRAP_R = '\r',
 	STATUS_WRAP_N = '\n',
-
-	STATUS_OK,
 };
+
+static csv_t *csv_create_struct(int len)
+{
+	return alloc_mem(CSV_TAG_LEN + len);
+}
 
 #define insert_valid_char(str, ch)					\
 	do {											\
 		if (0 != str_insert_char(str, ch)) { \
 			free_mem(str->buf);						\
-			return NULL;								\
+			return -1;								\
 		}											\
 	} while(0)
 
@@ -95,11 +84,10 @@ enum {
 	do {											\
 		log_e("the CSV file is invalid one");		\
 		free_mem(str->buf);							\
-		return NULL;									\
+		return -1;									\
 	} while(0)
 
-int a;
-void *parse_semicolon(FILE *fp, str_t *str)
+static int parse_semicolon(FILE *fp, str_t *str)
 {
 	int ch, c;
 
@@ -120,21 +108,21 @@ void *parse_semicolon(FILE *fp, str_t *str)
 		}
 	}
 
-	//TODO handle it
-	return (void *)&a;
+	return 0;
 }
 
-str_t *parse_csv(int *prow, int *pcol)
+static int parse_csv(csv_t *csv)
 {
 	int ch;
 	int row = 0, col = 0;
+	FILE *fp = csv->fp;
 	str_t *str = str_create_by_len(0);
 
 	while ((ch = fgetc(fp)) != EOF) {
 		switch (ch) {
 			case STATUS_SEMICOLON:
-				if (!parse_semicolon(fp, str))
-					return NULL;
+				if (0 != parse_semicolon(fp, str))
+					return -1;
 				break;
 			case STATUS_COMMA:
 				insert_valid_char(str, '\0');
@@ -153,25 +141,23 @@ str_t *parse_csv(int *prow, int *pcol)
 		}
 	}
 
-	*prow = row;
-	*pcol = col;
+	csv->row = row;
+	csv->col = col;
 
-	return str;
+	csv->str = str;
+
+	return 0;
 }
 
-csv_t *parse_csv_data(str_t *str, int row, int col)
+static csv_t *parse_csv_data(csv_t *csv)
 {
-#ifdef XIA_DEBUG
-	log_i("row: %d", row);
-	log_i("col: %d", col);
-#endif
-
 	int i = 0;
-	char *buf = str->buf;
-	csv_t *csv = csv_create_struct(col * DATA_POINT_LEN);
+	int col = csv->col;
+	char *buf = csv->str->buf;
 
-	csv->row = row;
-	csv->col = col / row;
+	realloc_mem(csv, CSV_TAG_LEN + col * DATA_POINT_LEN);
+
+	csv->col = csv->col / csv->row;
 
 	do {
 		csv->data[i] = buf;
@@ -183,20 +169,20 @@ csv_t *parse_csv_data(str_t *str, int row, int col)
 
 csv_t *csv_file_open(const char *path)
 {
-	int row = 0, col = 0;
+	csv_t *csv = csv_create_struct(0);
 
-	fp = fopen_l(path, "r");
-	str = parse_csv(&row, &col);
+	csv->fp = fopen_l(path, "r");
+	parse_csv(csv);
 
-	return parse_csv_data(str, row, col);
+	return parse_csv_data(csv);
 }
 
 void csv_file_clean(csv_t *csv)
 {
-	fclose_l(fp);
+	fclose_l(csv->fp);
 
-	free_mem(str->buf);
-	free_mem(str);
+	free_mem(csv->str->buf);
+	free_mem(csv->str);
 
 	free_mem(csv);
 }
