@@ -95,14 +95,14 @@ void str_dump(str_t *str)
 	printf("size: %d \n",	str->size);
 }
 
-#define str_realloc_mem(len, str)								\
-	do {														\
-		if (len > str->size) {									\
-			int size = realloc_mem(str->buf, len, str->size);	\
-			if (-1 == size)										\
-				return -1;										\
-			str->size = size;									\
-		}														\
+#define str_realloc_mem(len, str)										\
+	do {																\
+		if (len > str->size) {											\
+			int size = realloc_mem_by_size(str->buf, len, str->size);	\
+			if (-1 == size)												\
+				return -1;												\
+			str->size = size;											\
+		}																\
 	}while(0)
 
 int str_insert_char(str_t *str, char c)

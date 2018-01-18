@@ -34,10 +34,12 @@ extern "C" {
 
 void *malloc_mem(size_t len);
 void *alloc_mem(int len);
-int _realloc_mem(void **pp, int len, int size);
+int _realloc_mem_by_size(void **pp, int len, int size);
+void *_realloc_mem(void **pp, int size);
 void _free_mem(void **pp);
 
-#define realloc_mem(pp, len, size) _realloc_mem((void **)&(pp), len, size)
+#define realloc_mem_by_size(p, len, size) _realloc_mem_by_size((void **)&(p), len, size)
+#define realloc_mem(p, size) _realloc_mem((void **)&(p), size)
 #define free_mem(p) _free_mem((void **)&(p))
 
 #ifdef __cplusplus
