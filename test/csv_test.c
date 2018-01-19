@@ -29,6 +29,8 @@
 static void csv_test(void)
 {
 	csv_t *csv = csv_file_open(CSV_TEST_PATH);
+	if (!csv)
+		return;
 
 	for (int i = 0; i < csv->row; i++) {
 		for (int j = 0; j< csv->col; j++) {

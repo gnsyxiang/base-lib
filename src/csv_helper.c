@@ -72,19 +72,24 @@ static csv_t *csv_create_struct(int len)
 	return alloc_mem(CSV_TAG_LEN + len);
 }
 
-#define insert_valid_char(str, ch)					\
-	do {											\
-		if (0 != str_insert_char(str, ch)) { \
-			free_mem(str->buf);						\
-			return -1;								\
-		}											\
+#define csv_free_mem(str)		\
+	do {						\
+		free_mem(str->buf);		\
+		free_mem(str);			\
 	} while(0)
 
 #define invalid_csv_format(str)						\
 	do {											\
 		log_e("the CSV file is invalid one");		\
-		free_mem(str->buf);							\
+		csv_free_mem(str);							\
 		return -1;									\
+	} while(0)
+
+#define insert_valid_char(str, ch)					\
+	do {											\
+		if (0 != str_insert_char(str, ch)) {		\
+			invalid_csv_format(str);				\
+		}											\
 	} while(0)
 
 static int parse_semicolon(FILE *fp, str_t *str)
@@ -92,18 +97,19 @@ static int parse_semicolon(FILE *fp, str_t *str)
 	int ch, c;
 
 	while ((ch = fgetc(fp)) != EOF) {
+#ifdef XIA_DEBUG
+		printf("--2--ch: %c\n", ch);
+#endif
 		if (STATUS_SEMICOLON == ch) {
-			if ((c = fgetc(fp)) == EOF) {
+			if ((c = fgetc(fp)) == EOF)
 				invalid_csv_format(str);
-			}
+
 			if (STATUS_SEMICOLON != c) {
 				ungetc(c, fp);
 				break;
 			}
 			insert_valid_char(str, ch);
-		}
-
-		if (STATUS_SEMICOLON != ch) {
+		} else {
 			insert_valid_char(str, ch);
 		}
 	}
@@ -119,6 +125,9 @@ static int parse_csv(csv_t *csv)
 	str_t *str = str_create_by_len(0);
 
 	while ((ch = fgetc(fp)) != EOF) {
+#ifdef XIA_DEBUG
+		printf("--1--ch: %c\n", ch);
+#endif
 		switch (ch) {
 			case STATUS_SEMICOLON:
 				if (0 != parse_semicolon(fp, str))
@@ -140,6 +149,9 @@ static int parse_csv(csv_t *csv)
 				break;
 		}
 	}
+
+	if (col % row)
+		invalid_csv_format(str);
 
 	csv->row = row;
 	csv->col = col;
@@ -167,24 +179,28 @@ static csv_t *parse_csv_data(csv_t *csv)
 	return csv;
 }
 
+void csv_file_clean(csv_t *csv)
+{
+	fclose_l(csv->fp);
+
+	csv_free_mem(csv->str);
+
+	free_mem(csv);
+}
+
 csv_t *csv_file_open(const char *path)
 {
 	csv_t *csv = csv_create_struct(0);
 
 	csv->fp = fopen_l(path, "r");
-	parse_csv(csv);
+	if(-1 == parse_csv(csv)) {
+		fclose_l(csv->fp);
+		free_mem(csv);
+
+		return NULL;
+	}
 
 	return parse_csv_data(csv);
-}
-
-void csv_file_clean(csv_t *csv)
-{
-	fclose_l(csv->fp);
-
-	free_mem(csv->str->buf);
-	free_mem(csv->str);
-
-	free_mem(csv);
 }
 
 const char *csv_file_read_by_row_col(csv_t *csv, int row, int col)
