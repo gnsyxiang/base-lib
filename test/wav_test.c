@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdlib.h>
 
 #include "wav_helper.h"
 #include "parse_cmd.h"
@@ -37,30 +38,32 @@
 
 #define WAV_MS_LEN		(5)
 
-#define NEW_WAV_PATH "new_wav"
+#define SRC_DIR "wav/src"
+#define DST_DIR "wav/dst"
 
 static void wav_test(void)
 {
-	wav_file_param_t wav_file_param;
-	wav_file_t *wav_file;
-	
-	strcpy(wav_file_param.path, "test.wav");
-	wav_file_param.channels = CHANNELS;
-	wav_file_param.sample_rate = SAMPLE_RATE;
-	wav_file_param.bit_per_sample = BIT_PER_SAMPLE;
+    if (access(SRC_DIR, F_OK) != 0) {
+		system("mkdir -p "SRC_DIR);
+    }
 
-	wav_file = wav_file_create(&wav_file_param);
+	char wav_path[256] = {0};
+	wav_file_param_t wav_file_param;
+
+	sprintf(wav_path, "%s/%s", SRC_DIR, "test.wav");
+	wav_file_param_init(&wav_file_param, wav_path, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
+
+	wav_file_t *wav_file = wav_file_create(&wav_file_param);
 
 	char a = 0x55;
-	for (int i = 0; i < 5000; i++)
-		wav_file_write(wav_file, &a, 1);
-		
-	a = 0xc5;
-	for (int i = 0; i < 5000; i++)
-		wav_file_write(wav_file, &a, 1);
+	char b = 0xc5;
+	for (int i = 0; i < 5000 * 2; i++) {
+		if (i < 5000)
+			wav_file_write(wav_file, &a, 1);
+		else 
+			wav_file_write(wav_file, &b, 1);
+	}
 
-	wav_file_flush(wav_file);
-	wav_header_dump(wav_file);
 	wav_file_clean(wav_file);
 
 	log_i("wav test OK");
@@ -112,22 +115,12 @@ void wav_handle(const char *base_path, const char *name)
 	char *voice;
     char src_name[256] = {0};
     char dst_name[256] = {0};
-    char dst_dir[256] = {0};
-	wav_file_param_t wav_file_param = {0};
 
     sprintf(src_name, "%s/%s", base_path, name);
-    sprintf(dst_dir, "%s/%s", base_path, NEW_WAV_PATH);
-    sprintf(dst_name, "%s/%s", dst_dir, name);
+    sprintf(dst_name, "%s/%s", DST_DIR, name);
 
-    if (access(dst_dir, F_OK) != 0) {
-        mkdir(dst_dir, S_IRWXU);
-    }
-
-	strcpy(wav_file_param.path, dst_name);
-
-	wav_file_param.channels = CHANNELS;
-	wav_file_param.sample_rate = SAMPLE_RATE;
-	wav_file_param.bit_per_sample = BIT_PER_SAMPLE;
+	wav_file_param_t wav_file_param = {0};
+	wav_file_param_init(&wav_file_param, dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
 	int len = read_wav_to_buf(src_name, &voice);
 	write_buf_to_wav(&wav_file_param, voice, len, WAV_MS_LEN);
@@ -137,12 +130,11 @@ void wav_handle(const char *base_path, const char *name)
 
 static void add_blank_time_to_wav(void)
 {
-    char base_path[1000] = {0};
+    if (access(DST_DIR, F_OK) != 0) {
+		system("mkdir -p "DST_DIR);
+    }
 
-    getcwd(base_path, 999);
-	strcat(base_path, "/wav");
-
-    read_file_list(base_path, wav_handle);
+    read_file_list(SRC_DIR, wav_handle);
 
 	log_i("add blank time to wav OK");
 }
