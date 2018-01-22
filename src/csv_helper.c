@@ -52,6 +52,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "mem_helper.h"
 #include "file_helper.h"
@@ -206,5 +207,29 @@ csv_t *csv_file_open(const char *path)
 const char *csv_file_read_by_row_col(csv_t *csv, int row, int col)
 {
 	return csv->data[row * csv->col + col];
+}
+
+void csv_file_read_row(csv_t *csv, int row)
+{
+#define col_data_len(csv, row, col)		strlen(csv_file_read_by_row_col(csv, row, col))
+#define FORMAT_T		("\t\t")
+#define FORMAT_T_LEN	(strlen(FORMAT_T))
+
+	int row_data_len = 0;
+	int len = 0; 
+
+	for (int i = 0; i < csv->col; i++)
+		row_data_len += col_data_len(csv, row, i);
+
+	char *row_data = alloc_mem(row_data_len + csv->col * FORMAT_T_LEN + 1);
+
+	for (int i = 0; i < csv->col; i++) {
+		sprintf(row_data + len, "%s%s", csv_file_read_by_row_col(csv, row, i), FORMAT_T);
+		len += col_data_len(csv, row, i) + FORMAT_T_LEN;
+	}
+
+	printf("%s\n", row_data);
+
+	free_mem(row_data);
 }
 

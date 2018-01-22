@@ -32,11 +32,16 @@ static void csv_test(void)
 	if (!csv)
 		return;
 
+	for (int i = 0; i < csv->row; i++)
+		csv_file_read_row(csv, i);
+
+#if 0
 	for (int i = 0; i < csv->row; i++) {
 		for (int j = 0; j< csv->col; j++) {
 			printf("<%d, %d> => [%s]\n", i, j, csv_file_read_by_row_col(csv, i, j));
 		}
 	}
+#endif
 
 	csv_file_clean(csv);
 }
