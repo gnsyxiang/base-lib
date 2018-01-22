@@ -34,6 +34,16 @@
 
 #define FORMAT_PCM 1
 
+void wav_file_param_init(wav_file_param_t *wav_file_param, 
+		char *path, int channels, int sample_rate, int bit_per_sample)
+{
+	strcpy(wav_file_param->path, path);
+
+	wav_file_param->channels		  = channels;
+	wav_file_param->sample_rate	  = sample_rate;
+	wav_file_param->bit_per_sample = bit_per_sample;	
+}
+
 static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 {
 	int channels = wav_file_param->channels;
