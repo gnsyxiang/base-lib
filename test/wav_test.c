@@ -110,22 +110,57 @@ void write_buf_to_wav(wav_file_param_t *wav_file_param, char *voice, int len, in
 	wav_file_clean(new_wav_file);
 }
 
-void wav_handle(const char *base_path, const char *name)
+void add_blank_time(char *src_name, wav_file_param_t *wav_file_param)
 {
 	char *voice;
+	
+	int len = read_wav_to_buf(src_name, &voice);
+	write_buf_to_wav(wav_file_param, voice, len, WAV_MS_LEN);
+
+	free_mem(voice);
+}
+
+void save_one_channel_to_wav(char *src_name, wav_file_param_t *wav_file_param)
+{
+#define BUF_LEN (1024)
+	static short buf[BUF_LEN * 5 * 2];
+	static short one_channel[BUF_LEN];
+	int ret;
+
+	wav_file_t *wav_file = wav_file_open(src_name);
+	wav_file_t *one_channel_wav_file = wav_file_create(wav_file_param);
+
+	while (1) {
+		ret = wav_file_read(wav_file, buf, BUF_LEN * 5);
+		if (ret <=0)
+			break;
+
+		for (int i = 0; i < BUF_LEN; i++) {
+			one_channel[i] = buf[5 * i + 1];
+		}
+
+		ret = wav_file_write(one_channel_wav_file, one_channel, BUF_LEN);
+	}
+
+	wav_file_clean(wav_file);
+	wav_file_clean(one_channel_wav_file);
+}
+
+void wav_handle(const char *base_path, const char *name)
+{
     char src_name[256] = {0};
     char dst_name[256] = {0};
 
     sprintf(src_name, "%s/%s", base_path, name);
     sprintf(dst_name, "%s/%s", DST_DIR, name);
 
+	log_i("src_name: %s", src_name);
+
 	wav_file_param_t wav_file_param = {0};
 	wav_file_param_init(&wav_file_param, dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
-	int len = read_wav_to_buf(src_name, &voice);
-	write_buf_to_wav(&wav_file_param, voice, len, WAV_MS_LEN);
-
-	free_mem(voice);
+	/*add_blank_time(src_name, &wav_file_param);*/
+	save_one_channel_to_wav(src_name, &wav_file_param);
 }
 
 static void add_blank_time_to_wav(void)
@@ -136,7 +171,7 @@ static void add_blank_time_to_wav(void)
 
     read_file_list(SRC_DIR, wav_handle);
 
-	log_i("add blank time to wav OK");
+	log_i("succesful ...");
 }
 
 static void wav_test_init(void)
