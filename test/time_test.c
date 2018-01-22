@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2017 xxx Co., Ltd.
- * All rights reserved.
+ * Release under GPLv2.
  * 
  * @file    time_test.c
  * @brief   
@@ -30,7 +30,7 @@ static void random_test(void)
     }
 }
 
-static int time_test(void)
+static void time_test(void)
 {
     struct timespec ts;
     struct tm now_time;
@@ -50,11 +50,9 @@ static int time_test(void)
 	printf("time_ms: %ld \n", get_sys_time_ms());
 
 	random_test();
-
-	return 0;
 }
 
-void time_test_init(void)
+static void time_test_init(void)
 {
 	handle_test_cmd_t time_test_cmd[] = {
 		{"4", time_test}
@@ -62,4 +60,5 @@ void time_test_init(void)
 
 	register_test_cmd(time_test_cmd, ARRAY_NUM(time_test_cmd));
 }
+DECLARE_INIT(time_test_init);
 

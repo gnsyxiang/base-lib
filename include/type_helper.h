@@ -1,16 +1,22 @@
-/****************************************************************
- * Filename: type_helper.h
- * -------------------------------
- * Copyright(C),
- * Author: zhenquan.qiu
- * Version: V1.0.0
- * Last modified: 21/09 2017 19:57
- * Description:
- *
- * Change Log:
- * NO.	Author		    Date		Modified
- * 00	zhenquan.qiu	21/09 2017
- ****************************************************************/
+/**
+ * Copyright (C) 2017 xxx Co., Ltd.
+ * Release under GPLv2.
+ * 
+ * @file    type_helper.h
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    28/12 2017 16:34
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        28/12 2017      create the file
+ * 
+ *     last modified: 28/12 2017 16:34
+ */
 #ifndef _TYPE_HELPER_H_
 #define _TYPE_HELPER_H_
 

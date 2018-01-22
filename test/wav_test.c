@@ -1,6 +1,6 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
- * All rights reserved.
+ *
+ * Release under GPLv2.
  * 
  * @file    wav_test.c
  * @brief   
@@ -29,7 +29,7 @@
 #include "dir_helper.h"
 #include "wav_helper.h"
 #include "type_helper.h"
-#include "heap_memory_helper.h"
+#include "mem_helper.h"
 
 #define CHANNELS		(1)
 #define SAMPLE_RATE		(16000)
@@ -39,7 +39,7 @@
 
 #define NEW_WAV_PATH "new_wav"
 
-static int wav_test(void)
+static void wav_test(void)
 {
 	wav_file_param_t wav_file_param;
 	wav_file_t *wav_file;
@@ -64,21 +64,14 @@ static int wav_test(void)
 	wav_file_clean(wav_file);
 
 	log_i("wav test OK");
-
-	return 0;
 }
 
 
 int read_wav_to_buf(char *wav_path, char **voice)
 {
-	wav_file_t *wav_file;
-	wav_file_param_t wav_file_param = {0};
+	wav_file_t *wav_file = wav_file_open(wav_path);
 
-	strcpy(wav_file_param.path, wav_path);
-
-	wav_file = wav_file_open(&wav_file_param);
-
-	*voice = safer_malloc(wav_file->wav_header->data_sz);
+	*voice = malloc_mem(wav_file->wav_header->data_sz);
 
 	int len = wav_file_read(wav_file, *voice, wav_file->wav_header->data_sz);
 
@@ -139,10 +132,10 @@ void wav_handle(const char *base_path, const char *name)
 	int len = read_wav_to_buf(src_name, &voice);
 	write_buf_to_wav(&wav_file_param, voice, len, WAV_MS_LEN);
 
-	safer_free(voice);
+	free_mem(voice);
 }
 
-static int add_blank_time_to_wav(void)
+static void add_blank_time_to_wav(void)
 {
     char base_path[1000] = {0};
 
@@ -152,11 +145,9 @@ static int add_blank_time_to_wav(void)
     read_file_list(base_path, wav_handle);
 
 	log_i("add blank time to wav OK");
-
-    return 0;
 }
 
-void wav_test_init(void)
+static void wav_test_init(void)
 {
 	handle_test_cmd_t wav_test_cmd[] = {
 		{"5", wav_test},
@@ -165,4 +156,5 @@ void wav_test_init(void)
 
 	register_test_cmd(wav_test_cmd, ARRAY_NUM(wav_test_cmd));
 }
+DECLARE_INIT(wav_test_init);
 

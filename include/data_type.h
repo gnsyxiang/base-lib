@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2017 xxx Co., Ltd.
- * All rights reserved.
+ * Release under GPLv2.
  *
  * @file    data_type.h
  * @brief   specifying data types is convenient for transplantation

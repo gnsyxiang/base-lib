@@ -18,6 +18,7 @@ OBJ_DIR ?= objs
 LIB_DIR ?= lib
 INC_DIR ?= include
 SRC_DIR ?= src
+TST_DIR ?= test
 
 Q := @
 
@@ -34,23 +35,25 @@ BUG_VERSION := 0
 TARGET := base_lib
 TARGET_SO := lib$(TARGET).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUG_VERSION)
 TARGET_PATH := $(LIB_DIR)/$(TARGET_SO)
+TST_DEMO := main
 
 MSG_LIB := LIB_COPY
 
 # --------
 # compiler
 # --------
-GCC_PATH := ~/Desktop/mips-gcc520-32bit/bin
+GCC_PATH := ~/office/ingenic/gcc/mips-gcc520-32bit/bin
 GCC_NAME := mips-linux-gnu-
 
-# CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
+#CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
 
 CC := $(Q)$(CROSS_TOOL)gcc
 
 # ------
 # cflags
 # ------
-CFLAGS := -Wall -I$(INC_DIR) -fPIC
+CFLAGS := -Wall -Werror -g -I$(INC_DIR) -std=gnu99
+LIB_CFLAGS := $(CFLAGS) -fPIC
 
 MSG_CC := CC
 
@@ -59,7 +62,8 @@ MSG_CC := CC
 # -------
 SO_NAME := -Wl,-soname,lib$(TARGET).so.$(MAJOR_VERSION)
 
-LDFLAGS := $(SO_NAME) -shared
+LDFLAGS := -T configs/ldscript.lds -lbase_lib -lpthread -L./lib -Wl,-rpath=./lib
+LIB_LDFLAGS := $(SO_NAME) -shared
 
 MSG_LD := LD
 
@@ -79,12 +83,23 @@ DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(SRC_C))
 DEPS  ?= $(DEP_C)
 OBJS  ?= $(OBJ_C)
 
-all: $(TARGET_PATH) handle_lib
+TST_SRC_C := $(wildcard $(TST_DIR)/*.c)
+TST_OBJ_C := $(patsubst %.c, $(OBJ_DIR)/%.o, $(TST_SRC_C))
+TST_DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(TST_SRC_C))
+TST_DEPS  ?= $(TST_DEP_C)
+TST_OBJS  ?= $(TST_OBJ_C)
+
+all: $(TARGET_PATH) handle_lib $(TST_DEMO)
 
 $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $<
 	$(MKDIR) $(LIB_DIR)
-	$(CC) $(LDFLAGS) $(OBJS)  -o $@
+	$(CC) $(OBJS) $(LIB_LDFLAGS) -o $@
+
+$(TST_DEMO): $(TST_OBJS)
+	$(ECHO) $(MSG_LD) $<
+	$(MKDIR) $(LIB_DIR)
+	$(CC) $(TST_OBJS) $(LDFLAGS) -o $@
 
 handle_lib: clean_lib ln_lib cp_lib
 	$(ECHO) "copy lib and inc successful"
@@ -107,13 +122,24 @@ cp_lib:
 $(OBJ_C): $(OBJ_DIR)/%.o : %.c
 	$(MKDIR) $(dir $@)
 	$(ECHO) $(MSG_CC) $<
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(LIB_CFLAGS) $< -o $@
 
 $(DEP_C): $(OBJ_DIR)/%.d : %.c
 	$(MKDIR) $(dir $@);
-	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
+	$(CC) -MM $(LIB_CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
 sinclude $(DEPS)
+
+$(TST_OBJ_C): $(OBJ_DIR)/%.o : %.c
+	$(MKDIR) $(dir $@)
+	$(ECHO) $(MSG_CC) $<
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(TST_DEP_C): $(OBJ_DIR)/%.d : %.c
+	$(MKDIR) $(dir $@);
+	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
+
+sinclude $(TST_DEPS)
 
 clean:
 	$(RM) $(OBJS)

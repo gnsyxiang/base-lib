@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2017 xxx Co., Ltd.
- * All rights reserved.
+ * Release under GPLv2.
  * 
  * @file    parse_cmd.c
  * @brief   
@@ -27,6 +27,18 @@
 #undef BASE_LIB_PARSE_CMD_GB
 
 static handle_test_cmd_list_t handle_test_cmd_list;
+
+extern init_call _init_start;
+extern init_call _init_end;
+
+void do_initcalls(void)
+{
+	init_call *init_ptr = &_init_start;
+	for (; init_ptr < &_init_end; init_ptr++) {
+		printf("init address: %p\n", init_ptr);
+		(*init_ptr)();
+	}
+}
 
 void match_test_cmd(const char *str)
 {
