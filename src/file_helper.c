@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    file_helper.c
@@ -28,7 +28,6 @@
 #define FILE_HELPER_GB
 #include "file_helper.h"
 #undef FILE_HELPER_GB
-
 
 static int _set_fcntl(int fd, long arg)
 {
