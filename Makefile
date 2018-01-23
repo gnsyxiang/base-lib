@@ -45,7 +45,15 @@ MSG_LIB := LIB_COPY
 GCC_PATH := ~/office/ingenic/gcc/mips-gcc520-32bit/bin
 GCC_NAME := mips-linux-gnu-
 
-#CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
+TARGET_SYSTEM   := x1800
+
+ifeq ($(TARGET_SYSTEM), x1800)
+	CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
+	LDFLAGS := -T configs/ldscript-mips.lds
+else
+	LDFLAGS := -T configs/ldscript.lds
+endif
+
 
 CC := $(Q)$(CROSS_TOOL)gcc
 
@@ -62,7 +70,7 @@ MSG_CC := CC
 # -------
 SO_NAME := -Wl,-soname,lib$(TARGET).so.$(MAJOR_VERSION)
 
-LDFLAGS := -T configs/ldscript.lds -lbase_lib -lpthread -L./lib -Wl,-rpath=./lib
+LDFLAGS += -lbase_lib -lpthread -L./lib -Wl,-rpath=./lib
 LIB_LDFLAGS := $(SO_NAME) -shared
 
 MSG_LD := LD
