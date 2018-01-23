@@ -38,13 +38,13 @@ int fd,s;
 
 #define SERIAL_RECEIVE_PATH "/dev/pts/22"
 
-static int uart_recv(void)
+static void uart_recv(void)
 {
     char hd[MAX_BUFFER_SIZE],*rbuf;
     int flag_close,retv;
     struct termios opt;
 
-	uart_open(&fd, SERIAL_RECEIVE_PATH);
+	fd = uart_open(SERIAL_RECEIVE_PATH);
 
     tcgetattr(fd,&opt);
     cfmakeraw(&opt);
@@ -64,16 +64,16 @@ static int uart_recv(void)
     flag_close =close(fd);
     if(flag_close ==-1)
         printf("Close the devicefailure!\n");
-
-    return 0;
 }
 
-void uart_recv_init(void)
+static void uart_recv_init(void)
 {
 	handle_test_cmd_t uart_recv_test_cmd[] = {
-		{"7", uart_recv},
+		{"8", uart_recv},
 	};
 
 	register_test_cmd(uart_recv_test_cmd, ARRAY_NUM(uart_recv_test_cmd));
 }
+
+DECLARE_INIT(uart_recv_init);
 

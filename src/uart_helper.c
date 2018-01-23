@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    uart_helper.c
@@ -22,37 +22,38 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include "log_helper.h"
 
 #define UART_HELPER_GB
 #include "uart_helper.h"
 #undef UART_HELPER_GB
 
-int uart_open(char *port_path)
+int uart_open(const char *path)
 {
 	int fd;
 
-	if (!port_path)
+	if (!path)
 		return -1;
 
-    fd = open(port_path, O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open(path, O_RDWR | O_NOCTTY | O_NDELAY);
     if(fd < 0) {
         perror("open serial porterror!\n");
-		exit(1);
+		return -1;
     }
 
 	if (fcntl(fd, F_GETFL, 0) < 0) {
 		log_i("fcntl faild");
 		return -1;
-	} else {
-		log_i("fcntl: %d", fcntl(fd, F_GETFL, 0));
 	}
 
-	if (0 == isatty(STDIN_FILENO)) {
-		
-	}
+	return fd;
 }
 
-int uart_init(uart_param_t uart_param)
+void uart_close(int fd)
 {
+	close(fd);
 }
+
 

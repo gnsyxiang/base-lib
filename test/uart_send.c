@@ -32,17 +32,17 @@
 #include "parse_cmd.h"
 
 #define MAX_BUFFER_SIZE512
-#define SERIAL_SEND_PATH "/dev/pts/23"
+#define SERIAL_SEND_PATH "/dev/pts/21"
 
 int fd,flag_close;
 
-static int uart_send(void)
+static void uart_send(void)
 {
     char sbuf[] = {"hello world \n"};
     int retv;
     struct termios option;
 
-	uart_open(&fd, SERIAL_SEND_PATH);
+	fd = uart_open(SERIAL_SEND_PATH);
 
     printf("Ready for sendingdata...\n");
 
@@ -63,22 +63,23 @@ static int uart_send(void)
         if(retv == -1)
         {
             perror("Write dataerror!\n");
-            return -1;
+            return ;
         }
     }
 
     close(fd);
 
     printf("The number of charsent is %d\n", retv);
-    return 0;
 }
 
-void uart_send_init(void)
+static void uart_send_init(void)
 {
 	handle_test_cmd_t uart_send_test_cmd[] = {
-		{"6", uart_send},
+		{"7", uart_send},
 	};
 
 	register_test_cmd(uart_send_test_cmd, ARRAY_NUM(uart_send_test_cmd));
 }
+
+DECLARE_INIT(uart_send_init);
 

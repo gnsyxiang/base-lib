@@ -38,7 +38,7 @@ typedef struct _uart_param_tag {
 	int stop;
 } uart_param_t;
 
-UART_HELPER_EX void uart_open(int *fd, char *port_path);
+UART_HELPER_EX int uart_open(const char *port_path);
 
 #ifdef __cplusplus
 }
