@@ -17,15 +17,8 @@
  * 
  *     last modified: 12/12 2017 23:02
  */
-#include<stdio.h>
-#include<string.h>
-#include<malloc.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-#include<unistd.h>
-#include<termios.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "uart_helper.h"
 #include "log_helper.h"
@@ -40,19 +33,12 @@ static void uart_send(void)
 {
     char sbuf[] = {"hello world \n"};
     int retv;
-    struct termios option;
 
 	fd = uart_open(SERIAL_SEND_PATH);
 
     printf("Ready for sendingdata...\n");
 
-    tcgetattr(fd,&option);
-    cfmakeraw(&option);
-
-    cfsetispeed(&option,B9600);
-    cfsetospeed(&option,B9600);
-
-    tcsetattr(fd, TCSANOW,&option);
+	uart_init(fd, 9600, 0, 8, 'n', 1);
 
     int count = 0;
     int length =sizeof(sbuf);
@@ -67,9 +53,7 @@ static void uart_send(void)
         }
     }
 
-    close(fd);
-
-    printf("The number of charsent is %d\n", retv);
+	uart_close(fd);
 }
 
 static void uart_send_init(void)

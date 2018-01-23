@@ -17,16 +17,8 @@
  * 
  *     last modified: 12/12 2017 23:02
  */
-#include<stdio.h>
-#include<string.h>
-#include<malloc.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-#include<unistd.h>
-#include<termios.h>
-#include<math.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "uart_helper.h"
 #include "log_helper.h"
@@ -41,29 +33,22 @@ int fd,s;
 static void uart_recv(void)
 {
     char hd[MAX_BUFFER_SIZE],*rbuf;
-    int flag_close,retv;
-    struct termios opt;
+    int retv;
 
 	fd = uart_open(SERIAL_RECEIVE_PATH);
 
-    tcgetattr(fd,&opt);
-    cfmakeraw(&opt);
-    cfsetispeed(&opt,B9600);
-    cfsetospeed(&opt,B9600);
-    tcsetattr(fd, TCSANOW,&opt);
+	uart_init(fd, 9600, 0, 8, 'n', 1);
+
     rbuf = hd;
     printf("Ready for receivingdata...\n");
 
     while(1)
     {
         while((retv = read(fd,rbuf, 1)) > 0)
-            printf( "%c ",*rbuf);
+            printf("%c",*rbuf);
     }
 
-    printf("\n");
-    flag_close =close(fd);
-    if(flag_close ==-1)
-        printf("Close the devicefailure!\n");
+	uart_close(fd);
 }
 
 static void uart_recv_init(void)
