@@ -48,12 +48,9 @@ static void wav_test(void)
     }
 
 	char wav_path[256] = {0};
-	wav_file_param_t wav_file_param;
-
 	sprintf(wav_path, "%s/%s", SRC_DIR, "test.wav");
-	wav_file_param_init(&wav_file_param, wav_path, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
-	wav_file_t *wav_file = wav_file_create(&wav_file_param);
+	wav_file_t *wav_file = wav_file_create(wav_path, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
 	char a = 0x55;
 	char b = 0xc5;
@@ -131,11 +128,8 @@ void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_han
 
 	log_i("src_name: %s", src_name);
 
-	wav_file_param_t wav_file_param = {0};
-	wav_file_param_init(&wav_file_param, dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
-
 	wav_file_t *wav_file = wav_file_open(src_name);
-	wav_file_t *new_wav_file = wav_file_create(&wav_file_param);
+	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
 	wav_handle_cb(wav_file, new_wav_file);
 
@@ -149,8 +143,8 @@ static void create_new_wav(void)
 		system("mkdir -p "DST_DIR);
     }
 
-	read_file_list(SRC_DIR, wav_handle, add_blank_time);
-    /*read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);*/
+	/*read_file_list(SRC_DIR, wav_handle, add_blank_time);*/
+	read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);
 
 	log_i("succesful ...");
 }
