@@ -25,6 +25,7 @@
 #include<termios.h>
 
 #include "log_helper.h"
+#include "file_helper.h"
 
 #define UART_HELPER_GB
 #include "uart_helper.h"
@@ -206,6 +207,43 @@ int uart_init(int fd, int baude, int c_flow, int bits, char parity, int stop)
 	}
 
 	return 0;
+}
+
+ssize_t uart_read(int fd, char *buf, size_t cnt)
+{
+	fd_set rfds;
+	size_t ret = 0;
+	struct timeval time;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+
+	time.tv_sec = 15;
+	time.tv_usec = 0;
+
+	ret = select(fd+1, &rfds, NULL, NULL, &time);
+	switch (ret) {
+		case -1:
+			log_e("select error");
+			cnt = -1;
+			break;
+		case 0:
+			log_e("select timeout");
+			cnt = -1;
+			break;
+		default:
+			if ((cnt = file_read(fd, buf, cnt)) == -1) {
+				log_e("read error");
+				cnt = -1;
+			}
+	}
+
+	return cnt;
+}
+
+ssize_t uart_write(int fd, const char *buf, size_t cnt)
+{
+	return file_write(fd, buf, cnt);
 }
 
 
