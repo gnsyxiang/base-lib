@@ -70,7 +70,7 @@ typedef struct _wav_file_param_tag {
 #define WAV_FILE_LEN		(sizeof(wav_file_t))
 #define WAV_FILE_PARAM_LEN	(sizeof(wav_file_param_t))
 
-BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_create(wav_file_param_t *wav_file_param);
+BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int bit_per_sample);
 BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_open(const char *path);
 BASE_LIB_WAV_HELPER_EX void wav_file_clean(wav_file_t *wav_file);
 
