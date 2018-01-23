@@ -17,60 +17,46 @@
  * 
  *     last modified: 12/12 2017 23:02
  */
-#include<stdio.h>
-#include<string.h>
-#include<malloc.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-#include<unistd.h>
-#include<termios.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "uart_helper.h"
+#include "log_helper.h"
+#include "parse_cmd.h"
 
 #define MAX_BUFFER_SIZE512
-#define SERIAL_SEND_PATH "/dev/pts/20"
+#define SERIAL_SEND_PATH "/dev/pts/21"
 
-int fd,flag_close;
-
-int serial_send(void)
+static void uart_send(void)
 {
-    char sbuf[] = {"hello world \n"};
-    int retv;
-    struct termios option;
+    char buf[] = {"hello world\n"};
+    int ret;
+	int cnt = 0;
 
-	fd = uart_init(SERIAL_SEND_PATH);
-    if(fd < 0) {
-		printf("serial open faild \n");
-		exit(1);
-    }
+	int fd = uart_open(SERIAL_SEND_PATH);
 
-    printf("Ready for sendingdata...\n");
+	uart_init(fd, 9600, 0, 8, 'n', 1);
 
-    tcgetattr(fd,&option);
-    cfmakeraw(&option);
-
-    cfsetispeed(&option,B9600);
-    cfsetospeed(&option,B9600);
-
-    tcsetattr(fd, TCSANOW,&option);
-
-    int count = 0;
-    int length =sizeof(sbuf);
-    while (count++ < 10) {
+    while (cnt++ < 5) {
         sleep(1);
 
-        retv = write(fd, sbuf,length);
-        if(retv == -1)
-        {
-            perror("Write dataerror!\n");
-            return -1;
-        }
+		if ((ret = uart_write(fd, buf, sizeof(buf))) < 0)
+			break;
     }
 
-    close(fd);
+	uart_close(fd);
 
-    printf("The number of charsent is %d\n", retv);
-    return 0;
+	log_i("send OK");
 }
+
+static void uart_send_init(void)
+{
+	handle_test_cmd_t uart_send_test_cmd[] = {
+		{"7", uart_send},
+	};
+
+	register_test_cmd(uart_send_test_cmd, ARRAY_NUM(uart_send_test_cmd));
+}
+
+DECLARE_INIT(uart_send_init);
+

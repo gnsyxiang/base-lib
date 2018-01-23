@@ -30,11 +30,10 @@ extern "C" {
 #define DIR_HELPER_EX
 #endif
 
-typedef void (*handle)(const char* base_path, const char *name);
+typedef void (*wav_handle_cb_t)(void *file, void *new_file);
+typedef void (*wav_handle_t)(const char* base_path, const char *name, wav_handle_cb_t wav_handle_cb);
 
-
-DIR_HELPER_EX void read_file_list(char *basePath, handle handle_file_dir);
-
+DIR_HELPER_EX void read_file_list(char *basePath, wav_handle_t handle_file_dir, wav_handle_cb_t wav_handle_cb);
 
 #ifdef __cplusplus
 }

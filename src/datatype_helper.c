@@ -26,29 +26,29 @@
 void check_datatype_mem_len(void)
 {
 	printf("******************************************\n");
-	printf("* sizeof(char):           %ld \n", sizeof(char));
-	printf("* sizeof(signed char):    %ld \n", sizeof(unsigned char));
-	printf("* sizeof(unsigned char):  %ld \n", sizeof(signed char));
+	printf("* sizeof(char):           %d \n", (unsigned int)sizeof(char));
+	printf("* sizeof(signed char):    %d \n", (unsigned int)sizeof(unsigned char));
+	printf("* sizeof(unsigned char):  %d \n", (unsigned int)sizeof(signed char));
 	printf("\n");
 
-	printf("* sizeof(short):          %ld \n", sizeof(short));
-	printf("* sizeof(signed short):   %ld \n", sizeof(signed short));
-	printf("* sizeof(unsigned short): %ld \n", sizeof(unsigned short));
+	printf("* sizeof(short):          %d \n", (unsigned int)sizeof(short));
+	printf("* sizeof(signed short):   %d \n", (unsigned int)sizeof(signed short));
+	printf("* sizeof(unsigned short): %d \n", (unsigned int)sizeof(unsigned short));
 	printf("\n");
 
-	printf("* sizeof(int):            %ld \n", sizeof(int));
-	printf("* sizeof(signed int):     %ld \n", sizeof(signed int));
-	printf("* sizeof(unsigned int):   %ld \n", sizeof(unsigned int));
+	printf("* sizeof(int):            %d \n", (unsigned int)sizeof(int));
+	printf("* sizeof(signed int):     %d \n", (unsigned int)sizeof(signed int));
+	printf("* sizeof(unsigned int):   %d \n", (unsigned int)sizeof(unsigned int));
 	printf("\n");
 
-	printf("* sizeof(long):           %ld \n", sizeof(long));
-	printf("* sizeof(signed long):    %ld \n", sizeof(signed long));
-	printf("* sizeof(unsigned long):  %ld \n", sizeof(unsigned long));
+	printf("* sizeof(long):           %d \n", (unsigned int)sizeof(long));
+	printf("* sizeof(signed long):    %d \n", (unsigned int)sizeof(signed long));
+	printf("* sizeof(unsigned long):  %d \n", (unsigned int)sizeof(unsigned long));
 	printf("\n");
 
-	printf("* sizeof(float):          %ld \n", sizeof(float));
-	printf("* sizeof(double):         %ld \n", sizeof(double));
-	printf("* sizeof(long double):    %ld \n", sizeof(long double));
+	printf("* sizeof(float):          %d \n", (unsigned int)sizeof(float));
+	printf("* sizeof(double):         %d \n", (unsigned int)sizeof(double));
+	printf("* sizeof(long double):    %d \n", (unsigned int)sizeof(long double));
 	printf("******************************************\n");
 }
 

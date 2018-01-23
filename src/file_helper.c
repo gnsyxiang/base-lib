@@ -53,44 +53,52 @@ int file_close_on_exec(int fd)
 	return _set_fcntl(fd, FD_CLOEXEC);
 }
 
-int file_write(int fd, const char *buf, int size)
+ssize_t file_write(int fd, const void *buf, size_t cnt)
 {
-	int offset = 0;
-	int sz = size;
+	size_t ret;
+	size_t nleft;
+	const char *ptr;
 
-	while (sz > 0) {
-		int bytes = write(fd, buf + offset, sz);
-		if (bytes <= 0) {
-			log_d("%s: write error, size: %d, %s(%d)\n",
-					__func__, size, strerror(errno), -errno);
-			return bytes;
+	ptr = buf;
+	nleft = cnt;
+
+	while (nleft > 0) {
+		if ((ret = write(fd, ptr, nleft)) <= 0) {
+			if (ret < 0 && errno == EINTR)
+				ret = 0;
+			else
+				return -1;
 		}
 
-		sz -= bytes;
-		offset += bytes;
+		nleft -= ret;
+		ptr   += ret;
 	}
 
-	return size;
+	return cnt;
 }
 
-int file_read(int fd, char *buf, int size)
+ssize_t file_read(int fd, void *buf, size_t cnt)
 {
-	int offset = 0;
-	int sz = size;
+	size_t ret;
+	size_t nleft;
+	char *ptr;
 
-	while (sz > 0) {
-		int bytes = read(fd, buf + offset, sz);
-		log_i("bytes: %d", bytes);
-		if (bytes <= 0) {
-			log_d("%s: read error, size: %d, %s(%d)\n",
-					__func__, size, strerror(errno), -errno);
+	ptr   = buf;
+	nleft = cnt;
+
+	while (nleft > 0) {
+		if ((ret = read(fd, ptr, nleft)) < 0) {
+			if (errno == EINTR)
+				ret = 0;
+			else
+				return -1;
+		} else if (ret == 0)
 			break;
-		}
 
-		sz -= bytes;
-		offset += bytes;
+		nleft -= ret;
+		ptr   += ret;
 	}
 
-	return offset;
+	return cnt;
 }
 

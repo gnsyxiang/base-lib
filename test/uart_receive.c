@@ -17,55 +17,48 @@
  * 
  *     last modified: 12/12 2017 23:02
  */
-#include<stdio.h>
-#include<string.h>
-#include<malloc.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-#include<unistd.h>
-#include<termios.h>
-#include<math.h>
-#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "uart_helper.h"
+#include "log_helper.h"
+#include "parse_cmd.h"
 
 #define MAX_BUFFER_SIZE 512
 
-int fd,s;
+#define SERIAL_RECEIVE_PATH "/dev/pts/22"
 
-#define SERIAL_RECEIVE_PATH "/dev/pts/19"
-
-int serial_receive(void)
+static void uart_recv(void)
 {
-    char hd[MAX_BUFFER_SIZE],*rbuf;
-    int flag_close,retv;
-    struct termios opt;
+    char buf[MAX_BUFFER_SIZE], *ptr;
+    int ret;
 
-	fd = uart_init(SERIAL_RECEIVE_PATH);
-	if (fd < 0) {
-		printf("serial open faild \n");
-		exit(1);
-	}
+	ptr = buf;
 
-    tcgetattr(fd,&opt);
-    cfmakeraw(&opt);
-    cfsetispeed(&opt,B9600);
-    cfsetospeed(&opt,B9600);
-    tcsetattr(fd, TCSANOW,&opt);
-    rbuf = hd;
-    printf("Ready for receivingdata...\n");
+	int fd = uart_open(SERIAL_RECEIVE_PATH);
 
-    while(1)
-    {
-        while((retv = read(fd,rbuf, 1)) > 0)
-            printf( "%c ",*rbuf);
+	uart_init(fd, 9600, 0, 8, 'n', 1);
+
+    while(1) {
+		if ((ret = uart_read(fd, ptr, 1)) < 0)
+			break;
+
+		printf("%c", *ptr);
     }
 
-    printf("\n");
-    flag_close =close(fd);
-    if(flag_close ==-1)
-        printf("Close the devicefailure!\n");
+	uart_close(fd);
 
-    return 0;
+	log_i("receive OK");
 }
+
+static void uart_recv_init(void)
+{
+	handle_test_cmd_t uart_recv_test_cmd[] = {
+		{"8", uart_recv},
+	};
+
+	register_test_cmd(uart_recv_test_cmd, ARRAY_NUM(uart_recv_test_cmd));
+}
+
+DECLARE_INIT(uart_recv_init);
+

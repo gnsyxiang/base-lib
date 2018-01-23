@@ -34,6 +34,19 @@
 
 #define FORMAT_PCM 1
 
+static wav_file_param_t *wav_file_param_init(const char *path, int channels, int sample_rate, int bit_per_sample)
+{
+	wav_file_param_t *wav_file_param = alloc_mem(WAV_FILE_PARAM_LEN);
+
+	strcpy(wav_file_param->path, path);
+
+	wav_file_param->channels		= channels;
+	wav_file_param->sample_rate		= sample_rate;
+	wav_file_param->bit_per_sample	= bit_per_sample;	
+
+	return wav_file_param;
+}
+
 static wav_header_t *wav_header_init(wav_file_param_t *wav_file_param)
 {
 	int channels = wav_file_param->channels;
@@ -130,11 +143,15 @@ void wav_file_seek(wav_file_t *wav_file, long offset, int whence)
 	fseek(wav_file->file, offset, whence);
 }
 
-wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
+wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int bit_per_sample)
 {
+	wav_file_param_t *wav_file_param = wav_file_param_init(path, channel, sample_rate, bit_per_sample);
+
 	strcpy(wav_file_param->file_mode, "w+");
 
 	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
+
+	free_mem(wav_file_param);
 
 	fwrite(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
 
@@ -143,12 +160,13 @@ wav_file_t *wav_file_create(wav_file_param_t *wav_file_param)
 
 wav_file_t *wav_file_open(const char *path)
 {
-	wav_file_param_t wav_file_param;
+	wav_file_param_t *wav_file_param = wav_file_param_init(path, 0, 0, 0);
 
-	strcpy(wav_file_param.file_mode, "r");
-	strcpy(wav_file_param.path, path);
+	strcpy(wav_file_param->file_mode, "r");
 
-	wav_file_t *wav_file = new_wav_file_t(&wav_file_param);
+	wav_file_t *wav_file = new_wav_file_t(wav_file_param);
+
+	free_mem(wav_file_param);
 
 	fread(wav_file->wav_header, 1, WAV_HEADER_LEN, wav_file->file);
 
