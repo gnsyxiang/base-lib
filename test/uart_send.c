@@ -28,23 +28,21 @@
 #include <stdlib.h>
 
 #include "uart_helper.h"
+#include "log_helper.h"
+#include "parse_cmd.h"
 
 #define MAX_BUFFER_SIZE512
-#define SERIAL_SEND_PATH "/dev/pts/20"
+#define SERIAL_SEND_PATH "/dev/pts/23"
 
 int fd,flag_close;
 
-int serial_send(void)
+static int uart_send(void)
 {
     char sbuf[] = {"hello world \n"};
     int retv;
     struct termios option;
 
-	fd = uart_init(SERIAL_SEND_PATH);
-    if(fd < 0) {
-		printf("serial open faild \n");
-		exit(1);
-    }
+	uart_open(&fd, SERIAL_SEND_PATH);
 
     printf("Ready for sendingdata...\n");
 
@@ -74,3 +72,13 @@ int serial_send(void)
     printf("The number of charsent is %d\n", retv);
     return 0;
 }
+
+void uart_send_init(void)
+{
+	handle_test_cmd_t uart_send_test_cmd[] = {
+		{"6", uart_send},
+	};
+
+	register_test_cmd(uart_send_test_cmd, ARRAY_NUM(uart_send_test_cmd));
+}
+

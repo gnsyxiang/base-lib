@@ -29,24 +29,22 @@
 #include <stdlib.h>
 
 #include "uart_helper.h"
+#include "log_helper.h"
+#include "parse_cmd.h"
 
 #define MAX_BUFFER_SIZE 512
 
 int fd,s;
 
-#define SERIAL_RECEIVE_PATH "/dev/pts/19"
+#define SERIAL_RECEIVE_PATH "/dev/pts/22"
 
-int serial_receive(void)
+static int uart_recv(void)
 {
     char hd[MAX_BUFFER_SIZE],*rbuf;
     int flag_close,retv;
     struct termios opt;
 
-	fd = uart_init(SERIAL_RECEIVE_PATH);
-	if (fd < 0) {
-		printf("serial open faild \n");
-		exit(1);
-	}
+	uart_open(&fd, SERIAL_RECEIVE_PATH);
 
     tcgetattr(fd,&opt);
     cfmakeraw(&opt);
@@ -69,3 +67,13 @@ int serial_receive(void)
 
     return 0;
 }
+
+void uart_recv_init(void)
+{
+	handle_test_cmd_t uart_recv_test_cmd[] = {
+		{"7", uart_recv},
+	};
+
+	register_test_cmd(uart_recv_test_cmd, ARRAY_NUM(uart_recv_test_cmd));
+}
+
