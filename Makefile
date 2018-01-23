@@ -45,7 +45,7 @@ MSG_LIB := LIB_COPY
 GCC_PATH := ~/office/ingenic/gcc/mips-gcc520-32bit/bin
 GCC_NAME := mips-linux-gnu-
 
-TARGET_SYSTEM   := x1800
+#TARGET_SYSTEM   := x1800
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	CROSS_TOOL := $(GCC_PATH)/$(GCC_NAME)
@@ -149,10 +149,18 @@ $(TST_DEP_C): $(OBJ_DIR)/%.d : %.c
 
 sinclude $(TST_DEPS)
 
+#################################################
+
+push:
+	adb push ./lib /xia/base_lib/lib/
+	adb push $(TST_DEMO) /xia/base_lib/
+
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(DEPS)
-	$(RM) $(TARGET)
+	$(RM) $(TST_OBJS)
+	$(RM) $(TST_DEPS)
+	$(RM) $(TST_DEMO)
 
 distclean: clean index-clean
 	$(RM) $(OBJ_DIR)
