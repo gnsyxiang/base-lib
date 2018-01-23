@@ -26,29 +26,29 @@
 
 #define MAX_BUFFER_SIZE 512
 
-int fd,s;
-
 #define SERIAL_RECEIVE_PATH "/dev/pts/22"
 
 static void uart_recv(void)
 {
-    char hd[MAX_BUFFER_SIZE],*rbuf;
-    int retv;
+    char buf[MAX_BUFFER_SIZE], *ptr;
+    int ret;
 
-	fd = uart_open(SERIAL_RECEIVE_PATH);
+	ptr = buf;
+
+	int fd = uart_open(SERIAL_RECEIVE_PATH);
 
 	uart_init(fd, 9600, 0, 8, 'n', 1);
 
-    rbuf = hd;
-    printf("Ready for receivingdata...\n");
+    while(1) {
+		if ((ret = uart_read(fd, ptr, 1)) < 0)
+			break;
 
-    while(1)
-    {
-        while((retv = read(fd,rbuf, 1)) > 0)
-            printf("%c",*rbuf);
+		printf("%c", *ptr);
     }
 
 	uart_close(fd);
+
+	log_i("receive OK");
 }
 
 static void uart_recv_init(void)

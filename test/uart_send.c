@@ -27,33 +27,26 @@
 #define MAX_BUFFER_SIZE512
 #define SERIAL_SEND_PATH "/dev/pts/21"
 
-int fd,flag_close;
-
 static void uart_send(void)
 {
-    char sbuf[] = {"hello world \n"};
-    int retv;
+    char buf[] = {"hello world\n"};
+    int ret;
+	int cnt = 0;
 
-	fd = uart_open(SERIAL_SEND_PATH);
-
-    printf("Ready for sendingdata...\n");
+	int fd = uart_open(SERIAL_SEND_PATH);
 
 	uart_init(fd, 9600, 0, 8, 'n', 1);
 
-    int count = 0;
-    int length =sizeof(sbuf);
-    while (count++ < 10) {
+    while (cnt++ < 5) {
         sleep(1);
 
-        retv = write(fd, sbuf,length);
-        if(retv == -1)
-        {
-            perror("Write dataerror!\n");
-            return ;
-        }
+		if ((ret = uart_write(fd, buf, sizeof(buf))) < 0)
+			break;
     }
 
 	uart_close(fd);
+
+	log_i("send OK");
 }
 
 static void uart_send_init(void)
