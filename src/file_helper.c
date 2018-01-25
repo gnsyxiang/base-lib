@@ -22,8 +22,10 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/select.h>
 
 #include "log_helper.h"
+#include "time_helper.h"
 
 #define FILE_HELPER_GB
 #include "file_helper.h"
@@ -97,6 +99,37 @@ ssize_t file_read(int fd, void *buf, size_t cnt)
 
 		nleft -= ret;
 		ptr   += ret;
+	}
+
+	return cnt;
+}
+
+ssize_t file_read_timeout(int fd, void *buf, size_t cnt, size_t timeout_ms)
+{
+	fd_set rfds;
+	struct timeval time;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+
+	time_ms_to_timeval(timeout_ms, &time);
+
+	size_t ret = select(fd+1, &rfds, NULL, NULL, &time);
+	switch (ret) {
+		case -1:
+			log_e("select error");
+			cnt = -1;
+			break;
+		case 0:
+			log_e("select timeout");
+			cnt = -1;
+			break;
+		default:
+			if ((cnt = file_read(fd, buf, cnt)) == -1) {
+				log_e("read error");
+				cnt = -1;
+			}
+			break;
 	}
 
 	return cnt;
