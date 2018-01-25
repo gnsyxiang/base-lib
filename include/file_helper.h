@@ -55,6 +55,7 @@ static inline FILE *fopen_l(const char *path, const char *mode)
 FILE_HELPER_EX int file_close_on_exec(int fd);
 FILE_HELPER_EX int file_set_nonblocking(int fd);
 FILE_HELPER_EX ssize_t file_read(int fd, void *buf, size_t cnt);
+FILE_HELPER_EX ssize_t file_read_timeout(int fd, void *buf, size_t cnt, size_t timeout_ms);
 FILE_HELPER_EX ssize_t file_write(int fd, const void *buf, size_t cnt);
 
 
