@@ -2,7 +2,7 @@
  *
  * Release under GPLv2.
  * 
- * @file    str_helper.c
+ * @file    str_buf_helper.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    28/12 2017 10:36
@@ -33,26 +33,26 @@
 #include "log_helper.h"
 #include "mem_helper.h"
 
-#define STR_HELPER_GB
-#include "str_helper.h"
-#undef STR_HELPER_GB
+#define STR_BUF_HELPER_GB
+#include "str_buf_helper.h"
+#undef STR_BUF_HELPER_GB
 
-str_t *str_create(void)
+str_buf_t *str_buf_create(void)
 {
-	return (str_t *)alloc_mem(STR_T_LEN);
+	return (str_buf_t *)alloc_mem(str_buf_t_LEN);
 }
 
-str_t *str_create_by_len(int len)
+str_buf_t *str_buf_create_by_len(int len)
 {
-	str_t *str = str_create();
+	str_buf_t *str = str_buf_create();
 	str->buf = alloc_mem(len);
 
 	return str;
 }
 
-str_t *str_create_by_buf(const char *buf)
+str_buf_t *str_buf_create_by_buf(const char *buf)
 {
-	str_t *str = str_create();
+	str_buf_t *str = str_buf_create();
 
 	int len = strlen(buf);
 	if (len) {
@@ -65,18 +65,18 @@ str_t *str_create_by_buf(const char *buf)
 	return str;
 }
 
-void str_free_buf(str_t *str)
+void str_buf_free_buf(str_buf_t *str)
 {
 	free_mem(str->buf);
 }
 
-void str_free(str_t *str)
+void str_buf_free(str_buf_t *str)
 {
-	str_free_buf(str);
+	str_buf_free_buf(str);
 	free_mem(str);
 }
 
-void str_dump_buf(str_t *str)
+void str_buf_dump_buf(str_buf_t *str)
 {
 	if (!str || !str->buf)
 		return;
@@ -88,7 +88,7 @@ void str_dump_buf(str_t *str)
 	printf("\n");
 }
 
-void str_dump(str_t *str)
+void str_buf_dump(str_buf_t *str)
 {
 	printf("buf: %p \n",	str->buf);
 	printf("len: %d \n",	str->len);
@@ -105,7 +105,7 @@ void str_dump(str_t *str)
 		}																\
 	}while(0)
 
-int str_insert_char(str_t *str, char c)
+int str_buf_insert_char(str_buf_t *str, char c)
 {
 	if (!str) {
 		log_e("the str is NULL");
@@ -123,7 +123,7 @@ int str_insert_char(str_t *str, char c)
 	return 0;
 }
 
-int str_insert_buf(str_t *str, char *buf)
+int str_buf_insert_buf(str_buf_t *str, char *buf)
 {
 	if (!str || !buf) {
 		log_e("the str or buf is NULL");

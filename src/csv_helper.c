@@ -88,12 +88,12 @@ static csv_t *csv_create_struct(int len)
 
 #define insert_valid_char(str, ch)					\
 	do {											\
-		if (0 != str_insert_char(str, ch)) {		\
+		if (0 != str_buf_insert_char(str, ch)) {	\
 			invalid_csv_format(str);				\
 		}											\
 	} while(0)
 
-static int parse_semicolon(FILE *fp, str_t *str)
+static int parse_semicolon(FILE *fp, str_buf_t *str)
 {
 	int ch, c;
 
@@ -123,7 +123,7 @@ static int parse_csv(csv_t *csv)
 	int ch;
 	int row = 0, col = 0;
 	FILE *fp = csv->fp;
-	str_t *str = str_create_by_len(0);
+	str_buf_t *str = str_buf_create_by_len(0);
 
 	while ((ch = fgetc(fp)) != EOF) {
 #ifdef XIA_DEBUG
