@@ -42,7 +42,7 @@ static void str_buf_test(void)
 static void str_buf_test_init(void)
 {
 	handle_test_cmd_t str_buf_test_cmd[] = {
-		{"10", str_buf_test},
+		{"11", str_buf_test},
 	};
 
 	register_test_cmd(str_buf_test_cmd, ARRAY_NUM(str_buf_test_cmd));

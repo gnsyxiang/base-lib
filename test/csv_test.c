@@ -49,7 +49,7 @@ static void csv_test(void)
 static void csv_test_init(void)
 {
 	handle_test_cmd_t csv_test_cmd[] = {
-		{"11", csv_test},
+		{"12", csv_test},
 	};
 
 	register_test_cmd(csv_test_cmd, ARRAY_NUM(csv_test_cmd));
