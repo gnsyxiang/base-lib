@@ -83,13 +83,12 @@ ssize_t file_read(int fd, void *buf, size_t cnt)
 {
 	size_t ret;
 	size_t nleft;
-	char *ptr;
+	size_t offset = 0;
 
-	ptr   = buf;
 	nleft = cnt;
 
 	while (nleft > 0) {
-		if ((ret = read(fd, ptr, nleft)) < 0) {
+		if ((ret = read(fd, buf + offset, nleft)) < 0) {
 			if (errno == EINTR)
 				ret = 0;
 			else
@@ -97,11 +96,11 @@ ssize_t file_read(int fd, void *buf, size_t cnt)
 		} else if (ret == 0)
 			break;
 
-		nleft -= ret;
-		ptr   += ret;
+		nleft  -= ret;
+		offset += ret;
 	}
 
-	return cnt;
+	return offset;
 }
 
 ssize_t file_read_timeout(int fd, void *buf, size_t cnt, size_t timeout_ms)
