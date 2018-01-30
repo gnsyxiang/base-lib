@@ -38,7 +38,7 @@ static int _set_fcntl(int fd, long arg)
 	if ((flags = fcntl(fd, F_GETFL, 0)) == -1)
 		flags = 0;
 
-	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	return fcntl(fd, F_SETFL, flags | arg);
 }
 
 int file_set_nonblocking(int fd)
