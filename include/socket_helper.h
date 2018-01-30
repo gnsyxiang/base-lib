@@ -43,6 +43,9 @@ typedef struct _socket_tag {
 	pthread_mutex_t mutex;
 } socket_t;
 
+#define STATUS_NO_ACCEPT	(1)
+#define STATUS_ACCEPT		(!STATUS_NO_ACCEPT)
+
 #define MYPORT  8887
 #define LO_IP "127.0.0.1"
 #define BUF_LEN (1024)
@@ -54,7 +57,7 @@ SOCKET_HELPER_EX void socket_server_clean(socket_t *sk);
 
 SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
-
+SOCKET_HELPER_EX void socket_server_set_accept_flag(int flag);
 
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout);
 SOCKET_HELPER_EX socket_t *socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);

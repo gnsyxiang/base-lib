@@ -170,6 +170,12 @@ void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout)
 	}
 }
 
+static int socket_accept_flag;
+void socket_server_set_accept_flag(int flag)
+{
+	socket_accept_flag = flag;
+}
+
 socket_t *socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 {
 	int fd = sk->fd;
@@ -180,8 +186,9 @@ socket_t *socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 		return NULL;
 	}
 
-	while (1) {
+	while (!socket_accept_flag) {
 		fd_set read_fs;
+
 		FD_ZERO(&read_fs);
 		FD_SET(fd, &read_fs);
 		
