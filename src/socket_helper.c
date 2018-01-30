@@ -94,6 +94,7 @@ void socket_client_clean(socket_t *sk)
 		return;
 
 	close(sk->fd);
+	pthread_mutex_destroy(&sk->mutex);
 
 	_socket_clean_struct(sk);
 }
