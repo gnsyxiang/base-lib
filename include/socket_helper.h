@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    socket_helper.h
@@ -42,6 +42,7 @@ typedef struct _socket_tag {
 
 	pthread_mutex_t mutex;
 } socket_t;
+#define SOCKET_T_LEN	(sizeof(socket_t))
 
 #define STATUS_NO_ACCEPT	(1)
 #define STATUS_ACCEPT		(!STATUS_NO_ACCEPT)
@@ -60,7 +61,7 @@ SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
 SOCKET_HELPER_EX void socket_server_set_accept_flag(int flag);
 
 SOCKET_HELPER_EX void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout);
-SOCKET_HELPER_EX socket_t *socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
+SOCKET_HELPER_EX void socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);
 SOCKET_HELPER_EX int socket_read(socket_t *sk, char *buf, int size);

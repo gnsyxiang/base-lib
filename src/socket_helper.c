@@ -32,14 +32,17 @@
 #include "pthread_helper.h"
 #include "log_helper.h"
 #include "file_helper.h"
+#include "mem_helper.h"
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
 #undef SOCKET_HELPER_GB
 
+static int socket_accept_flag;
+
 static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
 {
-	socket_t *sk = (socket_t *)malloc(sizeof(socket_t));
+	socket_t *sk = alloc_mem(SOCKET_T_LEN);
 	if (NULL == sk) {
 		log_e("malloc faild");
 		exit(-1);
@@ -53,7 +56,7 @@ static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
 	if (ipaddr) {
 		int ipaddr_len = strlen(ipaddr) + 1;
 
-		sk->ipaddr = (char *)malloc(ipaddr_len);
+		sk->ipaddr = alloc_mem(ipaddr_len);
 		if (NULL == sk->ipaddr) {
 			log_e("malloc faild");
 			exit(-1);
@@ -68,13 +71,10 @@ static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
 
 static void _socket_clean_struct(socket_t *sk)
 {
-	if (!sk)
-		return;
-
 	if (sk->ipaddr)
-		free(sk->ipaddr);
+		free_mem(sk->ipaddr);
 
-	free(sk);
+	free_mem(sk);
 }
 
 socket_t *socket_client_init(char *ipaddr, int port)
@@ -106,9 +106,10 @@ socket_t *socket_server_init(int port)
 	sk = socket_client_init(NULL, port);
 
     struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    addr.sin_family			= AF_INET;
+    addr.sin_port			= htons(port);
+    addr.sin_addr.s_addr	= htonl(INADDR_ANY);
 
 	int val = 1;
 	ret = setsockopt(sk->fd, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(int));
@@ -127,9 +128,24 @@ void socket_server_clean(socket_t *sk)
 	return socket_client_clean(sk);
 }
 
+int socket_write(socket_t *sk, const char *buf, int size)
+{
+	return file_write(sk->fd, buf, size);
+}
+
+int socket_read(socket_t *sk, char *buf, int size)
+{
+	return file_read(sk->fd, buf, size);
+}
+
 int socket_set_nonblocking(socket_t *sk)
 {
 	return file_set_nonblocking(sk->fd);
+}
+
+void socket_server_set_accept_flag(int flag)
+{
+	socket_accept_flag = flag;
 }
 
 void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
@@ -150,40 +166,33 @@ void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout)
 
 	memset(&addr, '\0', sizeof(addr));
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(sk->port);
-	addr.sin_addr.s_addr = inet_addr(sk->ipaddr);
+	addr.sin_family			= AF_INET;
+	addr.sin_port			= htons(sk->port);
+	addr.sin_addr.s_addr	= inet_addr(sk->ipaddr);
 
 	do {
 		status = connect(sk->fd, (const struct sockaddr *)&addr, sizeof(addr));
-		if (status < 0) {
+		if (status < 0)
 			sleep(1);
-		}
 	} while ((status < 0) && (time++ < timeout));
 
 	if (status < 0) {
-		printf("wait for connect to server error !!! \n");
+		log_i("connect to server error");
 	} else {
-		printf("connect to server \n");
+		log_i("connect to server");
 
 		socket_cb(sk);
 	}
 }
 
-static int socket_accept_flag;
-void socket_server_set_accept_flag(int flag)
-{
-	socket_accept_flag = flag;
-}
-
-socket_t *socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
+void socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 {
 	int fd = sk->fd;
 
 	int status = listen(fd, SOMAXCONN);
 	if (status < 0) {
 		log_e("listen faild");
-		return NULL;
+		return;
 	}
 
 	while (!socket_accept_flag) {
@@ -202,28 +211,12 @@ socket_t *socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 			int client_fd = accept(fd, NULL, NULL);
 			if (client_fd < 0) {
 				log_e("accept faild");
-				return NULL;
+				return;
 			}
 
 			socket_cb((void *)&client_fd);
 		}
 	}
-	return NULL;
+	log_i("over accept while");
 }
-
-
-int socket_write(socket_t *sk, const char *buf, int size)
-{
-	return file_write(sk->fd, buf, size);
-}
-
-int socket_read(socket_t *sk, char *buf, int size)
-{
-	return file_read(sk->fd, buf, size);
-}
-
-
-
-
-
 
