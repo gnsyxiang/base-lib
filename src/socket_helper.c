@@ -215,7 +215,9 @@ void socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 				return;
 			}
 
-			socket_cb((void *)&client_fd);
+			socket_t *sk_client = _socket_init_struct(client_fd, NULL, MYPORT);
+
+			socket_cb((void *)sk_client);
 		}
 	}
 	log_i("over accept while");
