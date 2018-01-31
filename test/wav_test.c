@@ -66,6 +66,7 @@ static void wav_test(void)
 	log_i("wav test OK");
 }
 
+#if 0
 void add_blank_time(void *file, void *new_file)
 {
 	wav_file_t *wav_file = file;
@@ -148,12 +149,13 @@ static void create_new_wav(void)
 
 	log_i("succesful ...");
 }
+#endif
 
 static void wav_test_init(void)
 {
 	handle_test_cmd_t wav_test_cmd[] = {
 		{"5", wav_test},
-		{"6", create_new_wav},
+		/*{"6", create_new_wav},*/
 	};
 
 	register_test_cmd(wav_test_cmd, ARRAY_NUM(wav_test_cmd));
