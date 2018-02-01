@@ -34,8 +34,8 @@
 
 static inline void _header_riff_init(riff_t *riff)
 {
-	strcpy(riff->riff_id, ID_RIFF);
-	strcpy(riff->riff_fmt, ID_WAVE);
+	strncpy(riff->riff_id, ID_RIFF, 4);
+	strncpy(riff->riff_fmt, ID_WAVE, 4);
 
 	riff->riff_sz = WAV_HEADER_LEN - 8;
 }
@@ -56,7 +56,7 @@ static inline void _header_riff_dump(riff_t *riff)
 static inline void _header_fmt_init(fmt_t *fmt, 
 		int channel, int sample_rate, int bit_per_sample)
 {
-	strcpy(fmt->fmt_id, ID_FMT);
+	strncpy(fmt->fmt_id, ID_FMT, 4);
 
 	fmt->fmt_sz				 = FMT_SZ_LEN;
 	fmt->fmt_audio_format    = FORMAT_PCM;
@@ -85,7 +85,7 @@ static inline void _header_fmt_dump(fmt_t *fmt)
 
 static inline void _header_data_init(data_t *data)
 {
-	strcpy(data->data_id, ID_DATA);
+	strncpy(data->data_id, ID_DATA, 4);
 
 	data->data_sz = 0;
 }
