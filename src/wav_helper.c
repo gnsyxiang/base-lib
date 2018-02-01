@@ -136,7 +136,7 @@ void _header_init(wav_file_t *wav_file)
 
 wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int bit_per_sample)
 {
-	wav_file_t *wav_file = malloc_mem(WAV_FILE_LEN);
+	wav_file_t *wav_file = alloc_mem(WAV_FILE_LEN);
 
 	_header_init(wav_file);
 
@@ -166,7 +166,7 @@ void fread_append_msg(wav_file_t *wav_file)
 
 wav_file_t *wav_file_open(const char *path)
 {
-	wav_file_t *wav_file = malloc_mem(WAV_FILE_LEN);
+	wav_file_t *wav_file = alloc_mem(WAV_FILE_LEN);
 
 	_header_init(wav_file);
 
