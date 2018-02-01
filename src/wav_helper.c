@@ -198,6 +198,9 @@ void wav_file_clean(wav_file_t *wav_file)
 
 	fclose(wav_file->fp);	
 
+	if (wav_file->append_msg)
+		free_mem(wav_file->append_msg);
+
 	free_mem(wav_file->riff);	
 	free_mem(wav_file->fmt);	
 	free_mem(wav_file->data);	
