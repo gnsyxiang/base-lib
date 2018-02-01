@@ -71,17 +71,12 @@ void add_blank_time(void *file, void *new_file)
 	wav_file_t *wav_file = file;
 	wav_file_t *new_wav_file = new_file;
 
-	log_i("----------------------------1");
 	int wav_data_len = wav_file->data->data_sz;
-	log_i("----------------------------2");
 	char *voice = alloc_mem(wav_data_len);
-	log_i("----------------------------3");
 	int len = wav_file_read(wav_file, voice, wav_data_len);
-	log_i("----------------------------4, len: %d", len);
 
     int total_bytes = WAV_MS_LEN * SAMPLE_RATE * 2;
     int blank_bytes = (total_bytes - len) / 2;
-	log_i("----------------------------5");
 
 	switch (new_wav_file->fmt->fmt_bits_per_sample / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
@@ -90,16 +85,13 @@ void add_blank_time(void *file, void *new_file)
 
 		default: log_i("bsp is error"); break;
 	}
-	log_i("----------------------------6, blank_bytes: %d", blank_bytes);
 
     char buf[blank_bytes];
 	memset(buf, '\0', blank_bytes);
 
-	log_i("----------------------------7");
 	wav_file_write(new_wav_file, buf, blank_bytes);
 	wav_file_write(new_wav_file, voice, len);
 	wav_file_write(new_wav_file, buf, blank_bytes);
-	log_i("----------------------------8");
 
 	free_mem(voice);
 }
@@ -136,19 +128,13 @@ void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_han
 
 	log_i("src_name: %s", src_name);
 
-	log_i("------1");
 	wav_file_t *wav_file = wav_file_open(src_name);
-	log_i("------2");
 	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
-	log_i("------3");
 
 	wav_handle_cb(wav_file, new_wav_file);
-	log_i("------4");
 
 	wav_file_clean(wav_file);
-	log_i("------5");
 	wav_file_clean(new_wav_file);
-	log_i("------6");
 }
 
 static void create_new_wav(void)

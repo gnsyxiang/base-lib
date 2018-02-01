@@ -52,6 +52,8 @@ typedef struct _fmt_tag {
     short fmt_bits_per_sample;  // bits of each sample(8,16,32).
 }fmt_t;
 #define FMT_T_LEN	(sizeof(fmt_t))
+#define FMT_SZ_LEN	(16)		// 标准头部44字节
+#define FORMAT_PCM	(1)			// 表示存储pcm数据
 
 typedef struct _append_msg_tag {
 	short append_sz;			// 扩展域大小，两个字节
