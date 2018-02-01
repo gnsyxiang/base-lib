@@ -54,8 +54,8 @@ typedef struct _fmt_tag {
 #define FMT_T_LEN	(sizeof(fmt_t))
 
 typedef struct _append_msg_tag {
-	short append_sz;
-	char *append_data;
+	short append_sz;			// 扩展域大小，两个字节
+	char *append_data;			// 某些软件生成的附带信息
 }append_msg_t;
 #define APPEND_MSG_T_LEN	(sizeof(append_msg_t))
 

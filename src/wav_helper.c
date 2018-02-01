@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    wav_helper.c
@@ -159,6 +159,47 @@ wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int 
 	return wav_file;
 }
 
+wav_file_t *wav_file_open(const char *path)
+{
+	wav_file_t *wav_file = malloc_mem(WAV_FILE_LEN);
+
+	wav_file->play_ms = 0;
+	wav_file->fp = fopen(path, "r");
+
+	wav_file->riff = alloc_mem(RIFF_T_LEN);
+	wav_file->fmt = alloc_mem(FMT_T_LEN);
+	wav_file->data = alloc_mem(DATA_T_LEN);
+
+	fread(wav_file->riff, 1, RIFF_T_LEN, wav_file->fp);
+	_header_riff_dump(wav_file->riff);
+
+	fread(wav_file->fmt, 1, FMT_T_LEN, wav_file->fp);
+	_header_fmt_dump(wav_file->fmt);
+
+	switch (wav_file->fmt->fmt_sz) {
+		case 16:
+			fread(wav_file->data, 1, DATA_T_LEN, wav_file->fp);
+			break;
+		case 18:
+			wav_file->append_msg = alloc_mem(APPEND_MSG_T_LEN);
+
+			fread(&wav_file->append_msg->append_sz, 1, 2, wav_file->fp);
+			log_i("append_sz: %d", wav_file->append_msg->append_sz);
+			if (wav_file->append_msg->append_sz > 0) {
+				fread(wav_file->append_msg->append_data, 1, wav_file->append_msg->append_sz, wav_file->fp);
+			}
+
+			fread(wav_file->data, 1, DATA_T_LEN, wav_file->fp);
+			_header_data_dump(wav_file->data);
+			break;
+		default:
+			log_i("error wav format");
+			break;
+	}
+
+	return wav_file;
+}
+
 void wav_file_flush(wav_file_t *wav_file)
 {
 	fseek(wav_file->fp, 0, SEEK_SET);
@@ -212,6 +253,18 @@ int wav_file_write(wav_file_t *wav_file, void *data, int len)
 	int ret = fwrite(data, 1, len, wav_file->fp);
 	if (ret > 0)
 		wav_header_update(wav_file, ret);
+
+	return ret;
+}
+
+int wav_file_read(wav_file_t *wav_file, void *data, int len)
+{
+	int ret;
+
+	if (!(wav_file && data && len > 0))
+		return -1;
+
+	ret = fread(data, 1, len, wav_file->fp);
 
 	return ret;
 }
