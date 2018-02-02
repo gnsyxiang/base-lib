@@ -33,10 +33,10 @@
 #include "mem_helper.h"
 
 #define CHANNELS		(1)
-#define SAMPLE_RATE		(16000)
+#define SAMPLE_RATE		(48000)
 #define BIT_PER_SAMPLE	(16)
 
-#define WAV_MS_LEN		(5)
+#define WAV_MS_LEN		(15)
 
 #define SRC_DIR "wav/src"
 #define DST_DIR "wav/dst"
@@ -71,14 +71,14 @@ void add_blank_time(void *file, void *new_file)
 	wav_file_t *wav_file = file;
 	wav_file_t *new_wav_file = new_file;
 
-	int wav_data_len = wav_file->wav_header->data_sz;
+	int wav_data_len = wav_file->data->data_sz;
 	char *voice = alloc_mem(wav_data_len);
 	int len = wav_file_read(wav_file, voice, wav_data_len);
 
     int total_bytes = WAV_MS_LEN * SAMPLE_RATE * 2;
     int blank_bytes = (total_bytes - len) / 2;
 
-	switch (new_wav_file->wav_header->fmt_bits_per_sample / 8) {
+	switch (new_wav_file->fmt->fmt_bits_per_sample / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
 		case 3: blank_bytes = ALIGN3(blank_bytes); break;
 		case 4: blank_bytes = ALIGN4(blank_bytes); break;
@@ -143,8 +143,8 @@ static void create_new_wav(void)
 		system("mkdir -p "DST_DIR);
     }
 
-	/*read_file_list(SRC_DIR, wav_handle, add_blank_time);*/
-	read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);
+	read_file_list(SRC_DIR, wav_handle, add_blank_time);
+	/*read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);*/
 
 	log_i("succesful ...");
 }

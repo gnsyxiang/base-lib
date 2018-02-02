@@ -52,6 +52,23 @@ static inline uint32_t judgement_byte_order(void)
         return 0;
     }
 }
+
+#if 0
+#define swap(a, b)				\
+	do {						\
+		char tmp;				\
+		tmp = a;				\
+		a = b;					\
+		b = tmp;				\
+	} while (0)
+#else
+#define swap(a, b)				\
+	do {						\
+		a = a ^ b;				\
+		b = a ^ b; 				\
+		a = a ^ b; 				\
+	} while (0)
+#endif
 #define is_little_endian()      (1 == judgement_byte_order())
 #define is_big_endian()         (0 == judgement_byte_order())
 

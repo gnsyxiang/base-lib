@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    socket_helper.c
@@ -30,35 +30,35 @@
 #include <fcntl.h>
 
 #include "pthread_helper.h"
+#include "log_helper.h"
+#include "file_helper.h"
+#include "mem_helper.h"
 
 #define SOCKET_HELPER_GB
 #include "socket_helper.h"
 #undef SOCKET_HELPER_GB
 
-static socket_t *_socket_init_struct(int fd, char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms)
+static int socket_accept_flag;
+
+static socket_t *_socket_init_struct(int fd, char *ipaddr, int port)
 {
-	socket_t *sk = (socket_t *)malloc(sizeof(socket_t));
+	socket_t *sk = alloc_mem(SOCKET_T_LEN);
 	if (NULL == sk) {
-		printf("%s: malloc faild: %s(%d) \n",
-				__func__, strerror(errno), -errno);
+		log_e("malloc faild");
 		exit(-1);
 	}
 
 	sk->fd = fd;
 	sk->port = port;
 
-	sk->handle_read_message = handle_read_message;
-	sk->read_timeout_ms = read_timeout_ms;
-
 	pthread_mutex_init(&sk->mutex, NULL);
-	pthread_cond_init(&sk->cond, NULL);
 
 	if (ipaddr) {
 		int ipaddr_len = strlen(ipaddr) + 1;
-		sk->ipaddr = (char *)malloc(ipaddr_len);
+
+		sk->ipaddr = alloc_mem(ipaddr_len);
 		if (NULL == sk->ipaddr) {
-			printf("%s: malloc faild: %s(%d) \n",
-					__func__, strerror(errno), -errno);
+			log_e("malloc faild");
 			exit(-1);
 		}
 
@@ -71,75 +71,82 @@ static socket_t *_socket_init_struct(int fd, char *ipaddr, int port, handle_mess
 
 static void _socket_clean_struct(socket_t *sk)
 {
-	if (!sk)
-		return;
-
 	if (sk->ipaddr)
-		free(sk->ipaddr);
+		free_mem(sk->ipaddr);
 
-	free(sk);
+	free_mem(sk);
 }
 
-socket_t *socket_init_client(char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms)
+socket_t *socket_client_init(char *ipaddr, int port)
 {
-	int fd = socket(AF_INET,SOCK_STREAM, 0);
+	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd < 0) {
-		printf("%s: failed to create socket: %s(%d) \n",
-				__func__, strerror(errno), -errno);
+		log_e("socket faild to create client");
 		exit(-1);
 	}
 
-	return _socket_init_struct(fd, ipaddr, port, handle_read_message, read_timeout_ms);
+	return _socket_init_struct(fd, ipaddr, port);
 }
 
-void socket_clean_client(socket_t *sk)
+void socket_client_clean(socket_t *sk)
 {
 	if (NULL == sk)
 		return;
 
 	close(sk->fd);
+	pthread_mutex_destroy(&sk->mutex);
 
 	_socket_clean_struct(sk);
 }
 
-socket_t *socket_init_server(int port, handle_message_t handle_read_message, int read_timeout_ms)
+socket_t *socket_server_init(int port)
 {
 	socket_t *sk;
 	int ret;
 
-	sk = socket_init_client(NULL, port, handle_read_message, read_timeout_ms);
+	sk = socket_client_init(NULL, port);
 
     struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    addr.sin_family			= AF_INET;
+    addr.sin_port			= htons(port);
+    addr.sin_addr.s_addr	= htonl(INADDR_ANY);
 
 	int val = 1;
 	ret = setsockopt(sk->fd, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(int));
 
     ret = bind(sk->fd, (struct sockaddr *)&addr, sizeof(addr));
 	if (ret < 0) {
-		printf("%s: failed to create socket: %s(%d) \n",
-				__func__, strerror(errno), -errno);
+		log_e("bind faild");
 		exit(-1);
 	}
 
 	return sk;
 }
 
-void socket_clean_server(socket_t *sk)
+void socket_server_clean(socket_t *sk)
 {
-	return socket_clean_client(sk);
+	return socket_client_clean(sk);
+}
+
+int socket_write(socket_t *sk, const char *buf, int size)
+{
+	return file_write(sk->fd, buf, size);
+}
+
+int socket_read(socket_t *sk, char *buf, int size)
+{
+	return file_read(sk->fd, buf, size);
 }
 
 int socket_set_nonblocking(socket_t *sk)
 {
-	int flags;
+	return file_set_nonblocking(sk->fd);
+}
 
-	if ((flags = fcntl(sk->fd, F_GETFL, 0)) == -1)
-		flags = 0;
-
-	return fcntl(sk->fd, F_SETFL, flags | O_NONBLOCK);
+void socket_server_set_accept_flag(int flag)
+{
+	socket_accept_flag = flag;
 }
 
 void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
@@ -152,7 +159,7 @@ void socket_set_recv_timeout(socket_t *sk, int timeout_ms)
 	setsockopt(sk->fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(struct timeval));
 }
 
-void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
+void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout)
 {
 	struct sockaddr_in addr;
 	int status;
@@ -160,97 +167,59 @@ void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout)
 
 	memset(&addr, '\0', sizeof(addr));
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(sk->port);
-	addr.sin_addr.s_addr = inet_addr(sk->ipaddr);
+	addr.sin_family			= AF_INET;
+	addr.sin_port			= htons(sk->port);
+	addr.sin_addr.s_addr	= inet_addr(sk->ipaddr);
 
 	do {
 		status = connect(sk->fd, (const struct sockaddr *)&addr, sizeof(addr));
-		if (status < 0) {
+		if (status < 0)
 			sleep(1);
-		}
 	} while ((status < 0) && (time++ < timeout));
 
 	if (status < 0) {
-		printf("wait for connect to server error !!! \n");
+		log_i("connect to server error");
 	} else {
-		printf("connect to server \n");
+		log_i("connect to server");
 
-		create_a_attached_thread(NULL, read_cb, (void *)sk);
+		socket_cb(sk);
 	}
 }
 
-socket_t *socket_wait_for_connect(socket_t *sk, server_handle_message callback)
+void socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 {
 	int fd = sk->fd;
 
 	int status = listen(fd, SOMAXCONN);
 	if (status < 0) {
-		printf("%s: failed to listen socket: %s(%d) \n", __func__, strerror(errno), -errno);
-		return NULL;
+		log_e("listen faild");
+		return;
 	}
 
-	int client_fd = accept(fd, NULL, NULL);
-	if (client_fd < 0) {
-		printf("%s: failed to accept socket: %s(%d) \n", __func__, strerror(errno), -errno);
-		return NULL;
-	}
+	while (!socket_accept_flag) {
+		fd_set read_fs;
 
-	socket_t *client_sk = _socket_init_struct(client_fd, NULL, sk->port, NULL, 0);
-
-	client_sk->handle_read_message = sk->handle_read_message;
-	client_sk->read_timeout_ms = sk->read_timeout_ms;
-
-	create_a_attached_thread(NULL, callback, (void *)client_sk);
-
-	return client_sk;
-}
-
-
-int socket_write(socket_t *sk, const char *buf, int size)
-{
-	int offset = 0;
-	int sz = size;
-
-	while (sz > 0) {
-		int bytes = send(sk->fd, buf + offset, sz, 0);
-		if (bytes <= 0) {
-			return bytes;
-		}
-
-		sz -= bytes;
-		offset += bytes;
-	}
-
-	return size;
-}
-
-int socket_read(socket_t *sk, char *buf, int size)
-{
-	int offset = 0;
-	int sz = size;
-
-	while (sz > 0) {
-		int bytes = recv(sk->fd, buf + offset, sz, 0);
-		if (bytes == 0) {
-			printf("%s: client close fd: %s(%d) \n",
-					__func__, strerror(errno), -errno);
-			break;
-		} else if (bytes == -1) {
-			if (offset == 0)
-				offset = -1;
+		FD_ZERO(&read_fs);
+		FD_SET(fd, &read_fs);
+		
+		int ret = select(FD_SETSIZE, &read_fs, NULL, NULL, NULL);
+		if (ret < 0) {
+			log_e("select faild");
 			break;
 		}
 
-		sz -= bytes;
-		offset += bytes;
+		if (FD_ISSET(fd, &read_fs)) {
+			int client_fd = accept(fd, NULL, NULL);
+			if (client_fd < 0) {
+				log_e("accept faild");
+				return;
+			}
+
+			socket_t *sk_client = _socket_init_struct(client_fd, NULL, MYPORT);
+
+			socket_cb((void *)sk_client);
+		}
 	}
-
-	return offset;
+	log_i("over accept while");
 }
-
-
-
-
-
 

@@ -5,7 +5,7 @@
  * @file    str_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    09/01 2018 15:27
+ * @date    26/01 2018 10:14
  * @version v0.0.1
  * 
  * @since    note
@@ -13,9 +13,9 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        09/01 2018      create the file
+ *     00      zhenquan.qiu        26/01 2018      create the file
  * 
- *     last modified: 09/01 2018 15:27
+ *     last modified: 26/01 2018 10:14
  */
 #include <stdio.h>
 
@@ -25,18 +25,12 @@
 
 static void str_test(void)
 {
-	char buf[] = "abc";
-	str_t *str = str_create_by_buf(buf);
+	char ext_name[50];
+	char *file_name = "/home/os/samba/test.wav";
 
-	str_dump_buf(str);
-	str_insert_char(str, 'd');
-	str_dump_buf(str);
-
-	char buf1[] = "efg";
-	str_insert_buf(str, buf1);
-	str_dump_buf(str);
-
-	str_free(str);
+	str_get_file_extension_name(file_name, ext_name);
+	
+	printf("file_name: %s, ext_name: %s \n", file_name, ext_name);
 }
 
 static void str_test_init(void)

@@ -5,7 +5,7 @@
  * @file    str_helper.h
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    09/01 2018 11:15
+ * @date    26/01 2018 10:03
  * @version v0.0.1
  * 
  * @since    note
@@ -13,45 +13,28 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        09/01 2018      create the file
+ *     00      zhenquan.qiu        26/01 2018      create the file
  * 
- *     last modified: 09/01 2018 11:15
+ *     last modified: 26/01 2018 10:03
  */
-#ifndef __BASE_LIB_STR_HELPER_H__
-#define __BASE_LIB_STR_HELPER_H__
+#ifndef _STR_HELPER_H_
+#define _STR_HELPER_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef STR_HELPER_GB
+#ifndef STR_HELPER_GB
 #define STR_HELPER_EX extern
 #else
 #define STR_HELPER_EX
 #endif
 
-typedef struct str_tag {
-	char *buf;
-	int len;
-	int size;
-} str_t;
-
-#define STR_T_LEN (sizeof(struct str_tag))
-
-str_t *str_create(void);
-str_t *str_create_by_len(int len);
-str_t *str_create_by_buf(const char *buf);
-void str_free_buf(str_t *str);
-void str_free(str_t *str);
-void str_dump(str_t *str);
-void str_dump_buf(str_t *str);
-
-int str_insert_char(str_t *str, char c);
-int str_insert_buf(str_t *str, char *buf);
+STR_HELPER_EX void str_get_file_extension_name(const char *file_name, char *ext_name);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __BASE_LIB_STR_HELPER_H__ */
+#endif /* _STR_HELPER_H_ */
 

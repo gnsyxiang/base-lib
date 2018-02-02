@@ -39,7 +39,10 @@ void dis_func(void)
 	printf(" 8. serial receive test \n");
 	printf(" 9. file test \n");
 	printf("10. str test \n");
-	printf("11. csv test \n");
+	printf("11. str_buf test \n");
+	printf("12. csv test \n");
+	printf("13. net_v1 client test \n");
+	printf("14. net_v1 server test \n");
 
 	printf("input your number: ");
 }

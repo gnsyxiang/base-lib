@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    time_helper.c
@@ -45,13 +45,21 @@
 #include "time_helper.h"
 #undef TIME_HELPER_GB
 
+#define BASE_NUM	(1000)
+#define BASE_NUM_2	(1000 * 1000)
+#define BASE_NUM_3	(1000 * 1000 * 1000)
+
+#define take_integet_1000(num)		((num) / BASE_NUM)
+#define take_remainder_1000(num)	((num) % BASE_NUM)
+#define take_multiplier_1000(num)	((num) * BASE_NUM)
+
 time_t get_sys_time_ms(void)
 {
 	struct timeval tv;
 
 	gettimeofday(&tv, NULL);
 
-	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	return (take_multiplier_1000(tv.tv_sec) + take_integet_1000(tv.tv_usec));
 }
 
 struct timespec cur_delay_ms(uint32_t timeout_ms)
@@ -62,13 +70,19 @@ struct timespec cur_delay_ms(uint32_t timeout_ms)
     /* returns the current time (sec and usec) */
     gettimeofday(&tv, NULL);
 
-    ts.tv_sec = time(NULL) + timeout_ms / 1000;
-    ts.tv_nsec = tv.tv_usec * 1000 + 1000 * 1000 * (timeout_ms % 1000);
+    ts.tv_sec = time(NULL) + take_integet_1000(timeout_ms);
+    ts.tv_nsec = take_multiplier_1000(tv.tv_usec) + BASE_NUM_2 * take_remainder_1000(timeout_ms);
 
-    ts.tv_sec += ts.tv_nsec / (1000 * 1000 * 1000);
-    ts.tv_nsec %= (1000 * 1000 * 1000);
+    ts.tv_sec += ts.tv_nsec / BASE_NUM_3;
+    ts.tv_nsec %= BASE_NUM_3;
 
     return ts;
+}
+
+void time_ms_to_timeval(size_t time_ms, struct timeval * const time)
+{
+	time->tv_sec = take_integet_1000(time_ms);
+	time->tv_usec = take_multiplier_1000(take_remainder_1000(time_ms));
 }
 
 /* int clock_gettime(clockid_t clk_id, struct timespec *tp);
@@ -84,7 +98,7 @@ double get_sec_clk_with_boottime(void)
     struct timespec ts;
 
     clock_gettime(CLOCK_BOOTTIME, &ts);
-    return (double) ts.tv_sec + (double) (ts.tv_nsec) / 1000000000;
+    return (double) ts.tv_sec + (double) (ts.tv_nsec) / BASE_NUM_3;
 }
 
 void get_tm_time(struct tm *tm)
