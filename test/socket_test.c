@@ -23,7 +23,7 @@
 #include "parse_cmd.h"
 #include "socket_helper.h"
 
-void socket_client_cb(void *args)
+static void socket_client_cb(void *args)
 {
 	log_i("socket_client_cb ok");
 }
@@ -41,7 +41,7 @@ static void socket_client(void)
 
 int cnt;
 
-void socket_server_cb(void *args)
+static void socket_server_cb(void *args)
 {
 	if (cnt++ == 3)
 		socket_server_set_accept_flag(STATUS_NO_ACCEPT);
