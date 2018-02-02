@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    socket_helper.h
@@ -33,35 +33,35 @@ extern "C" {
 #define SOCKET_HELPER_EX
 #endif
 
-typedef void (*handle_message_t)(unsigned char *message, int len);
-typedef void *(*server_handle_message)(void *args);
+typedef void (*socket_cb_t)(void *args);
 
 typedef struct _socket_tag {
 	int fd;
 	int port;
 	char *ipaddr;
 
-	handle_message_t handle_read_message;
-	int read_timeout_ms;
-
 	pthread_mutex_t mutex;
-	pthread_cond_t cond;
 } socket_t;
+#define SOCKET_T_LEN	(sizeof(socket_t))
+
+#define STATUS_NO_ACCEPT	(1)
+#define STATUS_ACCEPT		(!STATUS_NO_ACCEPT)
 
 #define MYPORT  8887
+#define LO_IP "127.0.0.1"
 #define BUF_LEN (1024)
 
-SOCKET_HELPER_EX socket_t *socket_init_client(char *ipaddr, int port, handle_message_t handle_read_message, int read_timeout_ms);
-SOCKET_HELPER_EX void socket_clean_client(socket_t *sk);
-SOCKET_HELPER_EX socket_t *socket_init_server(int port, handle_message_t handle_read_message, int read_timeout_ms);
-SOCKET_HELPER_EX void socket_clean_server(socket_t *sk);
+SOCKET_HELPER_EX socket_t *socket_client_init(char *ipaddr, int port);
+SOCKET_HELPER_EX void socket_client_clean(socket_t *sk);
+SOCKET_HELPER_EX socket_t *socket_server_init(int port);
+SOCKET_HELPER_EX void socket_server_clean(socket_t *sk);
 
 SOCKET_HELPER_EX int socket_set_nonblocking(socket_t *sk);
 SOCKET_HELPER_EX void socket_set_recv_timeout(socket_t *sk, int timeout_ms);
+SOCKET_HELPER_EX void socket_server_set_accept_flag(int flag);
 
-
-SOCKET_HELPER_EX void socket_connect(socket_t *sk, server_handle_message read_cb, int timeout);
-SOCKET_HELPER_EX socket_t *socket_wait_for_connect(socket_t *sk, server_handle_message callback);
+SOCKET_HELPER_EX void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout);
+SOCKET_HELPER_EX void socket_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
 
 SOCKET_HELPER_EX int socket_write(socket_t *sk, const char *buf, int size);
 SOCKET_HELPER_EX int socket_read(socket_t *sk, char *buf, int size);
