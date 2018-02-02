@@ -100,60 +100,7 @@ static inline void _header_data_dump(data_t *data)
 	log_i("data_sz: %d", data->data_sz);
 }
 
-void wav_file_header_dump(wav_file_t *wav_file)
-{
-	long pos = ftell(wav_file->fp);
-
-	wav_file_flush(wav_file);
-
-	fseek(wav_file->fp, 0, SEEK_SET);
-
-	log_i("------------------------------------");
-	riff_t riff;
-	fread(&riff, 1, RIFF_T_LEN, wav_file->fp);
-	_header_riff_dump(&riff);
-
-	fmt_t fmt;
-	fread(&fmt, 1, FMT_T_LEN, wav_file->fp);
-	_header_fmt_dump(&fmt);
-
-	data_t data;
-	fread(&data, 1, DATA_T_LEN, wav_file->fp);
-	_header_data_dump(&data);
-	log_i("------------------------------------");
-
-	fseek(wav_file->fp, pos, SEEK_SET);
-}
-
-void _header_init(wav_file_t *wav_file)
-{
-	wav_file->riff = alloc_mem(RIFF_T_LEN);
-	wav_file->fmt = alloc_mem(FMT_T_LEN);
-	wav_file->data = alloc_mem(DATA_T_LEN);
-
-	wav_file->play_ms = 0;
-}
-
-wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int bit_per_sample)
-{
-	wav_file_t *wav_file = alloc_mem(WAV_FILE_LEN);
-
-	_header_init(wav_file);
-
-	_header_riff_init(wav_file->riff);
-	_header_fmt_init(wav_file->fmt, channel, sample_rate, bit_per_sample);
-	_header_data_init(wav_file->data);
-
-	wav_file->fp = fopen(path, "w+");
-
-	fwrite(wav_file->riff, 1, RIFF_T_LEN, wav_file->fp);
-	fwrite(wav_file->fmt, 1, FMT_T_LEN, wav_file->fp);
-	fwrite(wav_file->data, 1, DATA_T_LEN, wav_file->fp);
-
-	return wav_file;
-}
-
-void fread_append_msg(wav_file_t *wav_file)
+static inline void fread_append_msg(wav_file_t *wav_file)
 {
 	append_msg_t *append_msg = alloc_mem(APPEND_MSG_T_LEN);
 
@@ -164,14 +111,8 @@ void fread_append_msg(wav_file_t *wav_file)
 	wav_file->append_msg = append_msg;
 }
 
-wav_file_t *wav_file_open(const char *path)
+static inline void _header_read(wav_file_t *wav_file)
 {
-	wav_file_t *wav_file = alloc_mem(WAV_FILE_LEN);
-
-	_header_init(wav_file);
-
-	wav_file->fp = fopen(path, "r");
-
 	fread(wav_file->riff, 1, RIFF_T_LEN, wav_file->fp);
 	fread(wav_file->fmt, 1, FMT_T_LEN, wav_file->fp);
 
@@ -188,6 +129,71 @@ wav_file_t *wav_file_open(const char *path)
 			log_i("error wav format");
 			break;
 	}
+}
+
+void wav_file_header_dump(wav_file_t *wav_file)
+{
+	long pos = ftell(wav_file->fp);
+
+	wav_file_flush(wav_file);
+
+	fseek(wav_file->fp, 0, SEEK_SET);
+
+	_header_read(wav_file);
+
+	log_i("------------------------------------");
+	_header_riff_dump(wav_file->riff);
+	_header_fmt_dump(wav_file->fmt);
+	_header_data_dump(wav_file->data);
+	log_i("------------------------------------");
+
+	fseek(wav_file->fp, pos, SEEK_SET);
+}
+
+static inline void _header_init(wav_file_t *wav_file)
+{
+	wav_file->riff = alloc_mem(RIFF_T_LEN);
+	wav_file->fmt = alloc_mem(FMT_T_LEN);
+	wav_file->data = alloc_mem(DATA_T_LEN);
+
+	wav_file->play_ms = 0;
+}
+
+static inline void _header_write(wav_file_t *wav_file, 
+		int channel, int sample_rate, int bit_per_sample)
+{
+	_header_riff_init(wav_file->riff);
+	_header_fmt_init(wav_file->fmt, channel, sample_rate, bit_per_sample);
+	_header_data_init(wav_file->data);
+
+	fwrite(wav_file->riff, 1, RIFF_T_LEN, wav_file->fp);
+	fwrite(wav_file->fmt, 1, FMT_T_LEN, wav_file->fp);
+	fwrite(wav_file->data, 1, DATA_T_LEN, wav_file->fp);
+}
+
+wav_file_t *wav_file_create(const char *path, 
+		int channel, int sample_rate, int bit_per_sample)
+{
+	wav_file_t *wav_file = alloc_mem(WAV_FILE_LEN);
+
+	_header_init(wav_file);
+
+	wav_file->fp = fopen(path, "w+");
+
+	_header_write(wav_file, channel, sample_rate, bit_per_sample);
+
+	return wav_file;
+}
+
+wav_file_t *wav_file_open(const char *path)
+{
+	wav_file_t *wav_file = alloc_mem(WAV_FILE_LEN);
+
+	_header_init(wav_file);
+
+	wav_file->fp = fopen(path, "r");
+
+	_header_read(wav_file);
 
 	return wav_file;
 }
@@ -220,6 +226,9 @@ void wav_file_flush(wav_file_t *wav_file)
 
 int wav_file_write(wav_file_t *wav_file, void *data, int len)
 {
+	if (!(wav_file && data && len > 0))
+		return -1;
+
 	int ret = fwrite(data, 1, len, wav_file->fp);
 	if (ret > 0) {
 		wav_file->riff->riff_sz += ret;
@@ -231,13 +240,9 @@ int wav_file_write(wav_file_t *wav_file, void *data, int len)
 
 int wav_file_read(wav_file_t *wav_file, void *data, int len)
 {
-	int ret;
-
 	if (!(wav_file && data && len > 0))
 		return -1;
 
-	ret = fread(data, 1, len, wav_file->fp);
-
-	return ret;
+	return fread(data, 1, len, wav_file->fp);
 }
 

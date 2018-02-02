@@ -86,17 +86,7 @@ typedef struct _wav_file_tag {
 }wav_file_t;
 #define WAV_FILE_LEN		(sizeof(wav_file_t))
 
-#define WAV_HEADER_LEN		(RIFF_T_LEN + FMT_T_LEN + DATA_T_LEN)
-
-typedef struct _wav_file_param_tag {
-	char path[WAV_FILE_PATH_LEN];
-	char file_mode[5];
-	int channels;
-	int sample_rate;
-	int bit_per_sample;
-}wav_file_param_t;
-
-#define WAV_FILE_PARAM_LEN	(sizeof(wav_file_param_t))
+#define WAV_HEADER_LEN		(RIFF_T_LEN + FMT_T_LEN + DATA_T_LEN) //44
 
 BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int bit_per_sample);
 BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_open(const char *path);
