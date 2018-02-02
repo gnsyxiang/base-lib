@@ -2,7 +2,7 @@
  *
  * Release under GPLv2.
  * 
- * @file    socket_server.c
+ * @file    socket_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    11/12 2017 20:42
@@ -22,6 +22,22 @@
 #include "log_helper.h"
 #include "parse_cmd.h"
 #include "socket_helper.h"
+
+void socket_client_cb(void *args)
+{
+	log_i("socket_client_cb ok");
+}
+
+static void socket_client(void)
+{
+	socket_t *sk = socket_client_init(LO_IP, MYPORT);
+
+	socket_connect(sk, socket_client_cb, 3);
+
+	socket_client_clean(sk);
+
+	log_i("socket client test");
+}
 
 int cnt;
 
@@ -44,14 +60,15 @@ static void socket_server(void)
 	log_i("socket server test");
 }
 
-void socket_server_test_init(void)
+void socket_test_init(void)
 {
-	handle_test_cmd_t socket_server_test_cmd[] = {
+	handle_test_cmd_t socket_test_cmd[] = {
+		{"1", socket_client},
 		{"2", socket_server},
 	};
 
-	register_test_cmd(socket_server_test_cmd, ARRAY_NUM(socket_server_test_cmd));
+	register_test_cmd(socket_test_cmd, ARRAY_NUM(socket_test_cmd));
 }
 
-DECLARE_INIT(socket_server_test_init);
+DECLARE_INIT(socket_test_init);
 
