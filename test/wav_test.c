@@ -33,7 +33,7 @@
 #include "mem_helper.h"
 
 #define CHANNELS		(1)
-#define SAMPLE_RATE		(48000)
+#define SAMPLE_RATE		(16000)
 #define BIT_PER_SAMPLE	(16)
 
 #define WAV_MS_LEN		(15)
@@ -99,7 +99,7 @@ void add_blank_time(void *file, void *new_file)
 void save_one_channel_to_wav(void *file, void *new_file)
 {
 #define BUF_LEN (1024)
-	static short buf[BUF_LEN * 5 * 2];
+	static short buf[BUF_LEN * CHANNELS * 2];
 	static short one_channel[BUF_LEN];
 	int ret;
 
@@ -107,16 +107,18 @@ void save_one_channel_to_wav(void *file, void *new_file)
 	wav_file_t *one_channel_wav_file = new_file;
 
 	while (1) {
-		ret = wav_file_read(wav_file, buf, BUF_LEN * 5);
+		ret = wav_file_read(wav_file, buf, BUF_LEN * CHANNELS);
 		if (ret <=0)
 			break;
 
 		for (int i = 0; i < BUF_LEN; i++)
-			one_channel[i] = buf[5 * i + 1];
+			one_channel[i] = buf[CHANNELS * i + 0];
 
 		ret = wav_file_write(one_channel_wav_file, one_channel, BUF_LEN);
 	}
 }
+
+#define SAVE_TO_NEW_NAME
 
 void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_handle_cb)
 {
@@ -125,6 +127,12 @@ void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_han
 
     sprintf(src_name, "%s/%s", base_path, name);
     sprintf(dst_name, "%s/%s", DST_DIR, name);
+
+#ifdef SAVE_TO_NEW_NAME
+	static int file_cnt = 0;
+	memset(dst_name, '\0', 256);
+    sprintf(dst_name, "%s/%d.wav", DST_DIR, ++file_cnt);
+#endif
 
 	log_i("src_name: %s", src_name);
 
@@ -143,8 +151,8 @@ static void create_new_wav(void)
 		system("mkdir -p "DST_DIR);
     }
 
-	read_file_list(SRC_DIR, wav_handle, add_blank_time);
-	/*read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);*/
+	/*read_file_list(SRC_DIR, wav_handle, add_blank_time);*/
+	read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);
 
 	log_i("succesful ...");
 }
