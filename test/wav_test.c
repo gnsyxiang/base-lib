@@ -125,7 +125,7 @@ void save_one_channel_to_wav(void *file, void *new_file)
 
 /*#define SAVE_TO_NEW_NAME*/
 
-void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_handle_cb)
+void wav_handle(const char *base_path, const char *name)
 {
     char src_name[DIR_PATH_LEN] = {0};
     char dst_name[DIR_PATH_LEN] = {0};
@@ -159,7 +159,8 @@ void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_han
 	wav_file_t *wav_file = wav_file_open(src_name);
 	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
-	wav_handle_cb(wav_file, new_wav_file);
+	/*add_blank_time(wav_file, new_wav_file);*/
+	save_one_channel_to_wav(wav_file, new_wav_file);
 
 	wav_file_clean(wav_file);
 	wav_file_clean(new_wav_file);
@@ -167,8 +168,7 @@ void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_han
 
 static void create_new_wav(void)
 {
-	/*read_file_list(SRC_DIR_PATH, wav_handle, add_blank_time);*/
-	read_file_list(SRC_DIR_PATH, wav_handle, save_one_channel_to_wav);
+	read_file_list(SRC_DIR_PATH, wav_handle);
 
 	log_i("succesful ...");
 }
