@@ -39,7 +39,6 @@
 #define WAV_MS_LEN		(15)
 
 #define SRC_DIR "wav/src"
-#define DST_DIR "wav/dst"
 
 static void wav_test(void)
 {
@@ -118,21 +117,37 @@ void save_one_channel_to_wav(void *file, void *new_file)
 	}
 }
 
-#define SAVE_TO_NEW_NAME
+/*#define SAVE_TO_NEW_NAME*/
 
+#include "str_helper.h"
 void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_handle_cb)
 {
     char src_name[256] = {0};
     char dst_name[256] = {0};
-
-    sprintf(src_name, "%s/%s", base_path, name);
-    sprintf(dst_name, "%s/%s", DST_DIR, name);
-
+	char new_dst_name[256] = {0};
+	const char *dst_dir = NULL;
 #ifdef SAVE_TO_NEW_NAME
 	static int file_cnt = 0;
-	memset(dst_name, '\0', 256);
-    sprintf(dst_name, "%s/%d.wav", DST_DIR, ++file_cnt);
 #endif
+
+	dst_dir = str_replace_substr(base_path, "src", "dst", 1);
+
+    sprintf(src_name, "%s/%s", base_path, name);
+    sprintf(dst_name, "%s/%s", dst_dir, name);
+
+    if (access(dst_dir, F_OK) != 0) {
+#ifdef SAVE_TO_NEW_NAME
+		file_cnt = 0;
+#endif
+		sprintf(new_dst_name, "mkdir -p %s", dst_dir);
+		system(new_dst_name);
+    }
+
+#ifdef SAVE_TO_NEW_NAME
+	memset(dst_name, '\0', 256);
+    sprintf(dst_name, "%s/%d.wav", dst_dir, ++file_cnt);
+#endif
+	free((void *)dst_dir);
 
 	log_i("src_name: %s", src_name);
 
@@ -147,10 +162,6 @@ void wav_handle(const char *base_path, const char *name, wav_handle_cb_t wav_han
 
 static void create_new_wav(void)
 {
-    if (access(DST_DIR, F_OK) != 0) {
-		system("mkdir -p "DST_DIR);
-    }
-
 	/*read_file_list(SRC_DIR, wav_handle, add_blank_time);*/
 	read_file_list(SRC_DIR, wav_handle, save_one_channel_to_wav);
 
