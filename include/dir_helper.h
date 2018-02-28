@@ -30,10 +30,17 @@ extern "C" {
 #define DIR_HELPER_EX
 #endif
 
-typedef void (*wav_handle_cb_t)(void *file, void *new_file);
-typedef void (*wav_handle_t)(const char* base_path, const char *name, wav_handle_cb_t wav_handle_cb);
+typedef void (*handle_file_dir_t)(const char *base_path, const char *name);
 
-DIR_HELPER_EX void read_file_list(char *basePath, wav_handle_t handle_file_dir, wav_handle_cb_t wav_handle_cb);
+/**
+ * @brief traversing directory files, recursively calling
+ *
+ * @param base_path: specified directory
+ * @param handle_file_dir: callback func
+ *
+ * @return none
+ */
+DIR_HELPER_EX void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir);
 
 #ifdef __cplusplus
 }

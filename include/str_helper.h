@@ -30,7 +30,34 @@ extern "C" {
 #define STR_HELPER_EX
 #endif
 
+/**
+ * @brief first and end exchange string
+ *
+ * @param str: the switched string
+ */
+
+
+STR_HELPER_EX void str_swap_first_and_end(char *str);
+
+/**
+ * @brief get the extension name
+ *
+ * @param file_name: file path
+ * @param ext_name: the extension name of the file 
+ */
 STR_HELPER_EX void str_get_file_extension_name(const char *file_name, char *ext_name);
+
+/**
+ * @brief replace the specified string in a string 
+ *
+ * @param src: original string
+ * @param oldstr: old string
+ * @param newstr: new string
+ * @param num: replace times
+ *
+ * @return return the new string after the replacement
+ */
+const char *str_replace_substr(const char *src, const char *oldstr, const char *newstr, int num);
 
 #ifdef __cplusplus
 }
