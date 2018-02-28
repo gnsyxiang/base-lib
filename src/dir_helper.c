@@ -25,37 +25,50 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "mem_helper.h"
+#include "log_helper.h"
+
 #define DIR_HELPER_GB
 #include "dir_helper.h"
 #undef DIR_HELPER_GB
 
-void read_file_list(char *basePath, wav_handle_t handle_file_dir, wav_handle_cb_t wav_handle_cb)
+/**
+ * @brief traversing directory files, recursively calling
+ *
+ * @param basePath: specified directory
+ * @param handle_file_dir: callback func
+ * @param wav_handle_cb
+ *
+ * @return none
+ */
+void read_file_list(const char *basePath, wav_handle_t handle_file_dir, wav_handle_cb_t wav_handle_cb)
 {
-    DIR *dir;
-    struct dirent *ptr;
+	DIR *dir;
+	struct dirent *ptr;
 
-    if ((dir = opendir(basePath)) == NULL) {
-        perror("open dir error...");
-        exit(1);
-    }
+	if ((dir = opendir(basePath)) == NULL) {
+		log_e("open dir error");
+		exit(1);
+	}
 
-    while ((ptr = readdir(dir)) != NULL) {
-        if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)
-            continue;
-        else if(ptr->d_type == DT_REG) {
-            handle_file_dir(basePath, ptr->d_name, wav_handle_cb);
-        } else if(ptr->d_type == DT_DIR) {
-            int len = strlen(ptr->d_name) + strlen(basePath) + 20;
-            char *sub_dir = (char *)malloc(len);
-            sprintf(sub_dir, "%s/%s", basePath, ptr->d_name);
+	while ((ptr = readdir(dir)) != NULL) {
+		if(strcmp(ptr->d_name,".")==0 || strcmp(ptr->d_name,"..")==0)
+			continue;
+		else if(ptr->d_type == DT_REG) {
+			handle_file_dir(basePath, ptr->d_name, wav_handle_cb);
+		} else if(ptr->d_type == DT_DIR) {
+			int len = strlen(ptr->d_name) + strlen(basePath) + 20;
+			char *sub_dir = alloc_mem(len);
 
-            /* printf("base_path: %s, sub_dir: %s, len: %d \n", basePath, sub_dir, len); */
-            read_file_list(sub_dir, handle_file_dir, wav_handle_cb);
+			sprintf(sub_dir, "%s/%s", basePath, ptr->d_name);
 
-            free(sub_dir);
-        }
-    }
+			/*printf("base_path: %s, sub_dir: %s, len: %d \n", basePath, sub_dir, len); */
+			read_file_list(sub_dir, handle_file_dir, wav_handle_cb);
 
-    closedir(dir);
+			free(sub_dir);
+		}
+	}
+
+	closedir(dir);
 }
 
