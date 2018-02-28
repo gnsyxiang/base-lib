@@ -96,6 +96,8 @@ const char *str_replace_substr(const char *src, const char *oldstr, const char *
 		strcat(tmp, find_oldstr + strlen(oldstr));
 
 		dst = strdup(tmp);
+
+		free_mem(tmp);
 	}
 
 	return dst;
