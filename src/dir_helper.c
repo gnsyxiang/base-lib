@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -79,5 +78,24 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
 	}
 
 	closedir(dir);
+}
+
+void scan_lib(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_file)
+{
+	struct dirent **namelist; // struct dirent * namelist[];
+
+	int num = scandir(dir_name, &namelist, file_filter, alphasort);
+	if (num < 0) {
+		log_e("scandir faild");
+	} else {
+		int cnt = 0;
+		while (cnt < num) {
+			/*log_i("%s\n", namelist[cnt]->d_name);*/
+			handle_file(dir_name, namelist[cnt]->d_name);
+
+			free(namelist[cnt++]);
+		}
+	}
+	free(namelist);
 }
 

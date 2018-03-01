@@ -24,12 +24,15 @@
 extern "C" {
 #endif
 
+#include <dirent.h>
+
 #ifndef DIR_HELPER_GB
 #define DIR_HELPER_EX extern
 #else
 #define DIR_HELPER_EX
 #endif
 
+typedef int (*file_filter_t)(const struct dirent *file);
 typedef void (*handle_file_dir_t)(const char *base_path, const char *name);
 
 /**
@@ -41,6 +44,8 @@ typedef void (*handle_file_dir_t)(const char *base_path, const char *name);
  * @return none
  */
 DIR_HELPER_EX void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir);
+
+void scan_lib(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_file);
 
 #ifdef __cplusplus
 }

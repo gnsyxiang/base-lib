@@ -166,9 +166,23 @@ void wav_handle(const char *base_path, const char *name)
 	wav_file_clean(new_wav_file);
 }
 
+int file_filter(const struct dirent *file)
+{
+	if(file->d_type != DT_REG)
+		return 0;
+
+	return (strncmp(file->d_name, "2_out_xiaodu010105000", strlen("2_out_xiaodu010105000")) == 0);
+}
+
+void file_handler(const char *base_path, const char *name)
+{
+	printf("base_path: %s, name: %s\n", base_path, name);
+}
+
 static void create_new_wav(void)
 {
-	read_file_list(SRC_DIR_PATH, wav_handle);
+	/*read_file_list(SRC_DIR_PATH, wav_handle);*/
+	scan_lib("./wav/src/1/", file_filter, file_handler);
 
 	log_i("succesful ...");
 }
