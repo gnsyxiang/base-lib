@@ -39,13 +39,23 @@ typedef void (*handle_file_dir_t)(const char *base_path, const char *name);
  * @brief traversing directory files, recursively calling
  *
  * @param base_path: specified directory
- * @param handle_file_dir: callback func
+ * @param handle_file: callback func
+ * @param handle_dir: callback func
  *
  * @return none
  */
-DIR_HELPER_EX void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir);
+DIR_HELPER_EX void read_file_list(const char *base_path, 
+		handle_file_dir_t handle_file, handle_file_dir_t handle_dir);
 
-void scan_lib(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_file);
+/**
+ * @brief scan the directory and process the file according to the filter rules
+ *
+ * @param dir_name: directory name
+ * @param file_filter: the callback func of the filter rules
+ * @param handle_file: callback func
+ */
+DIR_HELPER_EX void scan_dir_sort_file(char *dir_name, 
+		file_filter_t file_filter, handle_file_dir_t handle_file);
 
 #ifdef __cplusplus
 }

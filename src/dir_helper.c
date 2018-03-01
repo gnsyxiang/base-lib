@@ -38,11 +38,13 @@
  * @brief traversing directory files, recursively calling
  *
  * @param base_path: specified directory
- * @param handle_file_dir: callback func
+ * @param handle_file: callback func
+ * @param handle_dir: callback func
  *
  * @return none
  */
-void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
+void read_file_list(const char *base_path, 
+		handle_file_dir_t handle_file, handle_file_dir_t handle_dir)
 {
 	DIR *dir;
 	struct dirent *ptr;
@@ -58,21 +60,26 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
 
 		switch (ptr->d_type) {
 			case DT_REG:
-				if (handle_file_dir)
-					handle_file_dir(base_path, ptr->d_name);
+				if (handle_file)
+					handle_file(base_path, ptr->d_name);
 				break;
+
 			case DT_DIR: {
 				int len = strlen(ptr->d_name) + strlen(base_path) + 1 + 1;	//1 for space('\0'), 1 for '/'
 				char *sub_dir = alloc_mem(len);
 
 				sprintf(sub_dir, "%s/%s", base_path, ptr->d_name);
+				/*log_i("base_path: %s, sub_dir: %s, ", base_path, sub_dir); */
 
-				/*log_i("base_path: %s, sub_dir: %s, len: %d", base_path, sub_dir, len); */
-				read_file_list(sub_dir, handle_file_dir);
+				if (handle_dir)
+					handle_dir(base_path, ptr->d_name);
+
+				read_file_list(sub_dir, handle_file, handle_dir);
 
 				free(sub_dir);
 				break;
 			}
+
 			default:
 				break;
 		}
@@ -81,7 +88,15 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
 	closedir(dir);
 }
 
-void scan_lib(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_file)
+/**
+ * @brief scan the directory and process the file according to the filter rules
+ *
+ * @param dir_name: directory name
+ * @param file_filter: the callback func of the filter rules
+ * @param handle_file: callback func
+ */
+void scan_dir_sort_file(char *dir_name, 
+		file_filter_t file_filter, handle_file_dir_t handle_file)
 {
 	struct dirent **namelist; // struct dirent * namelist[];
 
