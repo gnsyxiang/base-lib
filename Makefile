@@ -85,12 +85,12 @@ STRIP  	:= $(Q)$(CROSS_TOOL)strip
 # ------
 # cflags
 # ------
-DEBUG_SWITCH := debug
+#DEBUG_SWITCH := debug
 
 ifeq ($(DEBUG_SWITCH), debug)
 	CFLAGS     := -g
 else
-	CFLAGS     := -O2
+	CFLAGS     := -O2 -Wno-error=unused-result
 endif
 
 CFLAGS     += -Wall -Werror -std=gnu99
