@@ -45,6 +45,7 @@
 #define SRC_DIR_PATH	TOP_DIR"/"SRC_DIR
 
 #define DIR_PATH_LEN	(256)
+#define EXT_NAME_LEN	(10)
 
 static void wav_test(void)
 {
@@ -123,7 +124,7 @@ void save_one_channel_to_wav(void *file, void *new_file)
 	}
 }
 
-/*#define SAVE_TO_NEW_NAME*/
+#define SAVE_TO_NEW_NAME
 
 void wav_handle(const char *base_path, const char *name)
 {
@@ -166,9 +167,33 @@ void wav_handle(const char *base_path, const char *name)
 	wav_file_clean(new_wav_file);
 }
 
+#define EXT_NAME	"wav"
+int file_filter(const struct dirent *file)
+{
+	/*log_i("name: %s", file->d_name);*/
+
+	if(file->d_type != DT_REG)
+		return 0;
+
+	char ext_name[EXT_NAME_LEN] = {0};
+	str_get_file_extension_name(file->d_name, ext_name);
+
+	return (strncmp(ext_name, EXT_NAME, strlen(EXT_NAME)) == 0);
+}
+
+void handle_dir(const char *base_path, const char *name)
+{
+	/*log_i("base_path: %s, name: %s", base_path, name);*/
+
+	char dir_name[DIR_PATH_LEN] = {0};
+	sprintf(dir_name, "%s/%s", base_path, name);
+
+	scan_dir_sort_file(dir_name, file_filter, wav_handle);
+}
+
 static void create_new_wav(void)
 {
-	read_file_list(SRC_DIR_PATH, wav_handle);
+	read_file_list(SRC_DIR_PATH, NULL, handle_dir);
 
 	log_i("succesful ...");
 }

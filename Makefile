@@ -123,11 +123,11 @@ all: $(TARGET_PATH) handle_lib $(TARGET_DEMO)
 $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(MKDIR) $(LIB_DIR)
-	$(CC) $(OBJS) $(LIB_LDFLAGS) -o $@
+	$(CC) $^ $(LIB_LDFLAGS) -o $@
 
 $(TARGET_DEMO): $(TARGET_DEMO_OBJS)
 	$(ECHO) $(MSG_LD) $@
-	$(CC) $(TARGET_DEMO_OBJS) $(LDFLAGS) -o $@
+	$(CC) $^ $(LDFLAGS) -o $@
 
 handle_lib: clean_lib ln_lib cp_lib
 
