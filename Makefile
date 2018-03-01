@@ -22,7 +22,7 @@
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= base_lib
+TARGET_LIB_NAME ?= base-lib
 
 # ------------------
 # output information
@@ -30,12 +30,12 @@ TARGET_LIB_NAME ?= base_lib
 MSG_CC 	?= CC
 MSG_LD 	?= LD
 MSG_LIB ?= LIB_COPY
-MSG_INC := INC_COPY
+MSG_INC ?= INC_COPY
 
 # ----------------
 # cmd redefinition
 # ----------------
-Q := @
+Q 		:= @
 
 RM 		:= $(Q)rm -rf
 ECHO 	:= $(Q)echo
@@ -66,7 +66,6 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # --------
 # compiler
 # --------
-
 #TARGET_SYSTEM   := x1800
 
 ifeq ($(TARGET_SYSTEM), x1800)
@@ -79,12 +78,23 @@ else
 	LDFLAGS 	:= -T configs/ldscript.lds
 endif
 
-CC := $(Q)$(CROSS_TOOL)gcc
+CC 	 	:= $(Q)$(CROSS_TOOL)gcc
+CXX 	:= $(Q)$(CROSS_TOOL)g++
+STRIP  	:= $(Q)$(CROSS_TOOL)strip
 
 # ------
 # cflags
 # ------
-CFLAGS     := -Wall -Werror -g -I$(INC_DIR) -std=gnu99
+DEBUG_SWITCH := debug
+
+ifeq ($(DEBUG_SWITCH), debug)
+	CFLAGS     := -g
+else
+	CFLAGS     := -O2
+endif
+
+CFLAGS     += -Wall -Werror -std=gnu99
+CFLAGS     += -I$(INC_DIR)
 LIB_CFLAGS := $(CFLAGS) -fPIC
 
 # -------
@@ -92,7 +102,9 @@ LIB_CFLAGS := $(CFLAGS) -fPIC
 # -------
 SO_NAME 	:= -Wl,-soname,lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
 
-LDFLAGS 	+= -l$(TARGET_LIB_NAME) -L./lib -Wl,-rpath=./lib
+LDFLAGS 	+= -Wl,-rpath=./lib
+LDFLAGS 	+= -L./lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME)
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared
 
@@ -124,12 +136,14 @@ $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(MKDIR) $(LIB_DIR)
 	$(CC) $^ $(LIB_LDFLAGS) -o $@
+	$(STRIP) --strip-unneeded $@
 
 $(TARGET_DEMO): $(TARGET_DEMO_OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(CC) $^ $(LDFLAGS) -o $@
+	$(STRIP) --strip-unneeded $@
 
-handle_lib: clean_lib ln_lib cp_lib
+handle_lib: clean_lib ln_lib
 
 clean_lib:
 	$(RM) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so
@@ -138,10 +152,6 @@ clean_lib:
 ln_lib:
 	$(LN) $(TARGET_LIB) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so
 	$(LN) $(TARGET_LIB) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
-
-cp_lib:
-	$(CP) $(LIB_DIR)/* ../lib/
-	$(CP) $(INC_C) ../include/
 
 # --------
 # make *.c
