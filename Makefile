@@ -90,7 +90,7 @@ STRIP  	:= $(Q)$(CROSS_TOOL)strip
 ifeq ($(DEBUG_SWITCH), debug)
 	CFLAGS     := -g
 else
-	CFLAGS     := -O2 -Wno-error=unused-result
+	CFLAGS     := -O2 -Wno-error=unused-result -Werror=return-type
 endif
 
 CFLAGS     += -Wall -Werror -std=gnu99
