@@ -58,7 +58,8 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
 
 		switch (ptr->d_type) {
 			case DT_REG:
-				handle_file_dir(base_path, ptr->d_name);
+				if (handle_file_dir)
+					handle_file_dir(base_path, ptr->d_name);
 				break;
 			case DT_DIR: {
 				int len = strlen(ptr->d_name) + strlen(base_path) + 1 + 1;	//1 for space('\0'), 1 for '/'
