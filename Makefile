@@ -66,6 +66,8 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # --------
 # compiler
 # --------
+SYSTEM_32_64 	?= -m32
+
 #TARGET_SYSTEM   := x1800
 
 ifeq ($(TARGET_SYSTEM), x1800)
@@ -75,7 +77,11 @@ ifeq ($(TARGET_SYSTEM), x1800)
 	CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
 	LDFLAGS 	:= -T configs/ldscript-mips.lds
 else
+ifeq ($(SYSTEM_32_64), -m32)
+	LDFLAGS 	:= -T configs/ldscript-m32.lds
+else
 	LDFLAGS 	:= -T configs/ldscript.lds
+endif
 endif
 
 CC 	 	:= $(Q)$(CROSS_TOOL)gcc
@@ -85,28 +91,33 @@ STRIP  	:= $(Q)$(CROSS_TOOL)strip
 # ------
 # cflags
 # ------
+CFLAGS     :=
+LIB_CFLAGS :=
+
 #DEBUG_SWITCH := debug
 
 ifeq ($(DEBUG_SWITCH), debug)
-	CFLAGS     := -g
+	CFLAGS     += -g
 else
-	CFLAGS     := -O2 -Wno-error=unused-result -Werror=return-type
+	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
 endif
 
-CFLAGS     += -Wall -Werror -std=gnu99
+CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64)
 CFLAGS     += -I$(INC_DIR)
-LIB_CFLAGS := $(CFLAGS) -fPIC
+LIB_CFLAGS += $(CFLAGS) -fPIC
 
 # -------
 # ldflags
 # -------
 SO_NAME 	:= -Wl,-soname,lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
 
-LDFLAGS 	+= -Wl,-rpath=./lib
+LD_COM_FLAG := $(SYSTEM_32_64)
+
+LDFLAGS 	+= -Wl,-rpath=./lib $(LD_COM_FLAG)
 LDFLAGS 	+= -L./lib
 LDFLAGS 	+= -l$(TARGET_LIB_NAME)
 LDFLAGS 	+= -lpthread
-LIB_LDFLAGS := $(SO_NAME) -shared
+LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
 # -------
 # h files
@@ -130,7 +141,9 @@ TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
 #################################################
 
-all: $(TARGET_PATH) handle_lib $(TARGET_DEMO)
+all: $(TARGET_LIB) $(TARGET_DEMO)
+
+$(TARGET_LIB): $(TARGET_PATH) handle_lib
 
 $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
