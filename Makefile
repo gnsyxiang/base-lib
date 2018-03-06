@@ -46,11 +46,11 @@ CP 		:= $(Q)cp -ar
 # -------
 # version
 # -------
-MAJOR_VERSION ?= 1
-MINOR_VERSION ?= 0
-BUG_VERSION   ?= 0
+MAJOR_VERSION 	?= 1
+MINOR_VERSION 	?= 0
+RELEASE_VERSION ?= 0
 
-TARGET_LIB 	  := lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUG_VERSION)
+TARGET_LIB 	  := lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
 
 # ----------
 # output dir
