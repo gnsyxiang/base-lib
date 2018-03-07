@@ -26,10 +26,24 @@ extern "C" {
 
 #include <alsa/asoundlib.h>
 
-#ifndef ALSA_RECORD_INTERFACE_GB
-#define ALSA_RECORD_INTERFACE_EX extern
+typedef struct {
+	const char *pcm_name;
+	snd_pcm_format_t format;
+	int channels;
+	unsigned int sample_rate;
+} alsa_params_t;
+
+typedef struct {
+	snd_pcm_t *handle;
+	alsa_params_t alsa_params;
+} alsa_handle_t;
+#define ALSA_HANDLE_T_LEN (sizeof(alsa_handle_t))
+
+
+#ifndef ALSA_RECORD_GB
+#define ALSA_RECORD_EX extern
 #else
-#define ALSA_RECORD_INTERFACE_EX
+#define ALSA_RECORD_EX
 #endif
 
 //#define DEV_NAME		"default"//"plughw:2,0"
@@ -43,9 +57,9 @@ extern "C" {
 #define FRAMES_CNT		(1024)
 #define FRAMES_SIZE		(BIT_PER_SAMPLE / 8 * CHANNELS)
 
-ALSA_RECORD_INTERFACE_EX snd_pcm_t *alsa_record_get_handle(void);
-ALSA_RECORD_INTERFACE_EX void alsa_record_put_handle(snd_pcm_t *capture_handle);
-ALSA_RECORD_INTERFACE_EX int alsa_record_read_pcm(snd_pcm_t *capture_handle, void *buf, int len);
+ALSA_RECORD_EX alsa_handle_t *alsa_record_get_handle(alsa_params_t alsa_params);
+ALSA_RECORD_EX void alsa_record_put_handle(alsa_handle_t *alsa_handle);
+ALSA_RECORD_EX int alsa_record_read_pcm(alsa_handle_t *alsa_handle, void *buf, int len);
 
 #ifdef __cplusplus
 }

@@ -19,23 +19,20 @@
  */
 #include <stdio.h>
 
-#include "alsa_record_interface.h"
+#include "alsa_record.h"
 #include "wav_helper.h"
 
-void save_pcm_to_wav(snd_pcm_t *capture_handle)
+void save_pcm_to_wav(alsa_handle_t *alsa_handle)
 {
-	int i;
-	char *buffer;
 	int frame_len = FRAMES_SIZE * FRAMES_CNT;
+	char *buffer = malloc(frame_len);
 
 	printf("frame_len: %d \n", frame_len);
 
-	buffer = malloc(frame_len);
-
 	wav_file_t *new_wav_file = wav_file_create("test.wav", CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
-	for (i = 0; i < 200; ++i) {
-		alsa_record_read_pcm(capture_handle, buffer, frame_len);
+	for (int i = 0; i < 200; ++i) {
+		alsa_record_read_pcm(alsa_handle, buffer, frame_len);
 
 		printf("i: %d \n", i);
 
@@ -44,17 +41,26 @@ void save_pcm_to_wav(snd_pcm_t *capture_handle)
 
 	wav_file_clean(new_wav_file);
 	free(buffer);
-
-	fprintf(stdout, "buffer freed\n");
 }
 
 int main(void)
 {
-	snd_pcm_t * capture_handle = alsa_record_get_handle();
+	alsa_params_t alsa_params;
 
-	save_pcm_to_wav(capture_handle);
+	alsa_params.pcm_name	= DEV_NAME;
+	alsa_params.format		= SND_PCM_FORMAT_S16_LE;
+	alsa_params.channels	= CHANNELS;
+	alsa_params.sample_rate	= SAMPLE_RATE;
 
-	alsa_record_put_handle(capture_handle);
+	alsa_handle_t *alsa_handle  = alsa_record_get_handle(alsa_params);
+	if (!alsa_handle)
+		return -1;
+
+	save_pcm_to_wav(alsa_handle);
+
+	alsa_record_put_handle(alsa_handle);
+
+	printf("alsa record OK \n");
 
 	return 0;
 }
