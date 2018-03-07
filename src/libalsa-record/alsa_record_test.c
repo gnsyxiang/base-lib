@@ -35,7 +35,7 @@ void save_pcm_to_wav(snd_pcm_t *capture_handle)
 	wav_file_t *new_wav_file = wav_file_create("test.wav", CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
 	for (i = 0; i < 200; ++i) {
-		mic_read(capture_handle, buffer, frame_len);
+		alsa_record_read_pcm(capture_handle, buffer, frame_len);
 
 		printf("i: %d \n", i);
 
@@ -50,11 +50,11 @@ void save_pcm_to_wav(snd_pcm_t *capture_handle)
 
 int main(void)
 {
-	snd_pcm_t * capture_handle = mic_init();
+	snd_pcm_t * capture_handle = alsa_record_get_handle();
 
 	save_pcm_to_wav(capture_handle);
 
-	mic_clean(capture_handle);
+	alsa_record_put_handle(capture_handle);
 
 	return 0;
 }

@@ -43,9 +43,9 @@ extern "C" {
 #define FRAMES_CNT		(1024)
 #define FRAMES_SIZE		(BIT_PER_SAMPLE / 8 * CHANNELS)
 
-ALSA_RECORD_INTERFACE_EX snd_pcm_t *mic_init(void);
-ALSA_RECORD_INTERFACE_EX void mic_clean(snd_pcm_t *capture_handle);
-ALSA_RECORD_INTERFACE_EX int mic_read(snd_pcm_t *capture_handle, void *buf, int len);
+ALSA_RECORD_INTERFACE_EX snd_pcm_t *alsa_record_get_handle(void);
+ALSA_RECORD_INTERFACE_EX void alsa_record_put_handle(snd_pcm_t *capture_handle);
+ALSA_RECORD_INTERFACE_EX int alsa_record_read_pcm(snd_pcm_t *capture_handle, void *buf, int len);
 
 #ifdef __cplusplus
 }
