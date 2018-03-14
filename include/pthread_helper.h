@@ -21,7 +21,7 @@
 #define _PTHREAD_HELPER_H_
 
 #ifdef __cplusplus
-export "C" {
+extern "C" {
 #endif
 
 #include <pthread.h>
