@@ -50,7 +50,9 @@ MAJOR_VERSION 	?= 1
 MINOR_VERSION 	?= 0
 RELEASE_VERSION ?= 0
 
-TARGET_LIB 	  := lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
+TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
+TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
+TARGET_LIB_SO 	:= lib$(TARGET_LIB_NAME).so
 
 # ----------
 # output dir
@@ -66,7 +68,7 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # --------
 # compiler
 # --------
-SYSTEM_32_64 	?= -m32
+#SYSTEM_32_64 	?= -m32
 
 #TARGET_SYSTEM   := x1800
 
@@ -94,7 +96,7 @@ STRIP  	:= $(Q)$(CROSS_TOOL)strip
 CFLAGS     :=
 LIB_CFLAGS :=
 
-#DEBUG_SWITCH := debug
+DEBUG_SWITCH := debug
 
 ifeq ($(DEBUG_SWITCH), debug)
 	CFLAGS     += -g
@@ -109,7 +111,7 @@ LIB_CFLAGS += $(CFLAGS) -fPIC
 # -------
 # ldflags
 # -------
-SO_NAME 	:= -Wl,-soname,lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
+SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
 LD_COM_FLAG := $(SYSTEM_32_64)
 
@@ -149,22 +151,20 @@ $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(MKDIR) $(LIB_DIR)
 	$(CC) $^ $(LIB_LDFLAGS) -o $@
-	$(STRIP) --strip-unneeded $@
+	#$(STRIP) --strip-unneeded $@
 
 $(TARGET_DEMO): $(TARGET_DEMO_OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(CC) $^ $(LDFLAGS) -o $@
-	$(STRIP) --strip-unneeded $@
+	#$(STRIP) --strip-unneeded $@
 
-handle_lib: clean_lib ln_lib
+handle_lib: clean_lib
+	$(LN) $(TARGET_LIB) $(LIB_DIR)/$(TARGET_LIB_MAJ)
+	$(LN) $(TARGET_LIB_MAJ) $(LIB_DIR)/$(TARGET_LIB_SO)
 
 clean_lib:
-	$(RM) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so
-	$(RM) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
-
-ln_lib:
-	$(LN) $(TARGET_LIB) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so
-	$(LN) $(TARGET_LIB) $(LIB_DIR)/lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
+	$(RM) $(LIB_DIR)/$(TARGET_LIB_MAJ)
+	$(RM) $(LIB_DIR)/$(TARGET_LIB_SO)
 
 # --------
 # make *.c
