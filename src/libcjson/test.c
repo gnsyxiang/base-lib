@@ -274,7 +274,8 @@ char text_json[]="{\n\
 			\"Height\": 125,\n\
 			\"Width\":  \"100\"\n\
 		},\n\
-		\"IDs\": [116, 943, 234, 38793]\n\
+		\"num\": [1, 2, 3, 4],\n\
+		\"IDs\": [\"haha\", \"heihei\"]\n\
 	}\n\
 }";
 #endif
@@ -283,6 +284,7 @@ char text_json[]="{\n\
 void test_cjson_lib(void)
 {
 	cJSON *json = NULL;
+	int json_err_num = -1;
 
 
 #ifdef NO_USE_FILE
@@ -306,6 +308,16 @@ void test_cjson_lib(void)
 #endif
 	if (item_obj)
 		printf("root.child0.child1.item0: %s\n", item_obj->valuestring);
+
+	int height = cJSON_GetItemIntValue(json_err_num, json, "Image", "Thumbnail", "Height");
+	printf("Height: %d \n", height);
+
+	int num = cJSON_GetItemIntValue(json_err_num, json, "Image", "num", 2);
+	printf("num: %d \n", num);
+
+	const char *json_err_str = "err";
+	const char *ids = cJSON_GetItemStringValue(json_err_str, json, "Image", "IDs", 1);
+	printf("ids: %s \n", ids);
 
 	cJSON_Delete(json);
 }
