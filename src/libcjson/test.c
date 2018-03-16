@@ -108,6 +108,7 @@ static int print_preallocated(cJSON *root)
 /* Create a bunch of objects as demonstration. */
 static void create_objects(void)
 {
+	return ;
     /* declare a few. */
     cJSON *root = NULL;
     cJSON *fmt = NULL;
@@ -256,6 +257,59 @@ static void create_objects(void)
     cJSON_Delete(root);
 }
 
+#include "cjson_utils.h"
+#include "cjson_helper.h"
+
+/*#define NOTHER_JSON_FILE*/
+#define NO_USE_FILE
+
+#ifdef NO_USE_FILE
+char text_json[]="{\n\
+	\"Image\": {\n\
+		\"Width\":  800,\n\
+		\"Height\": 600,\n\
+		\"Title\":  \"View from 15th Floor\",\n\
+		\"Thumbnail\": {\n\
+			\"Url\":    \"http:/*www.example.com/image/481989943\",\n\
+			\"Height\": 125,\n\
+			\"Width\":  \"100\"\n\
+		},\n\
+		\"IDs\": [116, 943, 234, 38793]\n\
+	}\n\
+}";
+#endif
+
+
+void test_cjson_lib(void)
+{
+	cJSON *json = NULL;
+
+
+#ifdef NO_USE_FILE
+	json=cJSON_Parse(text_json);
+#else
+#ifdef NOTHER_JSON_FILE
+	json = GetJsonObject("test.json", json);
+#else
+	json = GetJsonObject("test1.json", json);
+#endif
+#endif
+
+	char *out = cJSON_Print(json);
+	printf("%s\n",out);
+	free(out);
+
+#ifdef NOTHER_JSON_FILE
+	cJSON *item_obj = cJSON_GetItem(json, "root", "child0", "child1", "item0");
+#else
+	cJSON *item_obj = cJSON_GetItem(json, "Image", "Thumbnail", "Url");
+#endif
+	if (item_obj)
+		printf("root.child0.child1.item0: %s\n", item_obj->valuestring);
+
+	cJSON_Delete(json);
+}
+
 int main(void)
 {
     /* print the version */
@@ -263,6 +317,8 @@ int main(void)
 
     /* Now some samplecode for building objects concisely: */
     create_objects();
+
+	test_cjson_lib();
 
     return 0;
 }

@@ -21,7 +21,7 @@
 # --------------
 # target setting
 # --------------
-TARGET_DEMO 	?= main
+TARGET_LIB_NAME ?= cjson
 
 # ------------------
 # output information
@@ -40,6 +40,17 @@ MKDIR 	:= $(Q)mkdir -p
 LN 		:= $(Q)ln -s
 CP 		:= $(Q)cp -ar
 
+# -------
+# version
+# -------
+MAJOR_VERSION 	?= 1
+MINOR_VERSION 	?= 7
+RELEASE_VERSION ?= 4
+
+TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
+TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
+TARGET_LIB_SO 	:= lib$(TARGET_LIB_NAME).so
+
 # --------
 # compiler
 # --------
@@ -55,7 +66,6 @@ STRIP  	 	:= $(Q)$(CROSS_TOOL)strip
 CFLAGS     	:=
 LIB_CFLAGS 	:=
 LDFLAGS 	:=
-LIB_LDFLAGS :=
 
 # ------
 # cflags
@@ -69,51 +79,56 @@ else
 endif
 
 CFLAGS     	+= -Wall -Werror -std=gnu99
-CFLAGS     	+= -Icjson-helper -Icjson-lib
+CFLAGS     	+= -I.
+LIB_CFLAGS 	+= $(CFLAGS) -fPIC
 
 # -------
 # ldflags
 # -------
 SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
-LDFLAGS 	+= -Wl,-rpath=cjson-lib:cjson-helper
-LDFLAGS 	+= -Lcjson-helper -Lcjson-lib
-LDFLAGS 	+= -lcjson -lcjson-helper
+LIB_LDFLAGS := $(SO_NAME) -shared
 
 # -------
 # c files
 # -------
-TARGET_DEMO_SRC_C := test.c
+SRC_C := cJSON.c
 
-TARGET_DEMO_OBJ_C := $(patsubst %.c, %.o, $(TARGET_DEMO_SRC_C))
-TARGET_DEMO_DEP_C := $(patsubst %.c, %.d, $(TARGET_DEMO_SRC_C))
-TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
-TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
+OBJ_C := $(patsubst %.c, %.o, $(SRC_C))
+DEP_C := $(patsubst %.c, %.d, $(SRC_C))
+DEPS  ?= $(DEP_C)
+OBJS  ?= $(OBJ_C)
 
 #################################################
 
-all: $(TARGET_LIB_NAME) $(TARGET_DEMO)
+all: $(TARGET_LIB_NAME)
 
-$(TARGET_DEMO): $(TARGET_DEMO_OBJS)
+$(TARGET_LIB_NAME): $(TARGET_LIB) handle_lib
+
+$(TARGET_LIB): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
-	$(CC) $^ $(LDFLAGS) -o $@
+	$(CC) $^ $(LIB_LDFLAGS) -o $@
 	$(STRIP) --strip-unneeded $@
 
-lib:
-	cd cjson-lib && make -f Makefile
-	cd cjson-helper && make -f Makefile
+handle_lib: clean_lib
+	$(LN) $(TARGET_LIB) $(TARGET_LIB_MAJ)
+	$(LN) $(TARGET_LIB_MAJ) $(TARGET_LIB_SO)
+
+clean_lib:
+	$(RM) $(TARGET_LIB_MAJ)
+	$(RM) $(TARGET_LIB_SO)
 
 # --------
 # make *.c
 # --------
-$(TARGET_DEMO_OBJ_C): %.o : %.c
+$(OBJ_C): %.o : %.c
 	$(ECHO) $(MSG_CC) $<
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(LIB_CFLAGS) $< -o $@
 
-$(TARGET_DEMO_DEP_C): %.d : %.c
-	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
+$(DEP_C): %.d : %.c
+	$(CC) -MM $(LIB_CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
-sinclude $(TARGET_DEMO_DEPS)
+sinclude $(DEPS)
 
 #################################################
 
@@ -128,17 +143,12 @@ clean:
 	$(RM) $(DEPS)
 	$(RM) $(TARGET_DEMO_OBJS)
 	$(RM) $(TARGET_DEMO_DEPS)
-	$(RM) $(TARGET_DEMO)
-	cd cjson-lib && make -f Makefile clean
-	cd cjson-helper && make -f Makefile clean
 
 distclean: clean index-clean
 	$(RM) $(TARGET_DEMO)
 	$(RM) $(TARGET_LIB)
 	$(RM) $(TARGET_LIB_MAJ)
 	$(RM) $(TARGET_LIB_SO)
-	cd cjson-lib && make -f Makefile distclean
-	cd cjson-helper && make -f Makefile distclean
 
 index: index-clean
 	$(ECHO) generate index
@@ -148,9 +158,6 @@ index: index-clean
 index-clean:
 	$(RM) *.out
 	$(RM) tags
-
-note:
-	doxygen configs/Doxyfile
 
 .PHONY: all clean distclean debug
 

@@ -1,0 +1,14 @@
+{
+	"root" : {
+		"child0" : {
+			"child1" : {
+				"item0" : "hello obj",
+				"item1" : "hello obj again"
+			}
+		},
+		"array" : {
+			{"item0" : "hello array"},
+			{"item1" : "hello array again"}
+		}
+	}
+}
