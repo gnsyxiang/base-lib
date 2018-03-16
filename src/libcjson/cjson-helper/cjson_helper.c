@@ -1,3 +1,22 @@
+/**
+ * 
+ * Release under GPLv2.
+ * 
+ * @file    cjson_helper.c
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    16/03 2018 16:59
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        16/03 2018      create the file
+ * 
+ *     last modified: 16/03 2018 16:59
+ */
 #include <stdio.h>
 #include <stdarg.h>
 
