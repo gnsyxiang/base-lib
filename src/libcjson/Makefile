@@ -26,8 +26,9 @@ TARGET_DEMO 	?= main
 # ------------------
 # output information
 # ------------------
-MSG_CC 	?= CC
-MSG_LD 	?= LD
+MSG_CC 		?= CC
+MSG_CC_E 	?= CC -E
+MSG_LD 		?= LD
 
 # ----------------
 # cmd redefinition
@@ -85,6 +86,7 @@ LDFLAGS 	+= -lcjson -lcjson-helper
 # -------
 TARGET_DEMO_SRC_C := test.c
 
+OBJ_I 			  := $(patsubst %.c, %.i, $(TARGET_DEMO_SRC_C))
 TARGET_DEMO_OBJ_C := $(patsubst %.c, %.o, $(TARGET_DEMO_SRC_C))
 TARGET_DEMO_DEP_C := $(patsubst %.c, %.d, $(TARGET_DEMO_SRC_C))
 TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
@@ -110,12 +112,18 @@ $(TARGET_DEMO_OBJ_C): %.o : %.c
 	$(ECHO) $(MSG_CC) $<
 	$(CC) -c $(CFLAGS) $< -o $@
 
+$(OBJ_I): %.i : %.c
+	$(ECHO) $(MSG_CC_E) $<
+	$(CC) -E $(CFLAGS) $< -o $@
+
 $(TARGET_DEMO_DEP_C): %.d : %.c
 	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
 sinclude $(TARGET_DEMO_DEPS)
 
 #################################################
+
+pre-compile:$(OBJ_I)
 
 debug:
 
@@ -126,6 +134,7 @@ push:
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(DEPS)
+	$(RM) $(OBJ_I)
 	$(RM) $(TARGET_DEMO_OBJS)
 	$(RM) $(TARGET_DEMO_DEPS)
 	$(RM) $(TARGET_DEMO)

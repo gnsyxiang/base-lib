@@ -26,8 +26,9 @@ TARGET_LIB_NAME ?= cjson-helper
 # ------------------
 # output information
 # ------------------
-MSG_CC 	?= CC
-MSG_LD 	?= LD
+MSG_CC 		?= CC
+MSG_CC_E 	?= CC -E
+MSG_LD 		?= LD
 
 # ----------------
 # cmd redefinition
@@ -93,9 +94,10 @@ LIB_LDFLAGS := $(SO_NAME) -shared
 # -------
 # c files
 # -------
-SRC_C := $(wildcard ./*.c)
+SRC_C := $(wildcard *.c)
 
 OBJ_C := $(patsubst %.c, %.o, $(SRC_C))
+OBJ_I := $(patsubst %.c, %.i, $(SRC_C))
 DEP_C := $(patsubst %.c, %.d, $(SRC_C))
 DEPS  ?= $(DEP_C)
 OBJS  ?= $(OBJ_C)
@@ -126,12 +128,18 @@ $(OBJ_C): %.o : %.c
 	$(ECHO) $(MSG_CC) $<
 	$(CC) -c $(LIB_CFLAGS) $< -o $@
 
+$(OBJ_I): %.i : %.c
+	$(ECHO) $(MSG_CC_E) $<
+	$(CC) -E $(CFLAGS) $< -o $@
+
 $(DEP_C): %.d : %.c
 	$(CC) -MM $(LIB_CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
 sinclude $(DEPS)
 
 #################################################
+
+pre-compile:$(OBJ_I)
 
 debug:
 
@@ -142,6 +150,7 @@ push:
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(DEPS)
+	$(RM) $(OBJ_I)
 	$(RM) $(TARGET_DEMO_OBJS)
 	$(RM) $(TARGET_DEMO_DEPS)
 
