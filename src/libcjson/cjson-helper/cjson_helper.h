@@ -20,8 +20,6 @@
 #ifndef _CJSON_HELPER_H_
 #define _CJSON_HELPER_H_
 
-#include <cJSON.h>
-
 #define comac_args_seqs() \
     39, 38, 37, 36, 35, 34, 33, 32, 31, 30, \
     29, 28, 27, 26, 25, 24, 23, 22, 21, 20, \
@@ -46,6 +44,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <cJSON.h>
+
+const char * const json_err_str = "the given domain is error";
+const int json_err_int = -1;
+const double json_err_double = -1.0;
 
 /**
  * 本文件提供对cJSON的快速调用,提供如下的宏作为调用
@@ -76,8 +80,8 @@ extern "C" {
  *              }
  *          },
  *          "array" : {
- *              {"item0" : "hello array"},
- *              {"item1" : "hello array again"}
+ *              "item0" : "hello array",
+ *              "item1" : "hello array again"
  *          }
  *      }
  *   }

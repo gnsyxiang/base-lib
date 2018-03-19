@@ -260,64 +260,55 @@ static void create_objects(void)
 #include "cjson_utils.h"
 #include "cjson_helper.h"
 
-/*#define NOTHER_JSON_FILE*/
 #define NO_USE_FILE
 
 #ifdef NO_USE_FILE
 char text_json[]="{\n\
-	\"Image\": {\n\
-		\"Width\":  800,\n\
-		\"Height\": 600,\n\
-		\"Title\":  \"View from 15th Floor\",\n\
-		\"Thumbnail\": {\n\
-			\"Url\":    \"http:/*www.example.com/image/481989943\",\n\
-			\"Height\": 125,\n\
-			\"Width\":  \"100\"\n\
+	\"image\": {\n\
+		\"width\":  800,\n\
+		\"height\": 600,\n\
+		\"title\":  \"View from 15th Floor\",\n\
+		\"thumbnail\": {\n\
+			\"url\":    \"http:/*www.example.com/image/481989943\",\n\
+			\"height\": 125,\n\
+			\"width\":  \"100\"\n\
 		},\n\
-		\"num\": [1, 2, 3, 4],\n\
-		\"IDs\": [\"haha\", \"heihei\"]\n\
+		\"int\": [1, 2, 3, 4],\n\
+		\"double\": [1.1, 0.2, 0.3],\n\
+		\"string\": [\"haha\", \"heihei\"]\n\
 	}\n\
 }";
 #endif
 
-
 void test_cjson_lib(void)
 {
 	cJSON *json = NULL;
-	int json_err_num = -1;
-
 
 #ifdef NO_USE_FILE
 	json=cJSON_Parse(text_json);
 #else
-#ifdef NOTHER_JSON_FILE
-	json = GetJsonObject("test.json", json);
-#else
-	json = GetJsonObject("test1.json", json);
-#endif
+	json = GetJsonObject("json_file.json", json);
 #endif
 
 	char *out = cJSON_Print(json);
 	printf("%s\n",out);
 	free(out);
 
-#ifdef NOTHER_JSON_FILE
-	cJSON *item_obj = cJSON_GetItem(json, "root", "child0", "child1", "item0");
-#else
-	cJSON *item_obj = cJSON_GetItem(json, "Image", "Thumbnail", "Url");
-#endif
+	cJSON *item_obj = cJSON_GetItem(json, "image", "Thumbnail", "url");
 	if (item_obj)
-		printf("root.child0.child1.item0: %s\n", item_obj->valuestring);
+		printf("image.thumbnail.url: %s\n", item_obj->valuestring);
 
-	int height = cJSON_GetItemIntValue(json_err_num, json, "Image", "Thumbnail", "Height");
+	int height = cJSON_GetItemIntValue(json_err_int, json, "image", "thumbnail", "height");
 	printf("Height: %d \n", height);
 
-	int num = cJSON_GetItemIntValue(json_err_num, json, "Image", "num", 2);
-	printf("num: %d \n", num);
+	int iret= cJSON_GetItemIntValue(json_err_int, json, "image", "int", 2);
+	printf("iret: %d \n", iret);
 
-	const char *json_err_str = "err";
-	const char *ids = cJSON_GetItemStringValue(json_err_str, json, "Image", "IDs", 1);
-	printf("ids: %s \n", ids);
+	double dret = cJSON_GetItemDoubleValue(json_err_double, json, "image", "double", 2);
+	printf("dret: %f \n", dret);
+
+	const char *str = cJSON_GetItemStringValue(json_err_str, json, "image", "string", 1);
+	printf("str: %s \n", str);
 
 	cJSON_Delete(json);
 }
