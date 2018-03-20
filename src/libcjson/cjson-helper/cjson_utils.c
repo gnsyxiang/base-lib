@@ -20,44 +20,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "log_helper.h"
+#include "file_helper.h"
+#include "mem_helper.h"
+
 #include "cjson_utils.h"
 
-cJSON *GetJsonObject(const char *cjson_name, cJSON *json)
+cJSON *cjson_get_object_from_file(const char *path)
 {
-	long len;
-	char* pContent;
-	int tmp;
-	FILE *fp;
+	cJSON *json = NULL;
 
-	if (!cjson_name) {
-		printf("%s is NULL \n", cjson_name);
+	if (!path) {
+		log_i("the file is NULL \n");
 		return NULL;
 	}
 
-	if (!(fp = fopen(cjson_name, "rb+"))) {
-		printf("fopen %s faild \n", cjson_name);
-		return NULL;
+	char* content;
+	long len = open_file_get_len(path);
+	if (len > 0) {
+		content = alloc_mem(len);
+
+		FILE *fp = fopen(path, "r");
+		fread(content, 1, len, fp);
+		fclose(fp);
+
+		json = cJSON_Parse(content);
+		if (!json) {
+			log_i("cJSON_Parse faild");
+			return NULL;
+		}
+
+		free_mem(content);
 	}
 
-	fseek(fp, 0, SEEK_END);
-	len = ftell(fp);
-	if(0 == len)
-	{
-		return NULL;
-	}
-
-	fseek(fp,0,SEEK_SET);
-	pContent = (char*) malloc (sizeof(char) * len);
-	tmp = fread(pContent,1,len,fp);
-	printf("tmp: %d \n", tmp);
-
-	fclose(fp);
-	json=cJSON_Parse(pContent);
-	if (!json)
-	{
-		return NULL;
-	}
-	free(pContent);
 	return json;
 }
 

@@ -26,7 +26,7 @@ extern "C" {
 
 #include "cJSON.h"
 
-cJSON *GetJsonObject(const char *cjson_name, cJSON *json);
+cJSON *cjson_get_object_from_file(const char *path);
 
 #ifdef __cplusplus
 }

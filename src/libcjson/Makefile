@@ -70,16 +70,17 @@ else
 endif
 
 CFLAGS     	+= -Wall -Werror -std=gnu99
-CFLAGS     	+= -Icjson-helper -Icjson-lib
+CFLAGS     	+= -Icjson-helper -Icjson-lib -I../../include
 
 # -------
 # ldflags
 # -------
 SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
-LDFLAGS 	+= -Wl,-rpath=cjson-lib:cjson-helper
-LDFLAGS 	+= -Lcjson-helper -Lcjson-lib
-LDFLAGS 	+= -lcjson -lcjson-helper
+LDFLAGS 	+= -Wl,-rpath=cjson-lib:cjson-helper:../../lib
+LDFLAGS 	+= -Lcjson-helper -Lcjson-lib -L../../lib
+LDFLAGS 	+= -lcjson -lcjson-helper -lbase-lib
+LDFLAGS 	+= -lpthread
 
 # -------
 # c files

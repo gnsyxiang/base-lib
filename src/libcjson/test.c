@@ -260,7 +260,7 @@ static void create_objects(void)
 #include "cjson_utils.h"
 #include "cjson_helper.h"
 
-#define NO_USE_FILE
+/*#define NO_USE_FILE*/
 
 #ifdef NO_USE_FILE
 char text_json[]="{\n\
@@ -287,7 +287,7 @@ void test_cjson_lib(void)
 #ifdef NO_USE_FILE
 	json=cJSON_Parse(text_json);
 #else
-	json = GetJsonObject("json_file.json", json);
+	json = cjson_get_object_from_file("json_file.json");
 #endif
 
 	char *out = cJSON_Print(json);

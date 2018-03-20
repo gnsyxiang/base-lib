@@ -80,7 +80,7 @@ else
 endif
 
 CFLAGS     	+= -Wall -Werror -std=gnu99
-CFLAGS     	+= -I. -I../cjson-lib
+CFLAGS     	+= -I. -I../cjson-lib -I../../../include
 LIB_CFLAGS 	+= $(CFLAGS) -fPIC
 
 # -------
@@ -88,7 +88,7 @@ LIB_CFLAGS 	+= $(CFLAGS) -fPIC
 # -------
 SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
-LDFLAGS 	+= -L../cjson-lib -lcjson
+LDFLAGS 	+= -L../cjson-lib -lcjson -L../../../lib -lbase_lib
 LIB_LDFLAGS := $(SO_NAME) -shared
 
 # -------
