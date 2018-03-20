@@ -24,9 +24,15 @@
 extern "C" {
 #endif
 
-#include "cJSON.h"
+#include <cJSON.h>
 
-cJSON *cjson_get_object_from_file(const char *path);
+#ifndef CJSON_UTILS_GB
+#define CJSON_UTILS_EX extern
+#else
+#define CJSON_UTILS_EX
+#endif
+
+CJSON_UTILS_EX cJSON *cjson_get_object_from_file(const char *path);
 
 #ifdef __cplusplus
 }

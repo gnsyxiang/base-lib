@@ -24,7 +24,9 @@
 #include "file_helper.h"
 #include "mem_helper.h"
 
+#define CJSON_UTILS_GB
 #include "cjson_utils.h"
+#undef CJSON_UTILS_GB
 
 cJSON *cjson_get_object_from_file(const char *path)
 {
