@@ -22,7 +22,6 @@
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= base-lib
 
 # ------------------
 # output information
@@ -43,33 +42,19 @@ MKDIR 	:= $(Q)mkdir -p
 LN 		:= $(Q)ln -s
 CP 		:= $(Q)cp -ar
 
-# -------
-# version
-# -------
-MAJOR_VERSION 	?= 1
-MINOR_VERSION 	?= 0
-RELEASE_VERSION ?= 0
-
-TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
-TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
-TARGET_LIB_SO 	:= lib$(TARGET_LIB_NAME).so
-
 # ----------
 # output dir
 # ----------
 OBJ_DIR ?= objs
 LIB_DIR ?= lib
-INC_DIR ?= include
-SRC_DIR ?= src
+INC_DIR ?= .
+SRC_DIR ?= .
 TST_DIR ?= test
-
-TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 
 # --------
 # compiler
 # --------
 #SYSTEM_32_64 	?= -m32
-
 #TARGET_SYSTEM   := x1800
 
 ifeq ($(TARGET_SYSTEM), x1800)
@@ -77,13 +62,9 @@ ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_NAME 	:= mips-linux-gnu-
 
 	CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
-	LDFLAGS 	:= -T configs/ldscript-mips.lds
+	LDFLAGS 	:=
 else
-ifeq ($(SYSTEM_32_64), -m32)
-	LDFLAGS 	:= -T configs/ldscript-m32.lds
-else
-	LDFLAGS 	:= -T configs/ldscript.lds
-endif
+	LDFLAGS 	:=
 endif
 
 CC 	 	:= $(Q)$(CROSS_TOOL)gcc
@@ -93,33 +74,28 @@ STRIP  	:= $(Q)$(CROSS_TOOL)strip
 # ------
 # cflags
 # ------
-CFLAGS     :=
-LIB_CFLAGS :=
+
+CFLAGS     	:= -Wall -Werror -std=gnu99 $(SYSTEM_32_64)
+CFLAGS 		+= -I$(INC_DIR)
+CFLAGS 		+= -I../../include
 
 DEBUG_SWITCH := debug
 
 ifeq ($(DEBUG_SWITCH), debug)
-	CFLAGS     += -g
+	CFLAGS 	+= -g
 else
-	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
+	CFLAGS  += -O2 -Wno-error=unused-result -Werror=return-type
 endif
-
-CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64)
-CFLAGS     += -I$(INC_DIR)
-LIB_CFLAGS += $(CFLAGS) -fPIC
 
 # -------
 # ldflags
 # -------
-SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
+LIB_PATH 	:= ../../lib
 
-LD_COM_FLAG := $(SYSTEM_32_64)
-
-LDFLAGS 	+= -Wl,-rpath=./lib $(LD_COM_FLAG)
-LDFLAGS 	+= -L./lib
-LDFLAGS 	+= -l$(TARGET_LIB_NAME)
-LDFLAGS 	+= -lpthread
-LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
+LDFLAGS 	+= -Wl,-rpath=$(LIB_PATH) $(SYSTEM_32_64)
+LDFLAGS 	+= -L$(LIB_PATH)
+LDFLAGS 	+= -lbase-lib
+LDFLAGS 	+= -lasound -lpthread
 
 # -------
 # h files
@@ -135,36 +111,14 @@ DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(SRC_C))
 DEPS  ?= $(DEP_C)
 OBJS  ?= $(OBJ_C)
 
-TARGET_DEMO_SRC_C := $(wildcard $(TST_DIR)/*.c)
-TARGET_DEMO_OBJ_C := $(patsubst %.c, $(OBJ_DIR)/%.o, $(TARGET_DEMO_SRC_C))
-TARGET_DEMO_DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(TARGET_DEMO_SRC_C))
-TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
-TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
-
 #################################################
 
-all: $(TARGET_LIB) $(TARGET_DEMO)
+all: $(TARGET_DEMO)
 
-$(TARGET_LIB): $(TARGET_PATH) handle_lib
-
-$(TARGET_PATH): $(OBJS)
-	$(ECHO) $(MSG_LD) $@
-	$(MKDIR) $(LIB_DIR)
-	$(CC) $^ $(LIB_LDFLAGS) -o $@
-	#$(STRIP) --strip-unneeded $@
-
-$(TARGET_DEMO): $(TARGET_DEMO_OBJS)
+$(TARGET_DEMO): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(CC) $^ $(LDFLAGS) -o $@
-	#$(STRIP) --strip-unneeded $@
-
-handle_lib: clean_lib
-	$(LN) $(TARGET_LIB) $(LIB_DIR)/$(TARGET_LIB_MAJ)
-	$(LN) $(TARGET_LIB_MAJ) $(LIB_DIR)/$(TARGET_LIB_SO)
-
-clean_lib:
-	$(RM) $(LIB_DIR)/$(TARGET_LIB_MAJ)
-	$(RM) $(LIB_DIR)/$(TARGET_LIB_SO)
+	$(STRIP) --strip-unneeded $@
 
 # --------
 # make *.c
@@ -172,24 +126,13 @@ clean_lib:
 $(OBJ_C): $(OBJ_DIR)/%.o : %.c
 	$(MKDIR) $(dir $@)
 	$(ECHO) $(MSG_CC) $<
-	$(CC) -c $(LIB_CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 $(DEP_C): $(OBJ_DIR)/%.d : %.c
 	$(MKDIR) $(dir $@);
-	$(CC) -MM $(LIB_CFLAGS) -MT $(@:%.d=%.o) $< >$@
-
-sinclude $(DEPS)
-
-$(TARGET_DEMO_OBJ_C): $(OBJ_DIR)/%.o : %.c
-	$(MKDIR) $(dir $@)
-	$(ECHO) $(MSG_CC) $<
-	$(CC) -c $(CFLAGS) $< -o $@
-
-$(TARGET_DEMO_DEP_C): $(OBJ_DIR)/%.d : %.c
-	$(MKDIR) $(dir $@);
 	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
-sinclude $(TARGET_DEMO_DEPS)
+sinclude $(DEPS)
 
 #################################################
 
@@ -197,8 +140,6 @@ debug:
 	echo $(SRC_DIR)
 
 push:
-	adb push ./lib /xia/base_lib/lib/
-	adb push $(TARGET_DEMO) /xia/base_lib/
 
 clean:
 	$(RM) $(OBJS)
