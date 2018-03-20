@@ -45,7 +45,7 @@ static inline FILE *fopen_l(const char *path, const char *mode)
 {
 	FILE *fp = fopen(path, mode);
 	if (NULL == fp) {
-		log_e("fopen faild");
+		log_e("fopen %s faild", path);
 		return NULL;
 	}
 
@@ -57,6 +57,15 @@ FILE_HELPER_EX int file_set_nonblocking(int fd);
 FILE_HELPER_EX ssize_t file_read(int fd, void *buf, size_t cnt);
 FILE_HELPER_EX ssize_t file_read_timeout(int fd, void *buf, size_t cnt, size_t timeout_ms);
 FILE_HELPER_EX ssize_t file_write(int fd, const void *buf, size_t cnt);
+
+/**
+ * @brief get the length of the file
+ *
+ * @param path: file name
+ *
+ * @return: successful, return total length of a file; faild, return -1 
+ */
+FILE_HELPER_EX long open_file_get_len(const char *path);
 
 
 #ifdef __cplusplus
