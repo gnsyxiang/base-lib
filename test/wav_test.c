@@ -102,29 +102,35 @@ void add_blank_time(void *file, void *new_file)
 	free_mem(voice);
 }
 
-void save_one_channel_to_wav(void *file, void *new_file)
+void save_channel_to_wav(char *src_name, char *dst_name)
 {
-#define BUF_LEN (1024)
-	static short buf[BUF_LEN * CHANNELS * 2];
-	static short one_channel[BUF_LEN];
+#define SRC_CHANNELS (8)
+#define FRAME_CNT (1024)
+
+	wav_file_t *wav_file = wav_file_open(src_name);
+	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
+
+	static short buf[SRC_CHANNELS * FRAME_CNT];
+	static short channels[CHANNELS * FRAME_CNT];
 	int ret;
 
-	wav_file_t *wav_file = file;
-	wav_file_t *one_channel_wav_file = new_file;
-
 	while (1) {
-		ret = wav_file_read(wav_file, buf, BUF_LEN * CHANNELS);
+		ret = wav_file_read(wav_file, buf, SRC_CHANNELS * FRAME_CNT * sizeof(short));
 		if (ret <=0)
 			break;
 
-		for (int i = 0; i < BUF_LEN; i++)
-			one_channel[i] = buf[CHANNELS * i + 0];
+		for (int i = 0; i < FRAME_CNT; i++) {
+			channels[i] = buf[SRC_CHANNELS * i];
+		}
 
-		ret = wav_file_write(one_channel_wav_file, one_channel, BUF_LEN);
+		ret = wav_file_write(new_wav_file, channels, CHANNELS * FRAME_CNT * sizeof(short));
 	}
+
+	wav_file_clean(wav_file);
+	wav_file_clean(new_wav_file);
 }
 
-#define SAVE_TO_NEW_NAME
+/*#define SAVE_TO_NEW_NAME*/
 
 void wav_handle(const char *base_path, const char *name)
 {
@@ -157,14 +163,8 @@ void wav_handle(const char *base_path, const char *name)
 
 	log_i("src_name: %s", src_name);
 
-	wav_file_t *wav_file = wav_file_open(src_name);
-	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
-
 	/*add_blank_time(wav_file, new_wav_file);*/
-	save_one_channel_to_wav(wav_file, new_wav_file);
-
-	wav_file_clean(wav_file);
-	wav_file_clean(new_wav_file);
+	save_channel_to_wav(src_name, dst_name);
 }
 
 #define EXT_NAME	"wav"
@@ -193,7 +193,8 @@ void handle_dir(const char *base_path, const char *name)
 
 static void create_new_wav(void)
 {
-	read_file_list(SRC_DIR_PATH, NULL, handle_dir);
+	/*read_file_list(SRC_DIR_PATH, NULL, handle_dir);*/
+	read_file_list(SRC_DIR_PATH, wav_handle, NULL);
 
 	log_i("succesful ...");
 }
