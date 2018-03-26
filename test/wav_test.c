@@ -132,7 +132,7 @@ void save_channel_to_wav(char *src_name, char *dst_name)
 
 /*#define SAVE_TO_NEW_NAME*/
 
-void wav_handle(const char *base_path, const char *name)
+void wav_handle(const char *base_path, const char *name, int d_type)
 {
     char src_name[DIR_PATH_LEN] = {0};
     char dst_name[DIR_PATH_LEN] = {0};
@@ -164,7 +164,7 @@ void wav_handle(const char *base_path, const char *name)
 	log_i("src_name: %s", src_name);
 
 	/*add_blank_time(wav_file, new_wav_file);*/
-	save_channel_to_wav(src_name, dst_name);
+	/*save_channel_to_wav(src_name, dst_name);*/
 }
 
 #define EXT_NAME	"wav"
@@ -181,9 +181,12 @@ int file_filter(const struct dirent *file)
 	return (strncmp(ext_name, EXT_NAME, strlen(EXT_NAME)) == 0);
 }
 
-void handle_dir(const char *base_path, const char *name)
+void handle_cb(const char *base_path, const char *name, int d_type)
 {
 	/*log_i("base_path: %s, name: %s", base_path, name);*/
+
+	if (d_type == DT_REG)
+		return;
 
 	char dir_name[DIR_PATH_LEN] = {0};
 	sprintf(dir_name, "%s/%s", base_path, name);
@@ -193,8 +196,7 @@ void handle_dir(const char *base_path, const char *name)
 
 static void create_new_wav(void)
 {
-	/*read_file_list(SRC_DIR_PATH, NULL, handle_dir);*/
-	read_file_list(SRC_DIR_PATH, wav_handle, NULL);
+	read_file_list(SRC_DIR_PATH, handle_cb);
 
 	log_i("succesful ...");
 }

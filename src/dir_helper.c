@@ -43,8 +43,7 @@
  *
  * @return none
  */
-void read_file_list(const char *base_path, 
-		handle_file_dir_t handle_file, handle_file_dir_t handle_dir)
+void read_file_list(const char *base_path, handle_file_dir_t handle_cb)
 {
 	DIR *dir;
 	struct dirent *ptr;
@@ -60,8 +59,8 @@ void read_file_list(const char *base_path,
 
 		switch (ptr->d_type) {
 			case DT_REG:
-				if (handle_file)
-					handle_file(base_path, ptr->d_name);
+				if (handle_cb)
+					handle_cb(base_path, ptr->d_name, ptr->d_type);
 				break;
 
 			case DT_DIR: {
@@ -71,10 +70,10 @@ void read_file_list(const char *base_path,
 				sprintf(sub_dir, "%s/%s", base_path, ptr->d_name);
 				/*log_i("base_path: %s, sub_dir: %s, ", base_path, sub_dir); */
 
-				if (handle_dir)
-					handle_dir(base_path, ptr->d_name);
+				if (handle_cb)
+					handle_cb(base_path, ptr->d_name, ptr->d_type);
 
-				read_file_list(sub_dir, handle_file, handle_dir);
+				read_file_list(sub_dir, handle_cb);
 
 				free(sub_dir);
 				break;
@@ -95,8 +94,7 @@ void read_file_list(const char *base_path,
  * @param file_filter: the callback func of the filter rules
  * @param handle_file: callback func
  */
-void scan_dir_sort_file(char *dir_name, 
-		file_filter_t file_filter, handle_file_dir_t handle_file)
+void scan_dir_sort_file(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_cb)
 {
 	struct dirent **namelist; // struct dirent * namelist[];
 
@@ -106,8 +104,8 @@ void scan_dir_sort_file(char *dir_name,
 	} else {
 		int cnt = 0;
 		while (cnt < num) {
-			/*log_i("%s\n", namelist[cnt]->d_name);*/
-			handle_file(dir_name, namelist[cnt]->d_name);
+			/*log_i("%s", namelist[cnt]->d_name);*/
+			handle_cb(dir_name, namelist[cnt]->d_name, DT_REG);
 
 			free(namelist[cnt++]);
 		}
