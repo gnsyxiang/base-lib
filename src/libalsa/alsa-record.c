@@ -114,13 +114,12 @@ ERR_SET_PARAMS:
 
 record_handle_t *alsa_get_record_handle(record_params_t record_params)
 {
-	char *devicename = "default";
 	record_handle_t *record_handle;
 	record_handle = (record_handle_t *)malloc(sizeof(record_handle_t));
 	memset(record_handle, 0x0, sizeof(record_handle_t));
 
-	if (snd_pcm_open(&(record_handle->handle), devicename, SND_PCM_STREAM_CAPTURE, 0) < 0) {
-		ERROR("Error snd_pcm_open [ %s]", devicename);
+	if (snd_pcm_open(&(record_handle->handle), record_params.snd_dev_name, SND_PCM_STREAM_CAPTURE, 0) < 0) {
+		ERROR("Error snd_pcm_open [ %s]", record_params.snd_dev_name);
 		free(record_handle);
 		return NULL;
 	}

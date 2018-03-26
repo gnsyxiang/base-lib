@@ -76,9 +76,11 @@ int main(int argc, char *argv[])
 	int size = 0;
 
 	record_params_t record_params;
-	record_params.format = SND_PCM_FORMAT_S16_LE;
-	record_params.channels = 2;
-	record_params.sample_rate = 16000;
+
+	record_params.snd_dev_name	= "default";
+	record_params.format		= SND_PCM_FORMAT_S16_LE;
+	record_params.channels		= 2;
+	record_params.sample_rate	= 16000;
 
 	int opt;
 	while( -1 != (opt = getopt( argc, argv, "f:s:t:"))) {

@@ -80,6 +80,12 @@ typedef struct {
  * @brief Recording parameters.
  */
 typedef struct {
+
+	/**
+	 * @brief Sound card device name
+	 */
+	const char *snd_dev_name;
+
 	/*
 	 * Specifies data format.
 	 * SND_PCM_FORMAT_S16_LE;
