@@ -173,5 +173,7 @@ void alsa_put_record_handle(record_handle_t * record_handle);
  */
 void alsa_free_record_result(record_result_t record_result);
 
+ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result);
+
 #endif /* end __ALSA_RECORD_H_ */
 

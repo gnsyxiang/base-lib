@@ -132,7 +132,7 @@ record_handle_t *alsa_get_record_handle(record_params_t record_params)
 	return record_handle;
 }
 
-static ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
+ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
 {
 	ssize_t r;
 	size_t result = 0;
@@ -162,88 +162,10 @@ static ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_r
 	return result;
 }
 
-record_result_t alsa_record_get_data(record_handle_t *record_handle)
-{
-	record_result_t record_result;
-	//计算录frame_num个frame需要的byte数
-	record_result.data_buf_size = record_handle->frame_num * record_handle->bits_per_frame / 8;
-
-	//开辟录音buffer
-	record_result.data_buf = (uint8_t *)malloc(record_result.data_buf_size);
-	if (!record_result.data_buf) {
-		ERROR("Error malloc: [data_buf]");
-		record_result.data_buf_size = 0;
-		return record_result;
-	}
-
-	if (read_pcm(record_handle, record_result) != record_handle->frame_num) {
-		free(record_result.data_buf);
-		record_result.data_buf = NULL;
-		record_result.data_buf_size = 0;
-		return record_result;
-	}
-
-	return record_result;
-}
-
-record_result_t alsa_record_by_time(record_handle_t *record_handle, uint32_t second)
-{
-    int blocks_align = record_handle->channels * record_handle->bits_per_sample / 8;  
-    uint32_t bytes_per_second = blocks_align * record_handle->sample_rate;  
-    uint32_t total_size = second * bytes_per_second;  
-	
-	return alsa_record_by_size(record_handle, total_size);
-}
-
-record_result_t alsa_record_by_size(record_handle_t *record_handle, uint32_t total_size)
-{
-	uint32_t tmp = 0;
-	record_result_t record_result;
-	record_result_t tmp_result;
-	memset(&record_result, 0x0, sizeof(record_result));
-	uint8_t *data_buffer = NULL;
-	uint8_t *data_pointer = NULL;
-
-	if(NULL == (data_buffer = (uint8_t *)malloc(total_size))) {
-		ERROR("malloc error.");
-		return record_result;
-	}
-
-	data_pointer = data_buffer;
-
-	while (tmp < total_size) {
-		tmp_result = alsa_record_get_data(record_handle);
-		if (tmp_result.data_buf_size == 0) {
-			return record_result;
-		}
-
-		if (tmp + tmp_result.data_buf_size > total_size) {
-			memcpy(data_pointer, tmp_result.data_buf, total_size - tmp);
-		} else {
-			memcpy(data_pointer, tmp_result.data_buf, tmp_result.data_buf_size);
-		}
-		free(tmp_result.data_buf);
-
-		tmp += tmp_result.data_buf_size;
-		data_pointer += tmp_result.data_buf_size;
-	}
-	record_result.data_buf = data_buffer;
-	record_result.data_buf_size = total_size;
-	return record_result;
-}
-
 void alsa_put_record_handle(record_handle_t *record_handle)
 {
 	snd_pcm_drain(record_handle->handle);
 	snd_pcm_close(record_handle->handle);
-}
-
-void alsa_free_record_result(record_result_t record_result)
-{
-	if(record_result.data_buf) {
-		free(record_result.data_buf);
-		record_result.data_buf = NULL;
-	}
-	record_result.data_buf_size = 0;
+	free(record_handle);
 }
 

@@ -26,85 +26,53 @@
 
 #include "alsa-record.h"
 
-extern char *optarg;
-
-void display_usage(char *bin)
+void alsa_put_record_result(record_result_t record_result)
 {
-	printf("Record data\n");
-	printf("\t-f: Specified function [a, b, c]\n");
-	printf("\ta: use alsa_record_get_data, b: alsa_record_by_time, c: alsa_record_by_size\n");
-	printf("\t-t: Specified time\n");
-	printf("\t-s: Specified size\n");
-	printf("\teg a: %s -f a\n", bin);
-	printf("\teg b: %s -f b -t 10\n", bin);
-	printf("\teg c: %s -f c -s 461234\n", bin);
+	if(record_result.data_buf) {
+		free(record_result.data_buf);
+		record_result.data_buf = NULL;
+	}
+	record_result.data_buf_size = 0;
+}
+
+record_result_t alsa_get_record_result(record_handle_t *record_handle)
+{
+	record_result_t record_result;
+	//计算录frame_num个frame需要的byte数
+	record_result.data_buf_size = record_handle->frame_num * record_handle->bits_per_frame / 8;
+
+	//开辟录音buffer
+	record_result.data_buf = (uint8_t *)malloc(record_result.data_buf_size);
+	if (!record_result.data_buf) {
+		printf("Error malloc: [data_buf]");
+		record_result.data_buf_size = 0;
+	}
+
+	return record_result;
 }
 
 void do_get_data(record_handle_t *record_handle, int fd, int n)
 {
-	record_result_t record_result;
-	while(n--){
-		record_result = alsa_record_get_data(record_handle);
-		if(record_result.data_buf == NULL)
+	record_result_t record_result = alsa_get_record_result(record_handle);
+
+	while (n--) {
+		if (read_pcm(record_handle, record_result) != record_handle->frame_num)
 			break;
 		write(fd, record_result.data_buf, record_result.data_buf_size);
-		alsa_free_record_result(record_result);
 	}
-}
 
-void do_by_time(record_handle_t *record_handle, int fd, int seconds)
-{
-	record_result_t record_result;
-	record_result = alsa_record_by_time(record_handle, seconds);
-	write(fd, record_result.data_buf, record_result.data_buf_size);
-	alsa_free_record_result(record_result);
-}
-
-void do_by_size(record_handle_t *record_handle, int fd, int size)
-{
-	record_result_t record_result;
-	record_result = alsa_record_by_size(record_handle, size);
-	write(fd, record_result.data_buf, record_result.data_buf_size);
-	alsa_free_record_result(record_result);
+	alsa_put_record_result(record_result);
 }
 
 int main(int argc, char *argv[])
 {
 	int fd = -1;
-	char * type = NULL;
-	int seconds = 0;
-	int size = 0;
-
 	record_params_t record_params;
 
 	record_params.snd_dev_name	= "default";
 	record_params.format		= SND_PCM_FORMAT_S16_LE;
 	record_params.channels		= 2;
 	record_params.sample_rate	= 16000;
-
-	int opt;
-	while( -1 != (opt = getopt( argc, argv, "f:s:t:"))) {
-		switch( opt ) {
-		case 'f':
-			type = optarg;
-			break;
-		case 's':
-			size = atoi(optarg);
-			break;
-		case 't':
-			seconds = atoi(optarg);
-			break;
-		case 'h':
-		default:
-			display_usage(argv[0]);
-			return -1;
-			break;
-		}
-	}
-	if(0 == type) {
-		display_usage(argv[0]);
-		return -1;
-	}
 
 	record_handle_t *record_handle = alsa_get_record_handle(record_params);
 	if(!record_handle){
@@ -118,17 +86,9 @@ int main(int argc, char *argv[])
 	if(fd < 0){
 		perror("open");
 	}
-	
-	if(0 == strcmp("a", type)) {
-		printf("Recording by alsa_record_get_data\n");
-		do_get_data(record_handle, fd, 50);
-	} else if (0 == strcmp("b", type)) {
-		printf("Recording by alsa_record_by_time, seconds is %d\n", seconds);
-		do_by_time(record_handle, fd, seconds);
-	} else if (0 == strcmp("c", type)) {
-		printf("Recording by alsa_record_by_size, size is %d\n", size);
-		do_by_size(record_handle, fd, size);
-	}
+
+	do_get_data(record_handle, fd, 50);
+
 	close(fd);
 	alsa_put_record_handle(record_handle);
 	return 0;
