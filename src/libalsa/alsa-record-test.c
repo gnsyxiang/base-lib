@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	alsa_set_read_frame(record_handle, 1024);
+
 #define FILE_PATH	"./haha.pcm"
 	remove(FILE_PATH);
 	fd = open(FILE_PATH, O_CREAT | O_WRONLY, 777);

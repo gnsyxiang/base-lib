@@ -132,6 +132,13 @@ record_handle_t *alsa_get_record_handle(record_params_t record_params)
 	return record_handle;
 }
 
+void alsa_put_record_handle(record_handle_t *record_handle)
+{
+	snd_pcm_drain(record_handle->handle);
+	snd_pcm_close(record_handle->handle);
+	free(record_handle);
+}
+
 ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
 {
 	ssize_t r;
@@ -162,10 +169,8 @@ ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
 	return result;
 }
 
-void alsa_put_record_handle(record_handle_t *record_handle)
+void alsa_set_read_frame(record_handle_t *record_handle, int frame_num)
 {
-	snd_pcm_drain(record_handle->handle);
-	snd_pcm_close(record_handle->handle);
-	free(record_handle);
+	record_handle->frame_num = frame_num;
 }
 

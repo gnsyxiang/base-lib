@@ -118,6 +118,11 @@ typedef struct {
 	size_t data_buf_size;
 } record_result_t;
 
+typedef struct {
+	short dmic[1];
+	short amic[1];
+} mic_src_t;
+
 /**
  * @brief Get the handle for the recording.
  *
@@ -128,52 +133,14 @@ typedef struct {
 record_handle_t *alsa_get_record_handle(record_params_t record_params);
 
 /**
- * @brief Get the recording data, the result in the record_result.
- * record_result must be free after use.
- *
- * @param record_handle
- *
- * @return Return record_result, on error record_result.data_buf is NULL.
- */
-record_result_t alsa_record_get_data(record_handle_t * record_handle);
-
-/**
- * @brief Recording by time length.
- * record_result must be free after use.
- *
- * @param record_handle
- * @param second
- *
- * @return Return record_result, on error record_result.data_buf is NULL.
- */
-record_result_t alsa_record_by_time(record_handle_t * record_handle, uint32_t second);
-
-/**
- * @brief Recording by data size.
- * record_result must be free after use.
- *
- * @param record_handle
- * @param size
- *
- * @return Return record_result, on error record_result.data_buf is NULL.
- */
-record_result_t alsa_record_by_size(record_handle_t * record_handle, uint32_t size);
-
-/**
  * @brief Release record handle after call alsa_get_record_handle.
  *
  * @param record_handle
  */
 void alsa_put_record_handle(record_handle_t * record_handle);
 
-/**
- * @brief Free no longer in use record_result
- *
- * @param record_result record_result
- */
-void alsa_free_record_result(record_result_t record_result);
-
 ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result);
+void alsa_set_read_frame(record_handle_t *record_handle, int frame_num);
 
 #endif /* end __ALSA_RECORD_H_ */
 
