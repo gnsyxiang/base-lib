@@ -3,6 +3,7 @@
 
 # Object files
 *.o
+*.i
 *.ko
 *.obj
 *.elf
@@ -54,12 +55,15 @@ dkms.conf
 # ignore the specified files and directoryies
 node_modules/
 tags
-main
 objs/html/
 objs/latex/
-*.wav
 .*.swp
 
+main
+demo
+
+*.wav
+*.pcm
 
 
 

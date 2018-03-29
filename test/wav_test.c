@@ -32,6 +32,9 @@
 #include "mem_helper.h"
 #include "str_helper.h"
 
+#define SRC_CHANNELS (8)
+#define FRAME_CNT (1024)
+
 #define CHANNELS		(1)
 #define SAMPLE_RATE		(16000)
 #define BIT_PER_SAMPLE	(16)
@@ -45,6 +48,7 @@
 #define SRC_DIR_PATH	TOP_DIR"/"SRC_DIR
 
 #define DIR_PATH_LEN	(256)
+#define EXT_NAME_LEN	(10)
 
 static void wav_test(void)
 {
@@ -101,32 +105,75 @@ void add_blank_time(void *file, void *new_file)
 	free_mem(voice);
 }
 
-void save_one_channel_to_wav(void *file, void *new_file)
+void save_channel_to_wav(void *file, void *new_file)
 {
-#define BUF_LEN (1024)
-	static short buf[BUF_LEN * CHANNELS * 2];
-	static short one_channel[BUF_LEN];
+	wav_file_t *wav_file = file;
+	wav_file_t **new_wav_file = new_file;
+
+	static short buf[SRC_CHANNELS * FRAME_CNT];
+	static short channels[SRC_CHANNELS][FRAME_CNT];
 	int ret;
 
-	wav_file_t *wav_file = file;
-	wav_file_t *one_channel_wav_file = new_file;
-
 	while (1) {
-		ret = wav_file_read(wav_file, buf, BUF_LEN * CHANNELS);
-		if (ret <=0)
+		ret = wav_file_read(wav_file, buf, SRC_CHANNELS * FRAME_CNT * sizeof(short));
+		if (ret <= 0)
 			break;
 
-		for (int i = 0; i < BUF_LEN; i++)
-			one_channel[i] = buf[CHANNELS * i + 0];
+		for (int j = 0; j < SRC_CHANNELS; j++)
+			for (int i = 0; i < FRAME_CNT; i++)
+				channels[j][i] = buf[j + SRC_CHANNELS * i];
 
-		ret = wav_file_write(one_channel_wav_file, one_channel, BUF_LEN);
+		for (int j = 0; j < SRC_CHANNELS; j++)
+			ret = wav_file_write(new_wav_file[j], channels[j], CHANNELS * FRAME_CNT * sizeof(short));
 	}
 }
 
 /*#define SAVE_TO_NEW_NAME*/
+#define SAVE_WAV_CHANNELS
 
-void wav_handle(const char *base_path, const char *name)
+void save_wav_channels(const char *base_path, const char *name, int d_type)
 {
+	/*log_i("base_path: %s, name: %s, d_type: %d", base_path, name, d_type);*/
+
+    char src_name[DIR_PATH_LEN] = {0};
+    char dst_name[SRC_CHANNELS][DIR_PATH_LEN] = {0};
+	wav_file_t *wav_file;
+	wav_file_t *new_wav_file[SRC_CHANNELS];
+	char new_dst_name[DIR_PATH_LEN] = {0};
+	const char *dst_dir = NULL;
+
+	dst_dir = str_replace_substr(base_path, SRC_DIR, DST_DIR, 1);
+
+    sprintf(src_name, "%s/%s", base_path, name);
+	for (int i = 0; i < SRC_CHANNELS; i++)
+		sprintf(dst_name[i], "%s/ch%d-%s", dst_dir, i, name);
+
+    if (access(dst_dir, F_OK) != 0) {
+		sprintf(new_dst_name, "mkdir -p %s", dst_dir);
+		system(new_dst_name);
+    }
+
+	free_mem(dst_dir);
+
+	log_i("src_name: %s", src_name);
+
+	wav_file = wav_file_open(src_name);
+	for (int i = 0; i < SRC_CHANNELS; i++)
+		new_wav_file[i] = wav_file_create(dst_name[i], CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
+
+	/*add_blank_time(wav_file, new_wav_file);*/
+	save_channel_to_wav(wav_file, new_wav_file);
+
+	wav_file_clean(wav_file);
+	for (int i = 0; i < SRC_CHANNELS; i++)
+		wav_file_clean(new_wav_file[i]);
+}
+
+void wav_handle(const char *base_path, const char *name, int d_type)
+{
+	save_wav_channels(base_path, name, d_type);
+	return;
+
     char src_name[DIR_PATH_LEN] = {0};
     char dst_name[DIR_PATH_LEN] = {0};
 	char new_dst_name[DIR_PATH_LEN] = {0};
@@ -160,15 +207,42 @@ void wav_handle(const char *base_path, const char *name)
 	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 
 	/*add_blank_time(wav_file, new_wav_file);*/
-	save_one_channel_to_wav(wav_file, new_wav_file);
+	save_channel_to_wav(wav_file, new_wav_file);
 
 	wav_file_clean(wav_file);
 	wav_file_clean(new_wav_file);
 }
 
+#define EXT_NAME	"wav"
+int file_filter(const struct dirent *file)
+{
+	/*log_i("name: %s", file->d_name);*/
+
+	if(file->d_type != DT_REG)
+		return 0;
+
+	char ext_name[EXT_NAME_LEN] = {0};
+	str_get_file_extension_name(file->d_name, ext_name);
+
+	return (strncmp(ext_name, EXT_NAME, strlen(EXT_NAME)) == 0);
+}
+
+void handle_cb(const char *base_path, const char *name, int d_type)
+{
+	/*log_i("base_path: %s, name: %s", base_path, name);*/
+
+	if (d_type == DT_REG)
+		return;
+
+	char dir_name[DIR_PATH_LEN] = {0};
+	sprintf(dir_name, "%s/%s", base_path, name);
+
+	scan_dir_sort_file(dir_name, file_filter, wav_handle);
+}
+
 static void create_new_wav(void)
 {
-	read_file_list(SRC_DIR_PATH, wav_handle);
+	read_file_list(SRC_DIR_PATH, handle_cb);
 
 	log_i("succesful ...");
 }

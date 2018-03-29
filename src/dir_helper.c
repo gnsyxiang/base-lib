@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dirent.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -39,11 +38,12 @@
  * @brief traversing directory files, recursively calling
  *
  * @param base_path: specified directory
- * @param handle_file_dir: callback func
+ * @param handle_file: callback func
+ * @param handle_dir: callback func
  *
  * @return none
  */
-void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
+void read_file_list(const char *base_path, handle_file_dir_t handle_cb)
 {
 	DIR *dir;
 	struct dirent *ptr;
@@ -59,25 +59,57 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_file_dir)
 
 		switch (ptr->d_type) {
 			case DT_REG:
-				handle_file_dir(base_path, ptr->d_name);
+				if (handle_cb)
+					handle_cb(base_path, ptr->d_name, ptr->d_type);
 				break;
+
 			case DT_DIR: {
 				int len = strlen(ptr->d_name) + strlen(base_path) + 1 + 1;	//1 for space('\0'), 1 for '/'
 				char *sub_dir = alloc_mem(len);
 
 				sprintf(sub_dir, "%s/%s", base_path, ptr->d_name);
+				/*log_i("base_path: %s, sub_dir: %s, ", base_path, sub_dir); */
 
-				/*log_i("base_path: %s, sub_dir: %s, len: %d", base_path, sub_dir, len); */
-				read_file_list(sub_dir, handle_file_dir);
+				if (handle_cb)
+					handle_cb(base_path, ptr->d_name, ptr->d_type);
+
+				read_file_list(sub_dir, handle_cb);
 
 				free(sub_dir);
 				break;
 			}
+
 			default:
 				break;
 		}
 	}
 
 	closedir(dir);
+}
+
+/**
+ * @brief scan the directory and process the file according to the filter rules
+ *
+ * @param dir_name: directory name
+ * @param file_filter: the callback func of the filter rules
+ * @param handle_file: callback func
+ */
+void scan_dir_sort_file(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_cb)
+{
+	struct dirent **namelist; // struct dirent * namelist[];
+
+	int num = scandir(dir_name, &namelist, file_filter, alphasort);
+	if (num < 0) {
+		log_e("scandir faild");
+	} else {
+		int cnt = 0;
+		while (cnt < num) {
+			/*log_i("%s", namelist[cnt]->d_name);*/
+			handle_cb(dir_name, namelist[cnt]->d_name, DT_REG);
+
+			free(namelist[cnt++]);
+		}
+	}
+	free(namelist);
 }
 

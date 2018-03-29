@@ -31,6 +31,33 @@
 #include "file_helper.h"
 #undef FILE_HELPER_GB
 
+/**
+ * @brief get the length of the file
+ *
+ * @param path: file name
+ *
+ * @return: successful, return total length of a file; faild, return -1 
+ */
+long open_file_get_len(const char *path)
+{
+	FILE *fp = fopen(path, "r");
+	if (NULL == fp) {
+		log_e("fopen %s faild", path);
+		return -1;
+	}
+
+	fseek(fp, 0, SEEK_END);
+	long len = ftell(fp);
+	if (len <= 0) {
+		printf("threre is no data in the %s file \n", path);
+		return -1;
+	}
+
+	fclose(fp);
+
+	return len;
+}
+
 static int _set_fcntl(int fd, long arg)
 {
 	int flags;
