@@ -35,13 +35,11 @@ MSG_INC ?= INC_COPY
 # ----------------
 # cmd redefinition
 # ----------------
-Q 		:= @
-
-RM 		:= $(Q)rm -rf
-ECHO 	:= $(Q)echo
-MKDIR 	:= $(Q)mkdir -p
-LN 		:= $(Q)ln -s
-CP 		:= $(Q)cp -ar
+RM 		:= rm -rf
+ECHO 	:= echo
+MKDIR 	:= mkdir -p
+LN 		:= ln -s
+CP 		:= cp -ar
 
 # -------
 # version
@@ -100,9 +98,9 @@ else
 	endif
 endif
 
-CC 	 	:= $(Q)$(CROSS_TOOL)gcc
-CXX 	:= $(Q)$(CROSS_TOOL)g++
-STRIP  	:= $(Q)$(CROSS_TOOL)strip
+CC 	 	:= $(CROSS_TOOL)gcc
+CXX 	:= $(CROSS_TOOL)g++
+STRIP  	:= $(CROSS_TOOL)strip
 
 # ------
 # cflags
@@ -205,21 +203,30 @@ $(TARGET_DEMO_DEP_C): $(OBJ_DIR)/%.d : %.c
 sinclude $(TARGET_DEMO_DEPS)
 
 #################################################
+err_no_targets:
+	@echo "error: use \"targets = your_target\" to specify your target to make!"
+	exit 1
 
-debug:
-	echo $(SRC_DIR)
+ifeq ($(V),1)
+slient_targets=err_no_targets
+endif
+
+.SILENT: $(slient_targets)
+#################################################
+ADB_SHELL := adb shell
+ADB_PUSH  := adb push
 
 DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
 DEVICE_TEST_PATH_LIB 	:= $(DEVICE_TEST_PATH)/lib
 
 push:
-	adb shell mkdir -p $(DEVICE_TEST_PATH)
-	adb shell mkdir -p  	$(DEVICE_TEST_PATH_LIB)
+	$(ADB_SHELL) $(MKDIR) 					$(DEVICE_TEST_PATH)
+	$(ADB_SHELL) $(MKDIR)  					$(DEVICE_TEST_PATH_LIB)
 	\
-	adb push $(TARGET_DEMO) $(DEVICE_TEST_PATH)
-	adb push $(LIB_DIR)/$(TARGET_LIB)  $(DEVICE_TEST_PATH_LIB)
+	$(ADB_PUSH) $(TARGET_DEMO) 				$(DEVICE_TEST_PATH)
+	$(ADB_PUSH) $(LIB_DIR)/$(TARGET_LIB)  	$(DEVICE_TEST_PATH_LIB)
 	\
-	adb shell ln -s $(TARGET_LIB) $(DEVICE_TEST_PATH_LIB)/$(TARGET_LIB_MAJ)
+	$(ADB_SHELL) $(LN) $(TARGET_LIB) 		$(DEVICE_TEST_PATH_LIB)/$(TARGET_LIB_MAJ)
 
 clean:
 	$(RM) $(OBJS)
@@ -234,8 +241,8 @@ distclean: clean index-clean
 
 index: index-clean
 	$(ECHO) generate index
-	$(Q)ctags -R
-	$(Q)cscope -Rbkq
+	ctags -R
+	cscope -Rbkq
 
 index-clean:
 	$(RM) *.out
@@ -243,6 +250,9 @@ index-clean:
 
 note:
 	doxygen configs/Doxyfile
+
+debug:
+	echo $(SRC_DIR)
 
 .PHONY: all clean distclean debug
 
