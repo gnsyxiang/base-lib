@@ -30,6 +30,8 @@ extern "C" {
 #define STR_HELPER_EX
 #endif
 
+typedef int (*strcmp_t)(const char*, const char*);
+
 /**
  * @brief first and end exchange string
  *

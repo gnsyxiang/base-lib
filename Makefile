@@ -135,7 +135,7 @@ LD_COM_FLAG := $(SYSTEM_32_64)
 
 LDFLAGS 	+= -Wl,-rpath=./lib $(LD_COM_FLAG)
 LDFLAGS 	+= -L./lib
-LDFLAGS 	+= -l$(TARGET_LIB_NAME)
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -ldl
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
