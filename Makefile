@@ -68,22 +68,36 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # --------
 # compiler
 # --------
+CFLAGS 		:=
+LIB_CFLAGS 	:=
+LDFLAGS 	:=
+
 #SYSTEM_32_64 	?= -m32
 
 #TARGET_SYSTEM   := x1800
+TARGET_SYSTEM   := xiaomi
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
 	GCC_NAME 	:= mips-linux-gnu-
 
 	CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
-	LDFLAGS 	:= -T configs/ldscript-mips.lds
+	LDFLAGS 	+= -T configs/ldscript-mips.lds
 else
-ifeq ($(SYSTEM_32_64), -m32)
-	LDFLAGS 	:= -T configs/ldscript-m32.lds
-else
-	LDFLAGS 	:= -T configs/ldscript.lds
-endif
+	ifeq ($(TARGET_SYSTEM), xiaomi)
+		GCC_PATH 	:= ~/office/xiaomi/gcc/toolchain-sunxi-musl/toolchain/bin/
+		GCC_NAME 	:= arm-openwrt-linux-
+
+		CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
+		LDFLAGS 	+= -T configs/ldscript-arm.lds
+		CFLAGS 		+= -DNO_backtrace
+	else
+		ifeq ($(SYSTEM_32_64), -m32)
+			LDFLAGS 	+= -T configs/ldscript-m32.lds
+		else
+			LDFLAGS 	+= -T configs/ldscript.lds
+		endif
+	endif
 endif
 
 CC 	 	:= $(Q)$(CROSS_TOOL)gcc
@@ -93,8 +107,6 @@ STRIP  	:= $(Q)$(CROSS_TOOL)strip
 # ------
 # cflags
 # ------
-CFLAGS     :=
-LIB_CFLAGS :=
 
 DEBUG_SWITCH := debug
 
@@ -106,6 +118,7 @@ endif
 
 CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64)
 CFLAGS     += -I$(INC_DIR)
+CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
 # -------
@@ -196,9 +209,17 @@ sinclude $(TARGET_DEMO_DEPS)
 debug:
 	echo $(SRC_DIR)
 
+DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
+DEVICE_TEST_PATH_LIB 	:= $(DEVICE_TEST_PATH)/lib
+
 push:
-	adb push ./lib /xia/base_lib/lib/
-	adb push $(TARGET_DEMO) /xia/base_lib/
+	adb shell mkdir -p $(DEVICE_TEST_PATH)
+	adb shell mkdir -p  	$(DEVICE_TEST_PATH_LIB)
+	\
+	adb push $(TARGET_DEMO) $(DEVICE_TEST_PATH)
+	adb push $(LIB_DIR)/$(TARGET_LIB)  $(DEVICE_TEST_PATH_LIB)
+	\
+	adb shell ln -s $(TARGET_LIB) $(DEVICE_TEST_PATH_LIB)/$(TARGET_LIB_MAJ)
 
 clean:
 	$(RM) $(OBJS)
