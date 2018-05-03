@@ -41,6 +41,9 @@ MKDIR 	:= mkdir -p
 LN 		:= ln -s
 CP 		:= cp -ar
 
+ADB_SHELL := adb shell
+ADB_PUSH  := adb push
+
 # -------
 # version
 # -------
@@ -72,8 +75,8 @@ LDFLAGS 	:=
 
 #SYSTEM_32_64 	?= -m32
 
-#TARGET_SYSTEM   := x1800
-TARGET_SYSTEM   := xiaomi
+TARGET_SYSTEM   := x1800
+#TARGET_SYSTEM   := xiaomi
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
@@ -81,6 +84,8 @@ ifeq ($(TARGET_SYSTEM), x1800)
 
 	CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
 	LDFLAGS 	+= -T configs/ldscript-mips.lds
+
+	DEVICE_TEST_PATH 	 	:= /usr/data/xia/base-lib
 else
 	ifeq ($(TARGET_SYSTEM), xiaomi)
 		GCC_PATH 	:= ~/office/xiaomi/gcc/toolchain-sunxi-musl/toolchain/bin/
@@ -89,6 +94,8 @@ else
 		CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
 		LDFLAGS 	+= -T configs/ldscript-arm.lds
 		CFLAGS 		+= -DNO_backtrace
+
+		DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
 	else
 		ifeq ($(SYSTEM_32_64), -m32)
 			LDFLAGS 	+= -T configs/ldscript-m32.lds
@@ -213,10 +220,6 @@ endif
 
 .SILENT: $(slient_targets)
 #################################################
-ADB_SHELL := adb shell
-ADB_PUSH  := adb push
-
-DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
 DEVICE_TEST_PATH_LIB 	:= $(DEVICE_TEST_PATH)/lib
 
 push:
