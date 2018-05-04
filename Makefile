@@ -75,7 +75,7 @@ LDFLAGS 	:=
 
 #SYSTEM_32_64 	?= -m32
 
-TARGET_SYSTEM   := x1800
+#TARGET_SYSTEM   := x1800
 #TARGET_SYSTEM   := xiaomi
 
 ifeq ($(TARGET_SYSTEM), x1800)

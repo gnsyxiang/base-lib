@@ -43,7 +43,8 @@
  *
  * @return none
  */
-void read_file_list(const char *base_path, handle_file_dir_t handle_cb)
+void read_file_list(const char *base_path, 
+		handle_dir_file_t handle_cb, void *args)
 {
 	DIR *dir;
 	struct dirent *ptr;
@@ -60,7 +61,7 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_cb)
 		switch (ptr->d_type) {
 			case DT_REG:
 				if (handle_cb)
-					handle_cb(base_path, ptr->d_name, ptr->d_type);
+					handle_cb(base_path, ptr->d_name, args);
 				break;
 
 			case DT_DIR: {
@@ -71,9 +72,9 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_cb)
 				/*log_i("base_path: %s, sub_dir: %s, ", base_path, sub_dir); */
 
 				if (handle_cb)
-					handle_cb(base_path, ptr->d_name, ptr->d_type);
+					handle_cb(base_path, ptr->d_name, args);
 
-				read_file_list(sub_dir, handle_cb);
+				read_file_list(sub_dir, handle_cb, args);
 
 				free(sub_dir);
 				break;
@@ -91,21 +92,22 @@ void read_file_list(const char *base_path, handle_file_dir_t handle_cb)
  * @brief scan the directory and process the file according to the filter rules
  *
  * @param dir_name: directory name
- * @param file_filter: the callback func of the filter rules
+ * @param filter: the callback func of the filter rules
  * @param handle_file: callback func
  */
-void scan_dir_sort_file(char *dir_name, file_filter_t file_filter, handle_file_dir_t handle_cb)
+void scan_dir_sort_file(char *dir_name, filter_t filter, 
+		handle_dir_file_t handle_cb, void *args)
 {
 	struct dirent **namelist; // struct dirent * namelist[];
 
-	int num = scandir(dir_name, &namelist, file_filter, alphasort);
+	int num = scandir(dir_name, &namelist, filter, alphasort);
 	if (num < 0) {
 		log_e("scandir faild");
 	} else {
 		int cnt = 0;
 		while (cnt < num) {
 			/*log_i("%s", namelist[cnt]->d_name);*/
-			handle_cb(dir_name, namelist[cnt]->d_name, DT_REG);
+			handle_cb(dir_name, namelist[cnt]->d_name, args);
 
 			free(namelist[cnt++]);
 		}

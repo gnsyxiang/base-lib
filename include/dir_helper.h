@@ -32,8 +32,8 @@ extern "C" {
 #define DIR_HELPER_EX
 #endif
 
-typedef int (*file_filter_t)(const struct dirent *file);
-typedef void (*handle_file_dir_t)(const char *base_path, const char *name, int d_type);
+typedef int (*filter_t)(const struct dirent *file);
+typedef void (*handle_dir_file_t)(const char *base_path, const char *name, void *args);
 
 /**
  * @brief traversing directory files, recursively calling
@@ -44,17 +44,17 @@ typedef void (*handle_file_dir_t)(const char *base_path, const char *name, int d
  *
  * @return none
  */
-DIR_HELPER_EX void read_file_list(const char *base_path, handle_file_dir_t handle_cb);
+DIR_HELPER_EX void read_file_list(const char *base_path, handle_dir_file_t handle_cb, void *args);
 
 /**
  * @brief scan the directory and process the file according to the filter rules
  *
  * @param dir_name: directory name
- * @param file_filter: the callback func of the filter rules
+ * @param filter: the callback func of the filter rules
  * @param handle_file: callback func
  */
-DIR_HELPER_EX void scan_dir_sort_file(char *dir_name, 
-		file_filter_t file_filter, handle_file_dir_t handle_cb);
+DIR_HELPER_EX void scan_dir_sort_file(char *dir_name, filter_t filter, 
+		handle_dir_file_t handle_cb, void *args);
 
 #ifdef __cplusplus
 }
