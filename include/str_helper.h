@@ -47,7 +47,9 @@ STR_HELPER_EX void str_swap_first_and_end(char *str);
  * @param file_name: file path
  * @param ext_name: the extension name of the file 
  */
-STR_HELPER_EX void str_get_file_extension_name(const char *file_name, char *ext_name);
+STR_HELPER_EX void str_get_file_extension_name(const char *, char *);
+
+STR_HELPER_EX void str_get_file_name_no_extension_name(const char *, char *);
 
 /**
  * @brief replace the specified string in a string 

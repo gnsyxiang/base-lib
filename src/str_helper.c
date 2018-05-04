@@ -63,6 +63,19 @@ void str_get_file_extension_name(const char *file_name, char *ext_name)
 	str_swap_first_and_end(pext_name);
 }  
 
+void str_get_file_name_no_extension_name(const char *file_name, char *name)
+{
+	int str_len = strlen(file_name) - 1;
+	const char *p = file_name + str_len;
+	int cnt = 0;
+
+	while (*p-- != '.')
+		cnt++;
+
+	memcpy(name, file_name, str_len - cnt);
+
+	name[str_len - cnt] = '\0';
+}
 
 /**
  * @brief replace the specified string in a string 
