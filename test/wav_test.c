@@ -214,15 +214,6 @@ static void create_new_wav(void)
 #endif
 
 #if 0
-void add_blank_time(void *new_file, int time_ms)
-{
-	int len = time_ms * CHANNELS * SAMPLE_RATE * BIT_PER_SAMPLE / 8;
-    char *blank_voice = alloc_mem(len);
-
-	wav_file_write((wav_file_t *)new_file, blank_voice, len);
-
-	free_mem(blank_voice);
-}
 
 #define SRC_CHANNELS (1)
 void save_channel_to_wav(void *file, void *new_file)
@@ -270,64 +261,53 @@ void save_channel_to_wav(void *file, void *new_file)
 }
 #endif
 
-#define SRC_CHANNELS (5)
-void save_channel_to_wav(void *file, void *new_file)
+#define channels(wav_file)			wav_file->fmt->fmt_channels
+#define sample_rate(wav_file)		wav_file->fmt->fmt_sample_rate
+#define bit_per_sample(wav_file)	wav_file->fmt->fmt_bits_per_sample
+#define data_len(wav_file)			wav_file->data->data_sz
+
+static inline void add_blank_time(wav_file_t *wav_file, wav_file_t *new_wav_file, int len)
 {
-	wav_file_t *wav_file = file;
-	wav_file_t *new_wav_file = new_file;
+	if (len <= 0)
+		return;
 
-	static short buf[SRC_CHANNELS * FRAME_CNT];
-	static short channels[SRC_CHANNELS][FRAME_CNT];
-	int ret;
-
-	while (1) {
-		ret = wav_file_read(wav_file, buf, SRC_CHANNELS * FRAME_CNT * sizeof(short));
-		if (ret <= 0)
-			break;
-
-		for (int j = 0; j < SRC_CHANNELS; j++)
-			for (int i = 0; i < FRAME_CNT; i++)
-				channels[j][i] = buf[j + SRC_CHANNELS * i];
-
-		for (int j = 0; j < 1; j++)
-			ret = wav_file_write(new_wav_file, channels[j], CHANNELS * FRAME_CNT * sizeof(short));
-	}
+    char *blank_voice = alloc_mem(len);
+	wav_file_write(new_wav_file, blank_voice, len);
+	free_mem(blank_voice);
 }
 
-void add_blank_time(void *file, const char *dst_name)
+static inline int calc_blank_bytes(wav_file_t *wav_file, int time_ms)
 {
-	wav_file_t *wav_file = file;
+    int total_bytes = time_ms * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
+	int blank_bytes = (total_bytes - data_len(wav_file)) / 2;
 
-	int channels = wav_file->fmt->fmt_channels;
-	int sample_rate = wav_file->fmt->fmt_sample_rate;
-	int bit_per_sample = wav_file->fmt->fmt_bits_per_sample;
-	int data_len = wav_file->data->data_sz;
-
-	wav_file_t *new_wav_file = wav_file_create(dst_name, channels, sample_rate, bit_per_sample);
-
-	char *voice = alloc_mem(data_len);
-	int len = wav_file_read(wav_file, voice, data_len);
-
-    int total_bytes = WAV_MS_LEN * channels * sample_rate * bit_per_sample / 8;
-    int blank_bytes = (total_bytes - len) / 2;
-
-	switch (new_wav_file->fmt->fmt_bits_per_sample / 8) {
+	switch (bit_per_sample(wav_file) / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
 		case 3: blank_bytes = ALIGN3(blank_bytes); break;
 		case 4: blank_bytes = ALIGN4(blank_bytes); break;
 
 		default: log_i("bsp is error"); break;
 	}
+	return blank_bytes;
+}
 
-    char buf[blank_bytes];
-	memset(buf, '\0', blank_bytes);
+void stretch_appointed_time(const char *src_name, const char *dst_name, int time_ms)
+{
+	wav_file_t *wav_file = wav_file_open(src_name);
+	wav_file_t *new_wav_file = wav_file_create(dst_name, 
+			channels(wav_file), sample_rate(wav_file), bit_per_sample(wav_file));
 
-	wav_file_write(new_wav_file, buf, blank_bytes);
-	wav_file_write(new_wav_file, voice, len);
-	wav_file_write(new_wav_file, buf, blank_bytes);
+	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_ms));
+
+	char *voice = alloc_mem(data_len(wav_file));
+	wav_file_read(wav_file, voice, data_len(wav_file));
+	wav_file_write(new_wav_file, voice, data_len(wav_file));
+
+	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_ms));
 
 	free_mem(voice);
 	wav_file_clean(new_wav_file);
+	wav_file_clean(wav_file);
 }
 
 void wav_handle(const char *base_path, const char *name, void *args)
@@ -351,12 +331,8 @@ void wav_handle(const char *base_path, const char *name, void *args)
 
 	log_i("src_name: %s", src_name);
 
-	wav_file_t *wav_file = wav_file_open(src_name);
-
-	add_blank_time(wav_file, dst_name);
+	stretch_appointed_time(src_name, dst_name, 2);
 	/*save_channel_to_wav(wav_file, new_wav_file);*/
-
-	wav_file_clean(wav_file);
 }
 
 static void synthetic_audio(void)
