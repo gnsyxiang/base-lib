@@ -61,7 +61,7 @@ void read_file_list(const char *base_path,
 		switch (ptr->d_type) {
 			case DT_REG:
 				if (handle_cb)
-					handle_cb(base_path, ptr->d_name, args);
+					handle_cb(base_path, ptr->d_name, DT_REG, args);
 				break;
 
 			case DT_DIR: {
@@ -72,7 +72,7 @@ void read_file_list(const char *base_path,
 				/*log_i("base_path: %s, sub_dir: %s, ", base_path, sub_dir); */
 
 				if (handle_cb)
-					handle_cb(base_path, ptr->d_name, args);
+					handle_cb(base_path, ptr->d_name, DT_DIR, args);
 
 				read_file_list(sub_dir, handle_cb, args);
 
@@ -107,7 +107,7 @@ void scan_dir_sort_file(char *dir_name, filter_t filter,
 		int cnt = 0;
 		while (cnt < num) {
 			/*log_i("%s", namelist[cnt]->d_name);*/
-			handle_cb(dir_name, namelist[cnt]->d_name, args);
+			handle_cb(dir_name, namelist[cnt]->d_name, DT_REG, args);
 
 			free(namelist[cnt++]);
 		}

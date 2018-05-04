@@ -45,11 +45,10 @@
 #define DST_DIR			"dst"
 
 #define SRC_DIR_PATH	TOP_DIR"/"SRC_DIR
+#define DST_DIR_PATH	TOP_DIR"/"DST_DIR
 
 #define DIR_PATH_LEN	(256)
 #define EXT_NAME_LEN	(10)
-
-#if 0
 
 static void wav_test(void)
 {
@@ -76,6 +75,7 @@ static void wav_test(void)
 	log_i("wav test OK");
 }
 
+#if 0
 void save_channel_to_wav(void *file, void *new_file)
 {
 	wav_file_t *wav_file = file;
@@ -99,7 +99,6 @@ void save_channel_to_wav(void *file, void *new_file)
 	}
 }
 
-/*#define SAVE_TO_NEW_NAME*/
 #define SAVE_WAV_CHANNELS
 
 void save_wav_channels(const char *base_path, const char *name, int d_type)
@@ -110,21 +109,21 @@ void save_wav_channels(const char *base_path, const char *name, int d_type)
     char dst_name[SRC_CHANNELS][DIR_PATH_LEN] = {0};
 	wav_file_t *wav_file;
 	wav_file_t *new_wav_file[SRC_CHANNELS];
-	char new_dst_name[DIR_PATH_LEN] = {0};
-	const char *dst_dir = NULL;
+	char buf[DIR_PATH_LEN] = {0};
+	const char *dst_name = NULL;
 
-	dst_dir = str_replace_substr(base_path, SRC_DIR, DST_DIR, 1);
+	dst_name = str_replace_substr(base_path, SRC_DIR, dst_name, 1);
 
     sprintf(src_name, "%s/%s", base_path, name);
 	for (int i = 0; i < SRC_CHANNELS; i++)
-		sprintf(dst_name[i], "%s/ch%d-%s", dst_dir, i, name);
+		sprintf(dst_name[i], "%s/ch%d-%s", dst_name, i, name);
 
-    if (access(dst_dir, F_OK) != 0) {
-		sprintf(new_dst_name, "mkdir -p %s", dst_dir);
-		system(new_dst_name);
+    if (access(dst_name, F_OK) != 0) {
+		sprintf(buf, "mkdir -p %s", dst_name);
+		system(buf);
     }
 
-	free_mem(dst_dir);
+	free_mem(dst_name);
 
 	log_i("src_name: %s", src_name);
 
@@ -138,47 +137,6 @@ void save_wav_channels(const char *base_path, const char *name, int d_type)
 	wav_file_clean(wav_file);
 	for (int i = 0; i < SRC_CHANNELS; i++)
 		wav_file_clean(new_wav_file[i]);
-}
-
-void wav_handle(const char *base_path, const char *name, void *args)
-{
-    char src_name[DIR_PATH_LEN] = {0};
-    char dst_name[DIR_PATH_LEN] = {0};
-	char new_dst_name[DIR_PATH_LEN] = {0};
-	const char *dst_dir = NULL;
-#ifdef SAVE_TO_NEW_NAME
-	static int file_cnt = 0;
-#endif
-
-	dst_dir = str_replace_substr(base_path, SRC_DIR, DST_DIR, 1);
-
-    sprintf(src_name, "%s/%s", base_path, name);
-    sprintf(dst_name, "%s/%s", dst_dir, name);
-
-    if (access(dst_dir, F_OK) != 0) {
-#ifdef SAVE_TO_NEW_NAME
-		file_cnt = 0;
-#endif
-		sprintf(new_dst_name, "mkdir -p %s", dst_dir);
-		system(new_dst_name);
-    }
-
-#ifdef SAVE_TO_NEW_NAME
-	memset(dst_name, '\0', DIR_PATH_LEN);
-    sprintf(dst_name, "%s/%d.wav", dst_dir, ++file_cnt);
-#endif
-	free_mem(dst_dir);
-
-	log_i("src_name: %s", src_name);
-
-	wav_file_t *wav_file = wav_file_open(src_name);
-	wav_file_t *new_wav_file = wav_file_create(dst_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
-
-	/*add_blank_time(wav_file, new_wav_file);*/
-	/*save_channel_to_wav(wav_file, new_wav_file);*/
-
-	wav_file_clean(wav_file);
-	wav_file_clean(new_wav_file);
 }
 
 #define EXT_NAME	"wav"
@@ -310,33 +268,41 @@ void stretch_appointed_time(const char *src_name, const char *dst_name, int time
 	wav_file_clean(wav_file);
 }
 
-void wav_handle(const char *base_path, const char *name, void *args)
+void wav_handle(const char *base_path, const char *name, unsigned char d_type, void *args)
 {
     char src_name[DIR_PATH_LEN] = {0};
-    char dst_name[DIR_PATH_LEN] = {0};
-	char new_dst_name[DIR_PATH_LEN] = {0};
-	const char *dst_dir = NULL;
-
-	dst_dir = str_replace_substr(base_path, SRC_DIR, DST_DIR, 1);
+	const char *dst_name = NULL;
 
     sprintf(src_name, "%s/%s", base_path, name);
-    sprintf(dst_name, "%s/%s", dst_dir, name);
+	dst_name = str_replace_substr(src_name, SRC_DIR, DST_DIR, 1);
 
-    if (access(dst_dir, F_OK) != 0) {
-		sprintf(new_dst_name, "mkdir -p %s", dst_dir);
-		system(new_dst_name);
-    }
+	log_i("src_name: %s, dst_name: %s", src_name, dst_name);
 
-	free_mem(dst_dir);
+	if (d_type == DT_DIR) {
+		char buf[DIR_PATH_LEN] = {0};
 
-	log_i("src_name: %s", src_name);
+		if (access(dst_name, F_OK) != 0) {
+			sprintf(buf, "mkdir -p %s", dst_name);
+			system(buf);
+		}
+	} else if (d_type == DT_REG) {
+		stretch_appointed_time(src_name, dst_name, 2);
+		/*save_channel_to_wav(wav_file, new_wav_file);*/
+	} else
+		log_e("error");
 
-	stretch_appointed_time(src_name, dst_name, 2);
-	/*save_channel_to_wav(wav_file, new_wav_file);*/
+	free_mem(dst_name);
 }
 
 static void synthetic_audio(void)
 {
+	if (access(DST_DIR_PATH, F_OK) != 0) {
+		char buf[DIR_PATH_LEN] = {0};
+
+		sprintf(buf, "mkdir -p %s", DST_DIR_PATH);
+		system(buf);
+	}
+
 	read_file_list(SRC_DIR_PATH, wav_handle, NULL);
 
 	log_i("succesful ...");

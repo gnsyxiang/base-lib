@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 typedef int (*filter_t)(const struct dirent *file);
-typedef void (*handle_dir_file_t)(const char *base_path, const char *name, void *args);
+typedef void (*handle_dir_file_t)(const char *base_path, const char *name, unsigned char d_type, void *args);
 
 /**
  * @brief traversing directory files, recursively calling
