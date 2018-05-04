@@ -63,6 +63,7 @@ LIB_DIR ?= lib
 INC_DIR ?= include
 SRC_DIR ?= src
 TST_DIR ?= test
+DEM_DIR ?= demo
 
 TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 
@@ -77,6 +78,8 @@ LDFLAGS 	:=
 
 #TARGET_SYSTEM   := x1800
 #TARGET_SYSTEM   := xiaomi
+
+#HOOK 		:= -DUSR_HOOK
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
@@ -121,7 +124,7 @@ else
 	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
 endif
 
-CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64)
+CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
 CFLAGS     += -I$(INC_DIR)
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
@@ -250,6 +253,11 @@ index: index-clean
 index-clean:
 	$(RM) *.out
 	$(RM) tags
+
+demo:
+	$(MKDIR) $(DEM_DIR)/$(LIB_DIR)
+	$(CP) $(LIB_DIR) $(DEM_DIR)
+	$(CP) $(TARGET_DEMO) $(DEM_DIR)
 
 note:
 	doxygen configs/Doxyfile

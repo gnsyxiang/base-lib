@@ -104,6 +104,7 @@ const char *str_replace_substr(const char *src, const char *oldstr, const char *
 	return dst;
 }
 
+#ifdef USE_HOOK
 /**
  * @brief LD_PRELOAD=xxx
  *        优先加载xxx路径的库
@@ -124,4 +125,5 @@ int strcmp(const char *s1, const char *s2)
 
 	return old_strcmp(s1, s2);
 }
+#endif
 
