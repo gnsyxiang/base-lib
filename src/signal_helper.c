@@ -64,8 +64,10 @@ static void sig_handler(int signo)
            __func__, global_app_name, getpid(), signal_str[signo]);
 
     printf("Call Trace:\n");
+#ifndef NO_backtrace
     size = backtrace(array, 10);
     strings = backtrace_symbols(array, size);
+#endif
     if (strings) {
         for (i = 0; i < size; i++)
             printf("  %s\n", strings[i]);

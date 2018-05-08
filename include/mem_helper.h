@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include <stdlib.h>
+
 #ifndef BASE_LIB_MEM_HELPER_GB
 #define BASE_LIB_MEM_HELPER_EX extern
 #else

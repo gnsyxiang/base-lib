@@ -18,6 +18,7 @@
  *     last modified: 26/01 2018 10:14
  */
 #include <stdio.h>
+#include <string.h>
 
 #include "log_helper.h"
 #include "parse_cmd.h"
@@ -33,10 +34,22 @@ static void str_test(void)
 	printf("file_name: %s, ext_name: %s \n", file_name, ext_name);
 }
 
+
+static void strcmp_hook_test(void)
+{
+	char *hook_test = "test";
+
+	if(strcmp(hook_test, "test"))
+		printf("Incorrect password\n");
+	else
+		printf("Correct password\n");
+}
+
 static void str_test_init(void)
 {
 	handle_test_cmd_t str_test_cmd[] = {
-		{"10", str_test},
+		/*{"10", str_test},*/
+		{"10", strcmp_hook_test},
 	};
 
 	register_test_cmd(str_test_cmd, ARRAY_NUM(str_test_cmd));

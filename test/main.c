@@ -45,6 +45,8 @@ void dis_func(void)
 	printf("14. net_v1 server test \n");
 
 	printf("input your number: ");
+
+	fflush(stdout);
 }
 
 int main(int argc, const char *argv[])

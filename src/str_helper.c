@@ -19,6 +19,7 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <dlfcn.h>
 
 #include "misc_helper.h"
 #include "mem_helper.h"
@@ -62,6 +63,19 @@ void str_get_file_extension_name(const char *file_name, char *ext_name)
 	str_swap_first_and_end(pext_name);
 }  
 
+void str_get_file_name_no_extension_name(const char *file_name, char *name)
+{
+	int str_len = strlen(file_name) - 1;
+	const char *p = file_name + str_len;
+	int cnt = 0;
+
+	while (*p-- != '.')
+		cnt++;
+
+	memcpy(name, file_name, str_len - cnt);
+
+	name[str_len - cnt] = '\0';
+}
 
 /**
  * @brief replace the specified string in a string 
@@ -103,7 +117,26 @@ const char *str_replace_substr(const char *src, const char *oldstr, const char *
 	return dst;
 }
 
+#ifdef USE_HOOK
+/**
+ * @brief LD_PRELOAD=xxx
+ *        优先加载xxx路径的库
+ * http://www.cnblogs.com/LittleHann/p/3854977.html?utm_source=tuicool&utm_medium=referral
+ */
+int strcmp(const char *s1, const char *s2)
+{
+	static void *handle = NULL;
+	static strcmp_t old_strcmp = NULL;
 
+	if(!handle) {
+		handle = dlopen("libc.so.6", RTLD_LAZY);
+		old_strcmp = (strcmp_t)dlsym(handle, "strcmp");
+	}
 
+	// do somethings
+	printf("hook strcmp: s1=<%s>, s2=<%s> \n", s1, s2);
 
+	return old_strcmp(s1, s2);
+}
+#endif
 

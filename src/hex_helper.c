@@ -23,7 +23,7 @@
 #include "hex_helper.h"
 #undef HEX_HELPER_GB
 
-void print_hex(unsigned char *buf, int len)
+void print_hex(char *buf, int len)
 {
 	for (int i = 0; i < len; i++) {
 		printf("%02x ", buf[i]);

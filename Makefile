@@ -35,20 +35,21 @@ MSG_INC ?= INC_COPY
 # ----------------
 # cmd redefinition
 # ----------------
-Q 		:= @
+RM 		:= rm -rf
+ECHO 	:= echo
+MKDIR 	:= mkdir -p
+LN 		:= ln -s
+CP 		:= cp -ar
 
-RM 		:= $(Q)rm -rf
-ECHO 	:= $(Q)echo
-MKDIR 	:= $(Q)mkdir -p
-LN 		:= $(Q)ln -s
-CP 		:= $(Q)cp -ar
+ADB_SHELL := adb shell
+ADB_PUSH  := adb push
 
 # -------
 # version
 # -------
 MAJOR_VERSION 	?= 1
 MINOR_VERSION 	?= 0
-RELEASE_VERSION ?= 0
+RELEASE_VERSION ?= 1
 
 TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
 TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
@@ -62,39 +63,58 @@ LIB_DIR ?= lib
 INC_DIR ?= include
 SRC_DIR ?= src
 TST_DIR ?= test
+DEM_DIR ?= demo
 
 TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 
 # --------
 # compiler
 # --------
+CFLAGS 		:=
+LIB_CFLAGS 	:=
+LDFLAGS 	:=
+
 #SYSTEM_32_64 	?= -m32
 
 #TARGET_SYSTEM   := x1800
+#TARGET_SYSTEM   := xiaomi
+
+#HOOK 		:= -DUSR_HOOK
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
 	GCC_NAME 	:= mips-linux-gnu-
 
 	CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
-	LDFLAGS 	:= -T configs/ldscript-mips.lds
+	LDFLAGS 	+= -T configs/ldscript-mips.lds
+
+	DEVICE_TEST_PATH 	 	:= /usr/data/xia/base-lib
 else
-ifeq ($(SYSTEM_32_64), -m32)
-	LDFLAGS 	:= -T configs/ldscript-m32.lds
-else
-	LDFLAGS 	:= -T configs/ldscript.lds
-endif
+	ifeq ($(TARGET_SYSTEM), xiaomi)
+		GCC_PATH 	:= ~/office/xiaomi/gcc/toolchain-sunxi-musl/toolchain/bin/
+		GCC_NAME 	:= arm-openwrt-linux-
+
+		CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
+		LDFLAGS 	+= -T configs/ldscript-arm.lds
+		CFLAGS 		+= -DNO_backtrace
+
+		DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
+	else
+		ifeq ($(SYSTEM_32_64), -m32)
+			LDFLAGS 	+= -T configs/ldscript-m32.lds
+		else
+			LDFLAGS 	+= -T configs/ldscript.lds
+		endif
+	endif
 endif
 
-CC 	 	:= $(Q)$(CROSS_TOOL)gcc
-CXX 	:= $(Q)$(CROSS_TOOL)g++
-STRIP  	:= $(Q)$(CROSS_TOOL)strip
+CC 	 	:= $(CROSS_TOOL)gcc
+CXX 	:= $(CROSS_TOOL)g++
+STRIP  	:= $(CROSS_TOOL)strip
 
 # ------
 # cflags
 # ------
-CFLAGS     :=
-LIB_CFLAGS :=
 
 DEBUG_SWITCH := debug
 
@@ -104,8 +124,9 @@ else
 	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
 endif
 
-CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64)
+CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
 CFLAGS     += -I$(INC_DIR)
+CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
 # -------
@@ -117,7 +138,7 @@ LD_COM_FLAG := $(SYSTEM_32_64)
 
 LDFLAGS 	+= -Wl,-rpath=./lib $(LD_COM_FLAG)
 LDFLAGS 	+= -L./lib
-LDFLAGS 	+= -l$(TARGET_LIB_NAME)
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -ldl
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
@@ -192,13 +213,26 @@ $(TARGET_DEMO_DEP_C): $(OBJ_DIR)/%.d : %.c
 sinclude $(TARGET_DEMO_DEPS)
 
 #################################################
+err_no_targets:
+	@echo "error: use \"targets = your_target\" to specify your target to make!"
+	exit 1
 
-debug:
-	echo $(SRC_DIR)
+ifeq ($(V),1)
+slient_targets=err_no_targets
+endif
+
+.SILENT: $(slient_targets)
+#################################################
+DEVICE_TEST_PATH_LIB 	:= $(DEVICE_TEST_PATH)/lib
 
 push:
-	adb push ./lib /xia/base_lib/lib/
-	adb push $(TARGET_DEMO) /xia/base_lib/
+	$(ADB_SHELL) $(MKDIR) 					$(DEVICE_TEST_PATH)
+	$(ADB_SHELL) $(MKDIR)  					$(DEVICE_TEST_PATH_LIB)
+	\
+	$(ADB_PUSH) $(TARGET_DEMO) 				$(DEVICE_TEST_PATH)
+	$(ADB_PUSH) $(LIB_DIR)/$(TARGET_LIB)  	$(DEVICE_TEST_PATH_LIB)
+	\
+	$(ADB_SHELL) $(LN) $(TARGET_LIB) 		$(DEVICE_TEST_PATH_LIB)/$(TARGET_LIB_MAJ)
 
 clean:
 	$(RM) $(OBJS)
@@ -213,15 +247,23 @@ distclean: clean index-clean
 
 index: index-clean
 	$(ECHO) generate index
-	$(Q)ctags -R
-	$(Q)cscope -Rbkq
+	ctags -R
+	cscope -Rbkq
 
 index-clean:
 	$(RM) *.out
 	$(RM) tags
 
+demo:
+	$(MKDIR) $(DEM_DIR)/$(LIB_DIR)
+	$(CP) $(LIB_DIR) $(DEM_DIR)
+	$(CP) $(TARGET_DEMO) $(DEM_DIR)
+
 note:
 	doxygen configs/Doxyfile
+
+debug:
+	echo $(SRC_DIR)
 
 .PHONY: all clean distclean debug
 
