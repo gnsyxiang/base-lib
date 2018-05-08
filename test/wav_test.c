@@ -142,54 +142,6 @@ void handle_cb(const char *base_path, const char *name, void *args)
 
 #endif
 
-#if 0
-
-#define SRC_CHANNELS (1)
-void save_channel_to_wav(void *file, void *new_file)
-{
-	wav_file_t *wav_file = file;
-	wav_file_t *new_wav_file = new_file;
-
-	static short buf[SRC_CHANNELS * FRAME_CNT];
-	static short channels[SRC_CHANNELS][FRAME_CNT];
-	int ret;
-
-	add_blank_time(new_file, 2);
-
-	while (1) {
-		ret = wav_file_read(wav_file, buf, SRC_CHANNELS * FRAME_CNT * sizeof(short));
-		if (ret <= 0)
-			break;
-
-		for (int j = 0; j < SRC_CHANNELS; j++)
-			for (int i = 0; i < FRAME_CNT; i++)
-				channels[j][i] = buf[j + SRC_CHANNELS * i];
-
-		for (int j = 0; j < SRC_CHANNELS; j++)
-			ret = wav_file_write(new_wav_file, channels[j], CHANNELS * FRAME_CNT * sizeof(short));
-	}
-
-	add_blank_time(new_file, 5);
-
-	wav_file_t *shibie_wav_file = wav_file_open("wav/shibie.wav");
-
-	while (1) {
-		ret = wav_file_read(shibie_wav_file, buf, SRC_CHANNELS * FRAME_CNT * sizeof(short));
-		if (ret <= 0)
-			break;
-
-		for (int j = 0; j < SRC_CHANNELS; j++)
-			for (int i = 0; i < FRAME_CNT; i++)
-				channels[j][i] = buf[j + SRC_CHANNELS * i];
-
-		for (int j = 0; j < SRC_CHANNELS; j++)
-			ret = wav_file_write(new_wav_file, channels[j], CHANNELS * FRAME_CNT * sizeof(short));
-	}
-
-	wav_file_clean(shibie_wav_file);
-}
-#endif
-
 #define channels(wav_file)			wav_file->fmt->fmt_channels
 #define sample_rate(wav_file)		wav_file->fmt->fmt_sample_rate
 #define bit_per_sample(wav_file)	wav_file->fmt->fmt_bits_per_sample
@@ -239,7 +191,6 @@ void stretch_appointed_time(const char *src_name, const char *dst_name, int time
 	wav_file_clean(wav_file);
 }
 
-#include <hex_helper.h>
 void save_wav_to_channel(const char *src_name, const char *dst_name)
 {
 	wav_file_t *wav_file = wav_file_open(src_name);
@@ -247,10 +198,10 @@ void save_wav_to_channel(const char *src_name, const char *dst_name)
 	wav_file_t *new_wav_file[channels];
 
 	int bit_per_sample = bit_per_sample(wav_file) / 8;
+
 	int frame_len = channels(wav_file) * FRAME_CNT * bit_per_sample;
 	char *src_data_buf = alloc_mem(frame_len);
 	char *dst_data_buf = alloc_mem(frame_len);
-	int ret;
 
 	char dst_name_no_ext[128];
 	str_get_file_name_no_extension_name(dst_name, dst_name_no_ext);
@@ -263,9 +214,7 @@ void save_wav_to_channel(const char *src_name, const char *dst_name)
 	}
 
 	int frame_point;
-	int sum_frame_point = 0;
-
-	int channels_distanc = data_len(wav_file) / channels / bit_per_sample;
+	int ret;
 
 	while (1) {
 		ret = wav_file_read(wav_file, src_data_buf, frame_len);
@@ -274,64 +223,24 @@ void save_wav_to_channel(const char *src_name, const char *dst_name)
 
 		frame_point = ret / bit_per_sample / channels;
 
-	/*short a = 0x7000;*/
-	/*short b = 0xa000;*/
-
-	/*char c,d;*/
-	/*c = d = 0;*/
-
-		/*print_hex((unsigned char *)src_data_buf, frame_len);*/
-
 		for (int i = 0; i < frame_point; i++) {
 			for (int j = 0; j < channels; j++) {
-
 				int src_len = i * channels * bit_per_sample + bit_per_sample * j;
-
-				char a = src_data_buf[src_len + 0];
-				char b = src_data_buf[src_len + 1];
-
 				int dst_len = j * frame_point * bit_per_sample + i * bit_per_sample;
 
-				*(dst_data_buf + dst_len + 0) = a;
-				*(dst_data_buf + dst_len + 1) = b;
-
-				/*log_i("src_len: %d, dst_len: %d, a: %x, b: %x, c: %x, d: %x, src: %x, dst: %x ", src_len, dst_len, a, b, c, d, a | b << 8, c | d << 8);*/
+				*(dst_data_buf + dst_len + 0) = src_data_buf[src_len + 0];
+				*(dst_data_buf + dst_len + 1) = src_data_buf[src_len + 1];
 			}
 		}
 
-		/*print_hex(dst_data_buf, frame_len);*/
-
-		log_i("ret: %d", ret);
-		log_i("frame_point: %d, sum_frame_point: %d ", frame_point, sum_frame_point);
-
-		log_i("--------1-----\n");
-		for (int j = 0; j < channels(wav_file); j++) {
-		log_i("--------2-----\n");
-
-		int len = j * frame_point * bit_per_sample;
-		log_i("len: %d", len);
-		char *tmp = dst_data_buf + len;
-
-		/*print_hex(tmp, frame_point * bit_per_sample);*/
-			
-			ret = wav_file_write(new_wav_file[j], tmp, frame_point * bit_per_sample);
-		log_i("--------3-----\n");
-		}
-		log_i("--------4-----\n");
-
-		sum_frame_point += frame_point;
+		for (int j = 0; j < channels(wav_file); j++)
+			wav_file_write(new_wav_file[j], dst_data_buf + j * frame_point * bit_per_sample, frame_point * bit_per_sample);
 	}
 
-	log_i("data_len: %d", data_len(wav_file));
-	log_i("channels_distanc: %d \n", channels_distanc);
-	log_i("frame_point: %d", frame_point);
-	log_i("frame_len: %d", frame_len);
-	log_i("bit_per_sample: %d \n", bit_per_sample);
-
-	for (int i = 0; i < channels; i++) {
+	for (int i = 0; i < channels; i++)
 		wav_file_clean(new_wav_file[i]);
-	}
 	wav_file_clean(wav_file);
+
 	free_mem(src_data_buf);
 	free_mem(dst_data_buf);
 }
