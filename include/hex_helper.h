@@ -30,7 +30,7 @@ extern "C" {
 #define HEX_HELPER_EX
 #endif
 
-HEX_HELPER_EX void print_hex(unsigned char *buf, int len);
+HEX_HELPER_EX void print_hex(char *buf, int len);
 
 
 #ifdef __cplusplus
