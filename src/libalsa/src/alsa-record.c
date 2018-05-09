@@ -27,7 +27,7 @@ static int record_set_params(record_handle_t * record_handle, record_params_t re
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_uframes_t alsa_buffer_size;
 	uint32_t exact_rate;
-	uint32_t buffer_time, period_time;
+	uint32_t buffer_time;
 
 	/* Allocate the snd_pcm_hw_params_t structure on the stack. */
 	snd_pcm_hw_params_alloca(&hwparams);
@@ -73,15 +73,21 @@ static int record_set_params(record_handle_t * record_handle, record_params_t re
 		ERROR("Error snd_pcm_hw_params_get_buffer_time_max");
 		goto ERR_SET_PARAMS;
 	}
-	if (buffer_time > 500000) buffer_time = 500000;
-	period_time = buffer_time / 4;
+
+	if (!record_params.period_time) {
+		if (buffer_time > 500000) 
+			buffer_time = 500000;
+		record_params.period_time = buffer_time / 4;
+	} else {
+			buffer_time = record_params.period_time * 5;
+	}
 
 	if (snd_pcm_hw_params_set_buffer_time_near(record_handle->handle, hwparams, &buffer_time, 0) < 0) {
 		ERROR("Error snd_pcm_hw_params_set_buffer_time_near");
 		goto ERR_SET_PARAMS;
 	}
 
-	if (snd_pcm_hw_params_set_period_time_near(record_handle->handle, hwparams, &period_time, 0) < 0) {
+	if (snd_pcm_hw_params_set_period_time_near(record_handle->handle, hwparams, &record_params.period_time, 0) < 0) {
 		ERROR("Error snd_pcm_hw_params_set_period_time_near");
 		goto ERR_SET_PARAMS;
 	}

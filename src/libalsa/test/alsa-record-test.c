@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 	record_params.format		= SND_PCM_FORMAT_S16_LE;
 	record_params.channels		= 2;
 	record_params.sample_rate	= 16000;
+	record_params.period_time	= 64 * 1000;
 
 	record_handle_t *record_handle = alsa_get_record_handle(record_params);
 	if(!record_handle){

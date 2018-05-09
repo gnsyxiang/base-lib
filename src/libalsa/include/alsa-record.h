@@ -102,6 +102,8 @@ typedef struct {
 	 * @brief frequence of sample
 	 */
 	uint32_t sample_rate;
+
+	uint32_t period_time;
 } record_params_t;
 
 /**
