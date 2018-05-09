@@ -5,7 +5,7 @@
 # @file    Makefile
 # @brief   
 # @author  gnsyxiang <gnsyxiang@163.com>
-# @date    28/02 2018 17:02
+# @date    08/05 2018 17:43
 # @version v0.0.1
 # 
 # @since    note
@@ -13,16 +13,16 @@
 # 
 #     change log:
 #     NO.     Author              Date            Modified
-#     00      zhenquan.qiu        28/02 2018      create the file
+#     00      zhenquan.qiu        08/05 2018      create the file
 # 
-#     last modified: 28/02 2018 17:02
+#     last modified: 08/05 2018 17:43
 # ===============================================================
 
 # --------------
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= base-lib
+TARGET_LIB_NAME ?= hardware
 
 # ------------------
 # output information
@@ -49,7 +49,7 @@ ADB_PUSH  := adb push
 # -------
 MAJOR_VERSION 	?= 1
 MINOR_VERSION 	?= 0
-RELEASE_VERSION ?= 1
+RELEASE_VERSION ?= 0
 
 TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
 TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
@@ -99,12 +99,6 @@ else
 		CFLAGS 		+= -DNO_backtrace
 
 		DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
-	else
-		ifeq ($(SYSTEM_32_64), -m32)
-			LDFLAGS 	+= -T configs/ldscript-m32.lds
-		else
-			LDFLAGS 	+= -T configs/ldscript.lds
-		endif
 	endif
 endif
 
@@ -125,7 +119,7 @@ else
 endif
 
 CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
-CFLAGS     += -I$(INC_DIR)
+CFLAGS     += -I$(INC_DIR) -I../../include
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
@@ -136,9 +130,9 @@ SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
 LD_COM_FLAG := $(SYSTEM_32_64)
 
-LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
-LDFLAGS 	+= -L$(LIB_DIR)
-LDFLAGS 	+= -l$(TARGET_LIB_NAME) -ldl
+LDFLAGS 	+= $(LD_COM_FLAG) -Wl,-rpath=$(LIB_DIR):../../lib 
+LDFLAGS 	+= -L$(LIB_DIR) -L../../lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lbase-lib
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
