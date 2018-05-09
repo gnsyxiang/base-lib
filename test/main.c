@@ -43,6 +43,7 @@ void dis_func(void)
 	printf("12. csv test \n");
 	printf("13. net_v1 client test \n");
 	printf("14. net_v1 server test \n");
+	printf("15. ring buffer test \n");
 
 	printf("input your number: ");
 

@@ -30,7 +30,7 @@ extern "C" {
 #define BASE_LIB_PARSE_CMD_EX
 #endif
 
-#define MAX_TEST_CMD (10)
+#define MAX_TEST_CMD (20)
 #define MAX_TEST_CMD_NAME_LEN (256)
 
 #define ARRAY_NUM(array) (sizeof(array) / sizeof(array[0]))
