@@ -32,15 +32,8 @@
 #include "mem_helper.h"
 #include "str_helper.h"
 
-#define FRAME_CNT (1024)
-
-#define POINT_NUM	(1025)
-
-#define CHANNELS		(2)
-#define SAMPLE_RATE		(16000)
-#define BIT_PER_SAMPLE	(16)
-
-#define WAV_MS_LEN		(15)
+#define FRAME_CNT		(1024)
+#define DIR_PATH_LEN	(128)
 
 #define TOP_DIR			"wav"
 #define SRC_DIR			"src"
@@ -49,11 +42,14 @@
 #define SRC_DIR_PATH	TOP_DIR"/"SRC_DIR
 #define DST_DIR_PATH	TOP_DIR"/"DST_DIR
 
-#define DIR_PATH_LEN	(128)
-#define EXT_NAME_LEN	(10)
-
 static void wav_test(void)
 {
+#define POINT_NUM	(1025)
+
+#define CHANNELS		(2)
+#define SAMPLE_RATE		(16000)
+#define BIT_PER_SAMPLE	(16)
+
     if (access(SRC_DIR_PATH, F_OK) != 0) {
 		system("mkdir -p "SRC_DIR_PATH);
     }
@@ -77,71 +73,6 @@ static void wav_test(void)
 	log_i("wav test OK");
 }
 
-#if 0
-void save_wav_channels(const char *base_path, const char *name, int d_type)
-{
-	/*log_i("base_path: %s, name: %s, d_type: %d", base_path, name, d_type);*/
-
-    char src_name[DIR_PATH_LEN] = {0};
-    char dst_name[SRC_CHANNELS][DIR_PATH_LEN] = {0};
-	wav_file_t *wav_file;
-	wav_file_t *new_wav_file[SRC_CHANNELS];
-	char buf[DIR_PATH_LEN] = {0};
-	const char *dst_name = NULL;
-
-	dst_name = str_replace_substr(base_path, SRC_DIR, dst_name, 1);
-
-    sprintf(src_name, "%s/%s", base_path, name);
-	for (int i = 0; i < SRC_CHANNELS; i++)
-		sprintf(dst_name[i], "%s/ch%d-%s", dst_name, i, name);
-
-    if (access(dst_name, F_OK) != 0) {
-		sprintf(buf, "mkdir -p %s", dst_name);
-		system(buf);
-    }
-
-	free_mem(dst_name);
-
-	log_i("src_name: %s", src_name);
-
-	wav_file = wav_file_open(src_name);
-	for (int i = 0; i < SRC_CHANNELS; i++)
-		new_wav_file[i] = wav_file_create(dst_name[i], CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
-
-	/*add_blank_time(wav_file, new_wav_file);*/
-	save_channel_to_wav(wav_file, new_wav_file);
-
-	wav_file_clean(wav_file);
-	for (int i = 0; i < SRC_CHANNELS; i++)
-		wav_file_clean(new_wav_file[i]);
-}
-
-#define EXT_NAME	"wav"
-int file_filter(const struct dirent *file)
-{
-	/*log_i("name: %s", file->d_name);*/
-
-	if(file->d_type != DT_REG)
-		return 0;
-
-	char ext_name[EXT_NAME_LEN] = {0};
-	str_get_file_extension_name(file->d_name, ext_name);
-
-	return (strncmp(ext_name, EXT_NAME, strlen(EXT_NAME)) == 0);
-}
-
-void handle_cb(const char *base_path, const char *name, void *args)
-{
-	log_i("base_path: %s, name: %s", base_path, name);
-
-	char dir_name[DIR_PATH_LEN] = {0};
-	sprintf(dir_name, "%s/%s", base_path, name);
-
-	scan_dir_sort_file(dir_name, file_filter, wav_handle, args);
-}
-
-#endif
-
 #define channels(wav_file)			wav_file->fmt->fmt_channels
 #define sample_rate(wav_file)		wav_file->fmt->fmt_sample_rate
 #define bit_per_sample(wav_file)	wav_file->fmt->fmt_bits_per_sample
@@ -149,18 +80,23 @@ void handle_cb(const char *base_path, const char *name, void *args)
 
 static inline void add_blank_time(wav_file_t *wav_file, wav_file_t *new_wav_file, int len)
 {
-	if (len <= 0)
+	if (len <= 0) {
+		log_e("len is less than zero");
 		return;
+	}
 
     char *blank_voice = alloc_mem(len);
 	wav_file_write(new_wav_file, blank_voice, len);
 	free_mem(blank_voice);
 }
 
-static inline int calc_blank_bytes(wav_file_t *wav_file, int time_ms)
+#define WAV_MS_LEN		(15)
+
+static inline int calc_blank_bytes(wav_file_t *wav_file, int time_s)
 {
-    int total_bytes = time_ms * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
-	int blank_bytes = (total_bytes - data_len(wav_file)) / 2;
+    int total_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
+	/*int blank_bytes = (total_bytes - data_len(wav_file)) / 2;*/
+	int blank_bytes = total_bytes;
 
 	switch (bit_per_sample(wav_file) / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
@@ -172,19 +108,34 @@ static inline int calc_blank_bytes(wav_file_t *wav_file, int time_ms)
 	return blank_bytes;
 }
 
-void stretch_appointed_time(const char *src_name, const char *dst_name, int time_ms)
+#define COMBINE_WAKEUP_ASR_WAV
+
+void stretch_appointed_time(const char *src_name, const char *dst_name, int time_s)
 {
 	wav_file_t *wav_file = wav_file_open(src_name);
 	wav_file_t *new_wav_file = wav_file_create(dst_name, 
 			channels(wav_file), sample_rate(wav_file), bit_per_sample(wav_file));
 
-	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_ms));
+	/*add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_s));*/
+	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, 5));
+
+#ifdef COMBINE_WAKEUP_ASR_WAV
+	wav_file_t *wakeup_file = wav_file_open("wav/xiaodu-48k-jiaozhun.wav");
+
+	char *wakeup_voice = alloc_mem(data_len(wakeup_file));
+	wav_file_read(wakeup_file, wakeup_voice, data_len(wakeup_file));
+	wav_file_write(new_wav_file, wakeup_voice, data_len(wakeup_file));
+
+	free_mem(wakeup_voice);
+	wav_file_clean(wakeup_file);
+#endif
 
 	char *voice = alloc_mem(data_len(wav_file));
 	wav_file_read(wav_file, voice, data_len(wav_file));
 	wav_file_write(new_wav_file, voice, data_len(wav_file));
 
-	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_ms));
+	/*add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_s));*/
+	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, 5));
 
 	free_mem(voice);
 	wav_file_clean(new_wav_file);
@@ -263,8 +214,8 @@ void wav_handle(const char *base_path, const char *name, unsigned char d_type, v
 			system(buf);
 		}
 	} else if (d_type == DT_REG) {
-		/*stretch_appointed_time(src_name, dst_name, 2);*/
-		save_wav_to_channel(src_name, dst_name);
+		stretch_appointed_time(src_name, dst_name, WAV_MS_LEN);
+		/*save_wav_to_channel(src_name, dst_name);*/
 	} else
 		log_e("error");
 
