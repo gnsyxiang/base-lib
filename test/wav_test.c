@@ -44,7 +44,7 @@
 
 static void wav_test(void)
 {
-#define POINT_NUM	(1025)
+#define POINT_NUM	(256000 + 30)
 
 #define CHANNELS		(2)
 #define SAMPLE_RATE		(16000)
@@ -106,6 +106,52 @@ static inline int calc_blank_bytes(wav_file_t *wav_file, int time_s)
 		default: log_i("bsp is error"); break;
 	}
 	return blank_bytes;
+}
+
+void cut_audio(const char *src_name, const char *dst_name, int time_s)
+{
+	wav_file_t *wav_file = wav_file_open(src_name);
+
+	int i, ret, wav_cnt;
+	i = ret = wav_cnt = 0;
+	wav_file_t *cut_wav_file;
+
+	int frame_len = channels(wav_file) * FRAME_CNT * bit_per_sample(wav_file) / 8;
+	char *cut_buf = alloc_mem(frame_len);
+
+	char dst_name_no_ext[128];
+	str_get_file_name_no_extension_name(dst_name, dst_name_no_ext);
+
+	// 去掉前面若干ms
+	int cut_frame_cnt = sample_rate(wav_file) * 10 / FRAME_CNT;
+	for (int j = 0; j < cut_frame_cnt; j++)
+		wav_file_read(wav_file, cut_buf, frame_len);
+
+	while (1) {
+		char buf[DIR_PATH_LEN] = {0};
+		sprintf(buf, "%s-%02d.wav", dst_name_no_ext, i++);
+		cut_wav_file = wav_file_create(buf, channels(wav_file), sample_rate(wav_file), bit_per_sample(wav_file));
+
+		wav_cnt = 0;
+		while (1) {
+			if (wav_cnt++ == sample_rate(wav_file) * time_s / FRAME_CNT)
+				break;
+
+			ret = wav_file_read(wav_file, cut_buf, frame_len);
+			if (ret <= 0)
+				goto wav_over;
+
+			wav_file_write(cut_wav_file, cut_buf, ret);
+		}
+	
+		wav_file_clean(cut_wav_file);
+	}
+
+wav_over:
+
+	free_mem(cut_buf);
+	wav_file_clean(cut_wav_file);
+	wav_file_clean(wav_file);
 }
 
 #define COMBINE_WAKEUP_ASR_WAV
@@ -214,7 +260,8 @@ void wav_handle(const char *base_path, const char *name, unsigned char d_type, v
 			system(buf);
 		}
 	} else if (d_type == DT_REG) {
-		stretch_appointed_time(src_name, dst_name, WAV_MS_LEN);
+		cut_audio(src_name, dst_name, 20); //8
+		/*stretch_appointed_time(src_name, dst_name, WAV_MS_LEN);*/
 		/*save_wav_to_channel(src_name, dst_name);*/
 	} else
 		log_e("error");
