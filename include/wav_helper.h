@@ -20,11 +20,12 @@
 #ifndef _BASE_LIB_WAV_HELPER_H_
 #define _BASE_LIB_WAV_HELPER_H_
 
-#include <stdio.h>
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifndef BASE_LIB_WAV_HELPER_GB
 #define BASE_LIB_WAV_HELPER_EX extern
@@ -105,6 +106,11 @@ BASE_LIB_WAV_HELPER_EX int wav_file_over(wav_file_t *wav_file);
 inline int wav_file_seek(wav_file_t *wav_file, long offset, int whence)
 {
 	return fseek(wav_file->fp, offset, whence);
+}
+
+int get_bit_per_sample(const char *name)
+{
+	return atoi(name + 1);
 }
 
 #ifdef  __cplusplus
