@@ -20,6 +20,10 @@
 #ifndef __ALSA_RECORD_H_
 #define __ALSA_RECORD_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <alsa/asoundlib.h>
 
 typedef unsigned char  uint8_t;
@@ -93,6 +97,10 @@ record_handle_t *alsa_record_init(record_params_t record_params);
 void alsa_record_clean(record_handle_t * record_handle);
 
 void alsa_record_get_data(record_handle_t *record_handle, void *buf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* end __ALSA_RECORD_H_ */
 

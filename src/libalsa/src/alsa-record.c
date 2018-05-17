@@ -19,12 +19,13 @@
  */
 #include <stdio.h>
 
+#include <log_helper.h>
+
+#define ALSA_RECORD_GB
 #include "alsa-record.h"
+#undef ALSA_RECORD_GB
 
-#define DEBUG(x,y...)	{printf("[ %s : %s : %d] ",__FILE__, __func__, __LINE__); printf(x,##y); printf("\n");}
-#define ERROR(x,y...)	{printf("[ %s : %s : %d] ",__FILE__, __func__, __LINE__); printf(x,##y); printf("\n");}
-
-static int record_set_params(record_handle_t * record_handle, record_params_t record_params)
+static int record_set_params(record_handle_t * r_handle, record_params_t record_params)
 {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_uframes_t alsa_buffer_size;
@@ -35,44 +36,44 @@ static int record_set_params(record_handle_t * record_handle, record_params_t re
 	snd_pcm_hw_params_alloca(&hwparams);
 
 	/* Init hwparams with full configuration space */
-	if (snd_pcm_hw_params_any(record_handle->handle, hwparams) < 0) {
-		ERROR("Error snd_pcm_hw_params_any");
+	if (snd_pcm_hw_params_any(r_handle->handle, hwparams) < 0) {
+		log_e("snd_pcm_hw_params_any");
 		goto ERR_SET_PARAMS;
 	}
 
-	if (snd_pcm_hw_params_set_access(record_handle->handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
-		ERROR("Error snd_pcm_hw_params_set_access");
+	if (snd_pcm_hw_params_set_access(r_handle->handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
+		log_e("snd_pcm_hw_params_set_access");
 		goto ERR_SET_PARAMS;
 	}
 
-	if (snd_pcm_hw_params_set_format(record_handle->handle, hwparams, record_params.format) < 0) {
-		ERROR("Error snd_pcm_hw_params_set_format");
+	if (snd_pcm_hw_params_set_format(r_handle->handle, hwparams, record_params.format) < 0) {
+		log_e("snd_pcm_hw_params_set_format");
 		goto ERR_SET_PARAMS;
 	}
-	record_handle->format = record_params.format;
+	r_handle->format = record_params.format;
 
 	/* Set number of channels */
-	if (snd_pcm_hw_params_set_channels(record_handle->handle, hwparams, record_params.channels) < 0) {
-		ERROR("Error snd_pcm_hw_params_set_channels");
+	if (snd_pcm_hw_params_set_channels(r_handle->handle, hwparams, record_params.channels) < 0) {
+		log_e("snd_pcm_hw_params_set_channels");
 		goto ERR_SET_PARAMS;
 	}
-	record_handle->channels = record_params.channels;
+	r_handle->channels = record_params.channels;
 
 	/* Set sample rate. If the exact rate is not supported */
 	/* by the hardware, use nearest possible rate.		 */
 	exact_rate = record_params.sample_rate;
-	if (snd_pcm_hw_params_set_rate_near(record_handle->handle, hwparams, &exact_rate, 0) < 0) {
-		ERROR("Error snd_pcm_hw_params_set_rate_near");
+	if (snd_pcm_hw_params_set_rate_near(r_handle->handle, hwparams, &exact_rate, 0) < 0) {
+		log_e("snd_pcm_hw_params_set_rate_near");
 		goto ERR_SET_PARAMS;
 	}
 	if (record_params.sample_rate != exact_rate) {
-		ERROR("The rate %d Hz is not supported by your hardware. ==> Using %d Hz instead.",
+		log_e("The rate %d Hz is not supported by your hardware. ==> Using %d Hz instead.",
 			record_params.sample_rate, exact_rate);
 	}
-	record_handle->sample_rate = exact_rate;
+	r_handle->sample_rate = exact_rate;
 
 	if (snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time, 0) < 0) {
-		ERROR("Error snd_pcm_hw_params_get_buffer_time_max");
+		log_e("snd_pcm_hw_params_get_buffer_time_max");
 		goto ERR_SET_PARAMS;
 	}
 
@@ -84,36 +85,37 @@ static int record_set_params(record_handle_t * record_handle, record_params_t re
 		buffer_time = record_params.period_time * 5;
 	}
 
-	if (snd_pcm_hw_params_set_buffer_time_near(record_handle->handle, hwparams, &buffer_time, 0) < 0) {
-		ERROR("Error snd_pcm_hw_params_set_buffer_time_near");
+	if (snd_pcm_hw_params_set_buffer_time_near(r_handle->handle, hwparams, &buffer_time, 0) < 0) {
+		log_e("snd_pcm_hw_params_set_buffer_time_near");
 		goto ERR_SET_PARAMS;
 	}
 
-	if (snd_pcm_hw_params_set_period_time_near(record_handle->handle, hwparams, &record_params.period_time, 0) < 0) {
-		ERROR("Error snd_pcm_hw_params_set_period_time_near");
+	if (snd_pcm_hw_params_set_period_time_near(r_handle->handle, hwparams, &record_params.period_time, 0) < 0) {
+		log_e("snd_pcm_hw_params_set_period_time_near");
 		goto ERR_SET_PARAMS;
 	}
 
 	/* Set hw params */
-	if (snd_pcm_hw_params(record_handle->handle, hwparams) < 0) {
-		ERROR("Error snd_pcm_hw_params(handle, params)");
+	if (snd_pcm_hw_params(r_handle->handle, hwparams) < 0) {
+		log_e("snd_pcm_hw_params(handle, params)");
 		goto ERR_SET_PARAMS;
 	}
 
-	snd_pcm_hw_params_get_period_size(hwparams, &record_handle->frame_num, 0);
+	snd_pcm_hw_params_get_period_size(hwparams, &r_handle->frame_num, 0);
 	snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
-	if (record_handle->frame_num == alsa_buffer_size) {
-		ERROR(("Can't use period equal to buffer size (%lu == %lu)"), record_handle->frame_num, alsa_buffer_size);
+	if (r_handle->frame_num == alsa_buffer_size) {
+		log_e(("Can't use period equal to buffer size (%lu == %lu)"), r_handle->frame_num, alsa_buffer_size);
 		goto ERR_SET_PARAMS;
 	}
 
 	//通过fomart获取每sample的bit数
-	record_handle->bits_per_sample = snd_pcm_format_physical_width(record_params.format);
+	r_handle->bits_per_sample = snd_pcm_format_physical_width(record_params.format);
 
 	//把frame定义为一个sample的数据，包括每个channel
-	record_handle->bits_per_frame = record_handle->bits_per_sample * record_params.channels;
+	r_handle->bits_per_frame = r_handle->bits_per_sample * record_params.channels;
 
 	//snd_pcm_hw_params_free (hwparams);
+
 	return 0;
 
 ERR_SET_PARAMS:
@@ -127,13 +129,13 @@ record_handle_t *alsa_record_init(record_params_t record_params)
 	memset(record_handle, 0x0, sizeof(record_handle_t));
 
 	if (snd_pcm_open(&(record_handle->handle), record_params.snd_dev_name, SND_PCM_STREAM_CAPTURE, 0) < 0) {
-		ERROR("Error snd_pcm_open [ %s]", record_params.snd_dev_name);
+		log_e("snd_pcm_open [ %s]", record_params.snd_dev_name);
 		free(record_handle);
 		return NULL;
 	}
 
 	if (record_set_params(record_handle, record_params) < 0) {
-		ERROR("Error set_snd_pcm_params");
+		log_e("set_snd_pcm_params");
 		free(record_handle);
 		return NULL;
 	}
@@ -161,11 +163,11 @@ ssize_t read_pcm(record_handle_t *record_handle, void *buf)
 			snd_pcm_wait(record_handle->handle, 1000);
 		} else if (r == -EPIPE) {
 			snd_pcm_prepare(record_handle->handle);
-			fprintf(stderr, "<<<<<<<<<<<<<<< Buffer Underrun >>>>>>>>>>>>>>>\n");
+			log_e("<<<<<<<<<<<<<<< Buffer Underrun >>>>>>>>>>>>>>>\n");
 		} else if (r == -ESTRPIPE) {
-			fprintf(stderr, "<<<<<<<<<<<<<<< Need suspend >>>>>>>>>>>>>>>\n");
+			log_e("<<<<<<<<<<<<<<< Need suspend >>>>>>>>>>>>>>>\n");
 		} else if (r < 0) {
-			fprintf(stderr, "Error snd_pcm_readi: [%s]", snd_strerror(r));
+			log_e("snd_pcm_readi: [%s]", snd_strerror(r));
 			return -1;
 		}
 
@@ -182,5 +184,4 @@ void alsa_record_get_data(record_handle_t *record_handle, void *buf)
 	if (read_pcm(record_handle, buf) != record_handle->frame_num)
 		printf("some thing is wrong while read mic data\n");
 }
-
 

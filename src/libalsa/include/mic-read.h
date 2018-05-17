@@ -24,8 +24,6 @@
 extern "C" {
 #endif
 
-#include <alsa/asoundlib.h>
-
 #ifndef MIC_READ_GB
 #define MIC_READ_EX		extern
 #else

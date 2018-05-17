@@ -26,6 +26,7 @@
 #include "mic-read.h"
 #undef MIC_READ_GB
 #include "alsa-record.h"
+#include "pthread_helper.h"
 
 static record_handle_t *mic_read_alsa_fd;
 static pringbuf_t mic_read_ringbuf;
@@ -45,7 +46,7 @@ static void open_mic(void)
 		log_e("mic_read_alsa_fd is NULL");
 }
 
-void *pcm_read_thread(void *args)
+static void *mic_read_loop(void *args)
 {
 	static mic_data_t buf[FRAME_CNT];
 
@@ -73,8 +74,7 @@ void mic_read_init(void)
 	if (!mic_read_ringbuf)
 		log_e("ringbuf init faild");
 
-	pthread_t pcm_read_tid;
-	pthread_create(&pcm_read_tid, NULL, pcm_read_thread, NULL);
+	create_a_attached_thread(NULL, mic_read_loop, NULL);
 }
 
 void mic_read_clean(void)
