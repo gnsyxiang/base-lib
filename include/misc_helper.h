@@ -27,7 +27,7 @@ extern "C" {
 #include <stdio.h>
 #include <linux/swab.h>
 
-#include "data_type.h"
+#include "typedef_helper.h"
 
 #ifndef MISC_HELPER_GB
 #define MISC_HELPER_EX extern

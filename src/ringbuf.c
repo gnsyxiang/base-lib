@@ -26,7 +26,7 @@
 #undef RINGBUF_GB
 
 #include "time_helper.h"
-#include "type_helper.h"
+#include "typedef_helper.h"
 
 static int ringbuf_out_timeout_base(pringbuf_t pringbuf, void *buf,
         unsigned int size, unsigned int timeout_ms, int delete_data_flag);

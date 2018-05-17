@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ * 
  * Release under GPLv2.
  * 
- * @file    type_helper.h
+ * @file    typedef_helper.h
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    28/12 2017 16:34
+ * @date    17/05 2018 19:25
  * @version v0.0.1
  * 
  * @since    note
@@ -13,12 +13,13 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        28/12 2017      create the file
+ *     00      zhenquan.qiu        17/05 2018      create the file
  * 
- *     last modified: 28/12 2017 16:34
+ *     last modified: 17/05 2018 19:25
  */
-#ifndef _TYPE_HELPER_H_
-#define _TYPE_HELPER_H_
+
+#ifndef __BASE_LIB_TYPEDEF_HELPER_H_
+#define __BASE_LIB_TYPEDEF_HELPER_H_
 
 #if defined _WIN32 || defined __CYGWIN__
     #ifdef BUILDING_DLL
@@ -45,12 +46,31 @@
     #endif
 #endif
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "data_type.h"
+#ifdef TYPEDEF_HELPER_GB
+#define TYPEDEF_HELPER_EX extern
+#else
+#define TYPEDEF_HELPER_EX
+#endif
+
+#include <linux/types.h>
+
+typedef		unsigned char   __u8;
+typedef		signed char     __s8;
+typedef		unsigned short  __u16;
+typedef		signed short    __s16;
+typedef		unsigned int    __u32;
+typedef		signed int      __s32;
+
+typedef		__u8		uint8_t;
+typedef		__s8		int8_t;
+typedef		__u16		uint16_t;
+typedef		__s16		int16_t;
+typedef		__u32		uint32_t;
+typedef		__s32		int32_t;
 
 #define BYTE_ALIGN(len, align) (((len) + (align) - 1) & ~((align) - 1))
 
@@ -60,17 +80,11 @@ extern "C" {
 #define ALIGN3(len)     BYTE_ALIGN(len, 3)
 #define ALIGN2(len)     BYTE_ALIGN(len, 2)
 
-#ifndef TYPE_HELPER_GB
-#define TYPE_HELPER_EX extern
-#else
-#define TYPE_HELPER_EX
-#endif
-
-
+TYPEDEF_HELPER_EX void check_datatype_mem_len(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* end _TYPE_HELPER_H_ */
+#endif
 

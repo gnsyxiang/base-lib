@@ -28,7 +28,7 @@
 #include "log_helper.h"
 #include "dir_helper.h"
 #include "wav_helper.h"
-#include "type_helper.h"
+#include "typedef_helper.h"
 #include "mem_helper.h"
 #include "str_helper.h"
 

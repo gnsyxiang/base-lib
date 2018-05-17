@@ -1,11 +1,11 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ * 
  * Release under GPLv2.
  * 
- * @file    datatype_helper.c
+ * @file    typedef_helper.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    07/12 2017 17:07
+ * @date    17/05 2018 19:28
  * @version v0.0.1
  * 
  * @since    note
@@ -13,15 +13,15 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        07/12 2017      create the file
+ *     00      zhenquan.qiu        17/05 2018      create the file
  * 
- *     last modified: 07/12 2017 17:07
+ *     last modified: 17/05 2018 19:28
  */
 #include <stdio.h>
 
-#define DATATYPE_GB
-#include "datatype_helper.h"
-#undef DATATYPE_GB
+#define TYPEDEF_HELPER_GB
+#include "typedef_helper.h"
+#undef TYPEDEF_HELPER_GB
 
 void check_datatype_mem_len(void)
 {

@@ -27,7 +27,7 @@ extern "C" {
 #include <time.h>
 #include <sys/time.h>
 
-#include "data_type.h"
+#include "typedef_helper.h"
 
 #ifndef TIME_HELPER_GB
 #define TIME_HELPER_EX extern       /**< control function external reference macro. */
