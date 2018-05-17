@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    log_helper.h
@@ -17,9 +17,8 @@
  * 
  *     last modified: 19/12 2017 14:01
  */
-#ifndef _BASE_LIB_LOG_H_
-#define _BASE_LIB_LOG_H_
-#include <libgen.h>
+#ifndef __BASE_LIB_LOG_H_
+#define __BASE_LIB_LOG_H_
 
 #ifdef __cplusplus
 extern "C" {

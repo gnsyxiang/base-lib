@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    log_helper.c
@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <libgen.h>
 
 #include "time_helper.h"
 
@@ -28,6 +29,16 @@
 #undef BASE_LIB_LOG_GB
 
 #define LOG_BUF_SIZE 2048
+
+#define ANSI_COLOR_RED     "\x1b[1;31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+/*printf("\033[字体高亮;字背景颜色;字体颜色m字符串\033[0m"); */
 
 static int log_debug_level = LOG_VERBOSE;
 
@@ -38,22 +49,31 @@ static void log_output(char *buffer)
 
 void log_debug(int level, const char *file, int line, const char *fmt, ...)
 {
-    char buffer[LOG_BUF_SIZE];
-    int size = 0, sz;
+    char buffer[LOG_BUF_SIZE] = {0};
+    int size = 0;
 
     if (!((level <= LOG_VERBOSE) && (level <= log_debug_level)))
         return ;
 
+	if (level <= LOG_ERROR)
+		size += snprintf(buffer + size, LOG_BUF_SIZE - size, ANSI_COLOR_MAGENTA);
+		/*size += snprintf(buffer + size, LOG_BUF_SIZE - size, "\033[35m");*/
+
     size = sprintf(buffer, "[%.03f]", get_sec_clk_with_boottime());
 
-    sz = sprintf(buffer + size, "[%s +%d]: ", file, line);
-    size += sz;
+    size += sprintf(buffer + size, "[%s +%d]: ", file, line);
+
+	if (level <= LOG_ERROR)
+		size += snprintf(buffer + size, LOG_BUF_SIZE - size, ANSI_COLOR_RED);
 
     va_list var_args;
 
     va_start(var_args, fmt);
-    vsnprintf(buffer + size, LOG_BUF_SIZE - size, fmt, var_args);
+    size += vsnprintf(buffer + size, LOG_BUF_SIZE - size, fmt, var_args);
     va_end(var_args);
+
+	if (level <= LOG_ERROR)
+		size += snprintf(buffer + size, LOG_BUF_SIZE - size, "\033[0m");
 
     log_output(buffer);
 }
