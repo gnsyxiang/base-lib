@@ -17,6 +17,8 @@
  * 
  *     last modified: 26/03 2018 16:34
  */
+#include <stdio.h>
+
 #include "alsa-record.h"
 
 #define DEBUG(x,y...)	{printf("[ %s : %s : %d] ",__FILE__, __func__, __LINE__); printf(x,##y); printf("\n");}
@@ -79,7 +81,7 @@ static int record_set_params(record_handle_t * record_handle, record_params_t re
 			buffer_time = 500000;
 		record_params.period_time = buffer_time / 4;
 	} else {
-			buffer_time = record_params.period_time * 5;
+		buffer_time = record_params.period_time * 5;
 	}
 
 	if (snd_pcm_hw_params_set_buffer_time_near(record_handle->handle, hwparams, &buffer_time, 0) < 0) {
@@ -118,7 +120,7 @@ ERR_SET_PARAMS:
 	return -1;
 }
 
-record_handle_t *alsa_get_record_handle(record_params_t record_params)
+record_handle_t *alsa_record_init(record_params_t record_params)
 {
 	record_handle_t *record_handle;
 	record_handle = (record_handle_t *)malloc(sizeof(record_handle_t));
@@ -138,14 +140,14 @@ record_handle_t *alsa_get_record_handle(record_params_t record_params)
 	return record_handle;
 }
 
-void alsa_put_record_handle(record_handle_t *record_handle)
+void alsa_record_clean(record_handle_t *record_handle)
 {
 	snd_pcm_drain(record_handle->handle);
 	snd_pcm_close(record_handle->handle);
 	free(record_handle);
 }
 
-ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
+ssize_t read_pcm(record_handle_t *record_handle, void *buf)
 {
 	ssize_t r;
 	size_t result = 0;
@@ -153,7 +155,7 @@ ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
 
 	while (count > 0) {
 		//录count个frame到data中
-		r = snd_pcm_readi(record_handle->handle, record_result.data_buf, count);
+		r = snd_pcm_readi(record_handle->handle, buf, count);
 
 		if (r == -EAGAIN || (r >= 0 && (size_t)r < count)) {
 			snd_pcm_wait(record_handle->handle, 1000);
@@ -175,8 +177,10 @@ ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result)
 	return result;
 }
 
-void alsa_set_read_frame(record_handle_t *record_handle, int frame_num)
+void alsa_record_get_data(record_handle_t *record_handle, void *buf)
 {
-	record_handle->frame_num = frame_num;
+	if (read_pcm(record_handle, buf) != record_handle->frame_num)
+		printf("some thing is wrong while read mic data\n");
 }
+
 

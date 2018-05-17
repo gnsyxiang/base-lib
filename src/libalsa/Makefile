@@ -77,7 +77,7 @@ LDFLAGS 	:=
 #SYSTEM_32_64 	?= -m32
 
 #TARGET_SYSTEM   := x1800
-#TARGET_SYSTEM   := xiaomi
+TARGET_SYSTEM   := xiaomi
 
 #HOOK 		:= -DUSR_HOOK
 
@@ -90,11 +90,12 @@ ifeq ($(TARGET_SYSTEM), x1800)
 	DEVICE_TEST_PATH 	 	:= /usr/data/xia/base-lib
 else
 	ifeq ($(TARGET_SYSTEM), xiaomi)
-		GCC_PATH 	:= ~/office/xiaomi/gcc/toolchain-sunxi-musl/toolchain/bin/
+		GCC_PATH 	:= ~/office/xiaomi/gcc/toolchain-sunxi-musl/toolchain/bin
 		GCC_NAME 	:= arm-openwrt-linux-
 
 		CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
-		CFLAGS 		+= -DNO_backtrace
+		CFLAGS 		+= -DNO_backtrace -I/home/uos/test/tools/src/common-library/install/include
+		LDFLAGS 	+= -L/home/uos/test/tools/src/common-library/install/lib
 
 		DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
 	endif
@@ -117,7 +118,7 @@ else
 endif
 
 CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
-CFLAGS     += -I$(INC_DIR)
+CFLAGS     += -I$(INC_DIR) -I../../include
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
@@ -128,9 +129,9 @@ SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
 LD_COM_FLAG := $(SYSTEM_32_64)
 
-LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
-LDFLAGS 	+= -L$(LIB_DIR)
-LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lasound
+LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR):../../lib:./alsa-lib $(LD_COM_FLAG)
+LDFLAGS 	+= -L$(LIB_DIR) -L../../lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lasound -lbase-lib
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 

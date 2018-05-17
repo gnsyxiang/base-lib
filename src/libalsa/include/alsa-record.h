@@ -20,23 +20,7 @@
 #ifndef __ALSA_RECORD_H_
 #define __ALSA_RECORD_H_
 
-#include <stdio.h>
-#include <malloc.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <getopt.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <time.h>
-#include <locale.h>
-#include <sys/unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include "alsa/asoundlib.h"
-#include <assert.h>
+#include <alsa/asoundlib.h>
 
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
@@ -102,47 +86,13 @@ typedef struct {
 	 * @brief frequence of sample
 	 */
 	uint32_t sample_rate;
-
 	uint32_t period_time;
 } record_params_t;
 
-/**
- * @brief Recording result.
- */
-typedef struct {
-	/**
-	 * @brief Point to the recording data.
-	 */
-	uint8_t *data_buf;
-	/**
-	 * @brief The size of recording data.
-	 */
-	size_t data_buf_size;
-} record_result_t;
+record_handle_t *alsa_record_init(record_params_t record_params);
+void alsa_record_clean(record_handle_t * record_handle);
 
-typedef struct {
-	short dmic[1];
-	short amic[1];
-} mic_src_t;
-
-/**
- * @brief Get the handle for the recording.
- *
- * @param record_params Recording parameters.
- *
- * @return Record handle on success otherwise NULL is returned.
- */
-record_handle_t *alsa_get_record_handle(record_params_t record_params);
-
-/**
- * @brief Release record handle after call alsa_get_record_handle.
- *
- * @param record_handle
- */
-void alsa_put_record_handle(record_handle_t * record_handle);
-
-ssize_t read_pcm(record_handle_t *record_handle, record_result_t record_result);
-void alsa_set_read_frame(record_handle_t *record_handle, int frame_num);
+void alsa_record_get_data(record_handle_t *record_handle, void *buf);
 
 #endif /* end __ALSA_RECORD_H_ */
 
