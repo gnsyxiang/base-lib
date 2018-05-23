@@ -87,6 +87,12 @@ typedef struct _wav_file_tag {
 }wav_file_t;
 #define WAV_FILE_LEN		(sizeof(wav_file_t))
 
+typedef struct _wav_header_tag {
+	riff_t	     riff;
+	fmt_t	     fmt;
+	data_t	     data;
+}wav_header_t;
+
 #define WAV_HEADER_LEN		(RIFF_T_LEN + FMT_T_LEN + DATA_T_LEN) //44
 
 BASE_LIB_WAV_HELPER_EX wav_file_t *wav_file_create(const char *path, int channel, int sample_rate, int bit_per_sample);
@@ -96,6 +102,8 @@ BASE_LIB_WAV_HELPER_EX void wav_file_clean(wav_file_t *wav_file);
 BASE_LIB_WAV_HELPER_EX int wav_file_write(wav_file_t *wav_file, void *data, int len);
 BASE_LIB_WAV_HELPER_EX int wav_file_read(wav_file_t *wav_file, void *data, int len);
 
+BASE_LIB_WAV_HELPER_EX void wav_file_output_header(wav_header_t *wav_header, 
+		int channel, int sample_rate, int bit_per_sample, int data_sum);
 BASE_LIB_WAV_HELPER_EX void wav_file_header_dump(wav_file_t *wav_file);
 BASE_LIB_WAV_HELPER_EX void wav_file_flush(wav_file_t *wav_file);
 //BASE_LIB_WAV_HELPER_EX void wav_file_seek(wav_file_t *wav_file, long offset, int whence);
