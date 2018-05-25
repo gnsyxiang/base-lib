@@ -5,7 +5,7 @@
 # @file    Makefile
 # @brief   
 # @author  gnsyxiang <gnsyxiang@163.com>
-# @date    14/03 2018 14:57
+# @date    28/02 2018 17:02
 # @version v0.0.1
 # 
 # @since    note
@@ -13,33 +13,21 @@
 # 
 #     change log:
 #     NO.     Author              Date            Modified
-#     00      zhenquan.qiu        14/03 2018      create the file
+#     00      zhenquan.qiu        28/02 2018      create the file
 # 
-#     last modified: 14/03 2018 14:57
+#     last modified: 28/02 2018 17:02
 # ===============================================================
+
+TO_TOP_DIR := ../../..
+
+include $(TO_TOP_DIR)/configs/com-var-def.mk
+include $(TO_TOP_DIR)/configs/com-ruler-def.mk
 
 # --------------
 # target setting
 # --------------
-TARGET_LIB_NAME ?= cjson-helper
-
-# ------------------
-# output information
-# ------------------
-MSG_CC 		?= CC
-MSG_CC_E 	?= CC -E
-MSG_LD 		?= LD
-
-# ----------------
-# cmd redefinition
-# ----------------
-Q 		:= @
-
-RM 		:= $(Q)rm -rf
-ECHO 	:= $(Q)echo
-MKDIR 	:= $(Q)mkdir -p
-LN 		:= $(Q)ln -s
-CP 		:= $(Q)cp -ar
+TARGET_DEMO 	?= main
+TARGET_LIB_NAME ?= cjson-help
 
 # -------
 # version
@@ -52,122 +40,162 @@ TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(R
 TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
 TARGET_LIB_SO 	:= lib$(TARGET_LIB_NAME).so
 
-# --------
-# compiler
-# --------
-GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
-GCC_NAME 	:= mips-linux-gnu-
-
-#CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
-
-CC 	 	 	:= $(Q)$(CROSS_TOOL)gcc
-CXX 	 	:= $(Q)$(CROSS_TOOL)g++
-STRIP  	 	:= $(Q)$(CROSS_TOOL)strip
-
-CFLAGS     	:=
-LIB_CFLAGS 	:=
-LDFLAGS 	:=
+TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 
 # ------
 # cflags
 # ------
-#DEBUG_SWITCH := debug
+
+DEBUG_SWITCH := debug
 
 ifeq ($(DEBUG_SWITCH), debug)
-	CFLAGS 	+= -g
+	CFLAGS     += -g
 else
-	CFLAGS 	+= -O2 -Wno-error=unused-result -Werror=return-type
+	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
 endif
 
-CFLAGS     	+= -Wall -Werror -std=gnu99
-CFLAGS     	+= -I. -I../cjson-lib -I../../../include
-LIB_CFLAGS 	+= $(CFLAGS) -fPIC
+CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
+CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/include
+CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
+LIB_CFLAGS += $(CFLAGS) -fPIC
 
 # -------
 # ldflags
 # -------
 SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
-LDFLAGS 	+= -L../cjson-lib -lcjson -L../../../lib -lbase_lib
-LIB_LDFLAGS := $(SO_NAME) -shared
+LD_COM_FLAG := $(SYSTEM_32_64)
+
+LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
+LDFLAGS 	+= -L$(LIB_DIR) -L$(TO_TOP_DIR)/lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lbase-lib
+LDFLAGS 	+= -lpthread
+LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
+
+# -------
+# h files
+# -------
+INC_C := $(wildcard $(INC_DIR)/*.h)
 
 # -------
 # c files
 # -------
-SRC_C := $(wildcard *.c)
-
-OBJ_C := $(patsubst %.c, %.o, $(SRC_C))
-OBJ_I := $(patsubst %.c, %.i, $(SRC_C))
-DEP_C := $(patsubst %.c, %.d, $(SRC_C))
+SRC_C := $(wildcard $(SRC_DIR)/*.c)
+OBJ_C := $(patsubst %.c, $(OBJ_DIR)/%.o, $(SRC_C))
+DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(SRC_C))
 DEPS  ?= $(DEP_C)
 OBJS  ?= $(OBJ_C)
 
-#################################################
+TARGET_DEMO_SRC_C := $(wildcard $(TST_DIR)/*.c)
+TARGET_DEMO_OBJ_C := $(patsubst %.c, $(OBJ_DIR)/%.o, $(TARGET_DEMO_SRC_C))
+TARGET_DEMO_DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(TARGET_DEMO_SRC_C))
+TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
+TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
-all: $(TARGET_LIB_NAME)
+###########################################
+#all: $(TARGET_LIB) $(TARGET_DEMO)
+all: $(TARGET_LIB)
+	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/lib
+	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/include
 
-$(TARGET_LIB_NAME): $(TARGET_LIB) handle_lib
+$(TARGET_LIB): $(TARGET_PATH) handle_lib
 
-$(TARGET_LIB): $(OBJS)
+$(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
+	$(MKDIR) $(LIB_DIR)
 	$(CC) $^ $(LIB_LDFLAGS) -o $@
-	$(STRIP) --strip-unneeded $@
+	#$(STRIP) --strip-unneeded $@
+
+$(TARGET_DEMO): $(TARGET_DEMO_OBJS)
+	$(ECHO) $(MSG_LD) $@
+	$(CC) $^ $(LDFLAGS) -o $@
+	#$(STRIP) --strip-unneeded $@
 
 handle_lib: clean_lib
-	$(LN) $(TARGET_LIB) $(TARGET_LIB_MAJ)
-	$(LN) $(TARGET_LIB_MAJ) $(TARGET_LIB_SO)
+	$(LN) $(TARGET_LIB) $(LIB_DIR)/$(TARGET_LIB_MAJ)
+	$(LN) $(TARGET_LIB_MAJ) $(LIB_DIR)/$(TARGET_LIB_SO)
 
 clean_lib:
-	$(RM) $(TARGET_LIB_MAJ)
-	$(RM) $(TARGET_LIB_SO)
+	$(RM) $(LIB_DIR)/$(TARGET_LIB_MAJ)
+	$(RM) $(LIB_DIR)/$(TARGET_LIB_SO)
 
 # --------
 # make *.c
 # --------
-$(OBJ_C): %.o : %.c
+$(OBJ_C): $(OBJ_DIR)/%.o : %.c
+	$(MKDIR) $(dir $@)
 	$(ECHO) $(MSG_CC) $<
 	$(CC) -c $(LIB_CFLAGS) $< -o $@
 
-$(OBJ_I): %.i : %.c
-	$(ECHO) $(MSG_CC_E) $<
-	$(CC) -E $(CFLAGS) $< -o $@
-
-$(DEP_C): %.d : %.c
+$(DEP_C): $(OBJ_DIR)/%.d : %.c
+	$(MKDIR) $(dir $@);
 	$(CC) -MM $(LIB_CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
 sinclude $(DEPS)
 
-#################################################
+$(TARGET_DEMO_OBJ_C): $(OBJ_DIR)/%.o : %.c
+	$(MKDIR) $(dir $@)
+	$(ECHO) $(MSG_CC) $<
+	$(CC) -c $(CFLAGS) $< -o $@
 
-pre-compile:$(OBJ_I)
+$(TARGET_DEMO_DEP_C): $(OBJ_DIR)/%.d : %.c
+	$(MKDIR) $(dir $@);
+	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
 
-debug:
+sinclude $(TARGET_DEMO_DEPS)
+
+#########################################################
+err_no_targets:
+	@echo "error: use \"targets = your_target\" to specify your target to make!"
+	exit 1
+
+ifeq ($(V),1)
+slient_targets=err_no_targets
+endif
+
+.SILENT: $(slient_targets)
+#########################################################
+DEVICE_TEST_PATH_LIB 	:= $(DEVICE_TEST_PATH)/lib
 
 push:
-	adb push ./lib /xia/base_lib/lib/
-	adb push $(TARGET_DEMO) /xia/base_lib/
+	$(ADB_SHELL) $(MKDIR) 					$(DEVICE_TEST_PATH)
+	$(ADB_SHELL) $(MKDIR)  					$(DEVICE_TEST_PATH_LIB)
+	\
+	$(ADB_PUSH) $(TARGET_DEMO) 				$(DEVICE_TEST_PATH)
+	$(ADB_PUSH) $(LIB_DIR)/$(TARGET_LIB)  	$(DEVICE_TEST_PATH_LIB)
+	\
+	$(ADB_SHELL) $(LN) $(TARGET_LIB) 		$(DEVICE_TEST_PATH_LIB)/$(TARGET_LIB_MAJ)
 
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(DEPS)
-	$(RM) $(OBJ_I)
 	$(RM) $(TARGET_DEMO_OBJS)
 	$(RM) $(TARGET_DEMO_DEPS)
+	$(RM) $(TARGET_DEMO)
 
 distclean: clean index-clean
-	$(RM) $(TARGET_DEMO)
-	$(RM) $(TARGET_LIB)
-	$(RM) $(TARGET_LIB_MAJ)
-	$(RM) $(TARGET_LIB_SO)
+	$(RM) $(OBJ_DIR)
+	$(RM) $(LIB_DIR)
 
 index: index-clean
 	$(ECHO) generate index
-	$(Q)ctags -R
-	$(Q)cscope -Rbkq
+	ctags -R
+	cscope -Rbkq
 
 index-clean:
 	$(RM) *.out
 	$(RM) tags
+
+demo:
+	$(MKDIR) $(DEM_DIR)/$(LIB_DIR)
+	$(CP) $(LIB_DIR) $(DEM_DIR)
+	$(CP) $(TARGET_DEMO) $(DEM_DIR)
+
+note:
+	doxygen configs/Doxyfile
+
+debug:
+	echo $(TARGET_PATH)
 
 .PHONY: all clean distclean debug
 
