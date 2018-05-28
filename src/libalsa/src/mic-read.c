@@ -41,6 +41,8 @@ static void open_mic(void)
 	record_params.sample_rate	= SAMPLE_RATE;
 	record_params.period_time	= PERIOD_TIME;
 
+	log_i("BIT_PER_SAMPLE_STR: %s", BIT_PER_SAMPLE_STR);
+
 	mic_read_alsa_fd = alsa_record_init(record_params);
 	if (!mic_read_alsa_fd)
 		log_e("mic_read_alsa_fd is NULL");
@@ -61,7 +63,7 @@ static void *mic_read_loop(void *args)
 	return NULL;
 }
 
-void mic_read_get_data(mic_data_t *buf, int len)
+void mic_read_get_data(void *buf, int len)
 {
 	ringbuf_out(mic_read_ringbuf, buf, len);
 }
