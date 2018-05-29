@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <libgen.h>
+#include <string.h>
 
 #include "time_helper.h"
 
@@ -47,7 +48,7 @@ static void log_output(char *buffer)
     printf("%s\n", buffer);
 }
 
-void log_debug(int level, const char *file, int line, const char *fmt, ...)
+void log_debug(int level, const char *file, int line, int num, const char *fmt, ...)
 {
     char buffer[LOG_BUF_SIZE] = {0};
     int size = 0;
@@ -72,8 +73,10 @@ void log_debug(int level, const char *file, int line, const char *fmt, ...)
     size += vsnprintf(buffer + size, LOG_BUF_SIZE - size, fmt, var_args);
     va_end(var_args);
 
-	if (level <= LOG_ERROR)
+	if (level <= LOG_ERROR) {
 		size += snprintf(buffer + size, LOG_BUF_SIZE - size, "\033[0m");
+		size += sprintf(buffer + size, " [errno string: %s]", strerror(num));
+	}
 
     log_output(buffer);
 }
