@@ -62,7 +62,7 @@ time_t get_sys_time_ms(void)
 	return (take_multiplier_1000(tv.tv_sec) + take_integet_1000(tv.tv_usec));
 }
 
-struct timespec cur_delay_ms(uint32_t timeout_ms)
+struct timespec cur_delay_ms(bl_uint32_t timeout_ms)
 {
     struct timeval tv;
     struct timespec ts;

@@ -29,8 +29,8 @@ static int record_set_params(record_handle_t * r_handle, record_params_t record_
 {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_uframes_t alsa_buffer_size;
-	uint32_t exact_rate;
-	uint32_t buffer_time;
+	bl_uint32_t exact_rate;
+	bl_uint32_t buffer_time;
 
 	/* Allocate the snd_pcm_hw_params_t structure on the stack. */
 	snd_pcm_hw_params_alloca(&hwparams);

@@ -25,10 +25,7 @@ extern "C" {
 #endif
 
 #include <alsa/asoundlib.h>
-
-typedef unsigned char  uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int   uint32_t;
+#include <typedef_helper.h>
 
 /**
  * @brief Recording handle.
@@ -45,11 +42,11 @@ typedef struct {
 	/**
 	 * @brief The number of channels.
 	 */
-	uint16_t channels;
+	bl_uint16_t channels;
 	/**
 	 * @brief frequence of sample
 	 */
-	uint32_t sample_rate;
+	bl_uint32_t sample_rate;
 	/**
 	 * @brief The number of bit per sample point.
 	 */
@@ -85,12 +82,12 @@ typedef struct {
 	/**
 	 * @brief Specifies the number of channels.
 	 */
-	uint16_t channels;
+	bl_uint16_t channels;
 	/**
 	 * @brief frequence of sample
 	 */
-	uint32_t sample_rate;
-	uint32_t period_time;
+	bl_uint32_t sample_rate;
+	bl_uint32_t period_time;
 } record_params_t;
 
 record_handle_t *alsa_record_init(record_params_t record_params);

@@ -42,7 +42,7 @@ extern "C" {
  * @param timeout_ms: milliseconds requiring delay.
  * @return return the 'struct timespec' time.
  */
-TIME_HELPER_EX struct timespec cur_delay_ms(uint32_t timeout_ms);
+TIME_HELPER_EX struct timespec cur_delay_ms(bl_uint32_t timeout_ms);
 
 /**
  * get the current time with 'struct tm'

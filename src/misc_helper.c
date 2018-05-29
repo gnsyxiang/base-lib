@@ -47,14 +47,14 @@ void stacks_detection(void)
 		printf("%p \n", &buf[i]);
 }
 
-uint32_t random_num(uint32_t range)
+bl_uint32_t random_num(bl_uint32_t range)
 {
     struct timeval tv;
 
     gettimeofday(&tv, NULL);
     srand(tv.tv_usec);
 
-    return (1 + (uint32_t)(1.0 * range * rand() / (RAND_MAX + 1.0)));
+    return (1 + (bl_uint32_t)(1.0 * range * rand() / (RAND_MAX + 1.0)));
 }
 
 void test(void)
