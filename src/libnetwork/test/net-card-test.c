@@ -19,26 +19,31 @@
  */
 #include <stdio.h>
 
-#include "network-card.h"
+#include <log_helper.h>
+
+#include "net-card.h"
 
 int main(int argc, char* argv[])
 {
-	bl_int8_t net_card_info[2][64] = {0};
+	bl_int8_t netcard_name[2][64] = {0};
 	bl_int8_t ip[64] = {0};
 	bl_int8_t mac[64] = {0};
 	bl_int8_t broadip[64] = {0};
 	bl_int8_t netmask[64] = {0};
+	bl_int8_t gateway[64] = {0};
 
-	int cnt = get_netcard_info(net_card_info);
+	int cnt = get_netcard_num(netcard_name);
 
 	for (int i = 0; i < cnt; i++) {
-		printf("name: %s \n", net_card_info[i]);
+		log_i("name: %s ", netcard_name[i]);
 
-		disp_netcard_info(net_card_info[i], ip, mac, broadip, netmask);
+		disp_netcard_info(netcard_name[i], ip, mac, broadip, netmask, gateway);
 
-		printf("ip: %s \n", ip);
-		printf("mac: %s \n", mac);
-		printf("broadip: %s \n", broadip);
+		log_i("mac: %s ", mac);
+		log_i("ip: %s ", ip);
+		log_i("broadip: %s ", broadip);
+		log_i("netmask: %s ", netmask);
+		log_i("gateway: %s ", gateway);
 	}
 
 	return 0;

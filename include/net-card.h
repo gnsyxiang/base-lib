@@ -28,9 +28,19 @@ extern "C" {
 
 #define NET_DEV_NAME	"/proc/net/dev"
 
-bl_int32_t get_netcard_info(bl_int8_t (*net_card_info)[64]);
+bl_int32_t get_netcard_num(bl_int8_t (*net_card_info)[64]);
 void disp_netcard_info(const bl_int8_t *netcard_name, 
-		bl_int8_t *ip, bl_int8_t *mac, bl_int8_t *broadip, bl_int8_t *netmask);
+		bl_int8_t *ip, bl_int8_t *mac, bl_int8_t *broadip, 
+		bl_int8_t *netmask, bl_int8_t *gateway);
+
+bl_int32_t get_netcard_ip(const bl_int8_t *netcard_name, bl_int8_t *ip);
+bl_int32_t set_netcard_ip(const bl_int8_t *netcard_name, const bl_int8_t *ip);
+
+bl_int32_t get_netcard_mac(const bl_int8_t *netcard_name, bl_int8_t *mac);
+bl_int32_t get_netcard_gateway(bl_int8_t *gateway);
+
+bl_int32_t get_netcard_netmast(const bl_int8_t *netcard_name, bl_int8_t *netmask);
+bl_int32_t set_netcard_netmast(const bl_int8_t *netcard_name, const bl_int8_t *netmask);
 
 #ifdef __cplusplus
 }
