@@ -20,16 +20,17 @@
 
 
 define run-dir-makefile-clean-distclean
-	for dir in $(subdir-src); \
-	do \
-		make -C $$dir $@ || exit 1; \
+	for dir in $(subdir-src); 			\
+	do 									\
+		$(MAKE) -C $$dir $@ || exit 1; 	\
 	done
 endef
 
 define run-dir-makefile-make
-	for dir in $(subdir-src); \
-	do \
-		make -C $$dir || exit 1; \
+	for dir in $(subdir-src); 			\
+	do 									\
+		$(ECHO) "--->> "$$dir; 			\
+		$(MAKE) -C $$dir || exit 1; 	\
 	done
 endef
 

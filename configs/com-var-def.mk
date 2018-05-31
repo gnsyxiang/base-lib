@@ -18,6 +18,15 @@
 #     last modified: 25/05 2018 15:48
 # ===============================================================
 
+# scale the maximum concurrency with the number of CPUs.
+# # # An additional job is used in order to keep processors busy
+# # # If the number of processors is not available, assume one.
+PARALLEL_JOBS 	:= $(shell echo $$((1 + `getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1`)))
+
+HOSTMAKE  		:= $(shell which make || echo make)
+MAKE1  			:= $(HOSTMAKE) -j1
+MAKE 			:= $(HOSTMAKE) -j1
+
 # ------------------
 # output information
 # ------------------
@@ -58,7 +67,7 @@ LDFLAGS 	:=
 #SYSTEM_32_64 	?= -m32
 
 #TARGET_SYSTEM   := x1800
-TARGET_SYSTEM   := xiaomi
+#TARGET_SYSTEM   := xiaomi
 
 #HOOK 		:= -DUSR_HOOK
 

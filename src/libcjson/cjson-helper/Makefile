@@ -27,7 +27,7 @@ include $(TO_TOP_DIR)/configs/com-ruler-def.mk
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= cjson-help
+TARGET_LIB_NAME ?= cjson-helper
 
 # -------
 # version

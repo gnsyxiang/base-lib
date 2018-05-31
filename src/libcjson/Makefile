@@ -71,7 +71,7 @@ LDFLAGS 	:=
 LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
 LDFLAGS 	+= -L$(LIB_DIR) -L$(TO_TOP_DIR)/lib
 #LDFLAGS 	+= -l$(TARGET_LIB_NAME)
-LDFLAGS 	+=  -lcjson -lcjson-help -lbase-lib
+LDFLAGS 	+=  -lcjson -lcjson-helper -lbase-lib
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
