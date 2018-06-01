@@ -171,6 +171,16 @@ static inline void _header_write(wav_file_t *wav_file,
 	fwrite(wav_file->data, 1, DATA_T_LEN, wav_file->fp);
 }
 
+void wav_file_output_header(wav_header_t *wav_header, 
+		int channel, int sample_rate, int bit_per_sample, int data_sum)
+{
+	_header_riff_init(&wav_header->riff);
+	_header_fmt_init(&wav_header->fmt, channel, sample_rate, bit_per_sample);
+	_header_data_init(&wav_header->data);
+
+	wav_header->data.data_sz = data_sum;
+}
+
 wav_file_t *wav_file_create(const char *path, 
 		int channel, int sample_rate, int bit_per_sample)
 {

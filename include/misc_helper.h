@@ -27,7 +27,7 @@ extern "C" {
 #include <stdio.h>
 #include <linux/swab.h>
 
-#include "data_type.h"
+#include "typedef_helper.h"
 
 #ifndef MISC_HELPER_GB
 #define MISC_HELPER_EX extern
@@ -35,15 +35,15 @@ extern "C" {
 #define MISC_HELPER_EX
 #endif
 
-#define FOR_ZERO_TO_LEN(len) for (uint32_t i = 0; i < (len); i++)
+#define FOR_ZERO_TO_LEN(len) for (bl_uint32_t i = 0; i < (len); i++)
 
 // byte order processing function in <linux/swab.h>, eg: __swab16, __swab32
 // 内存地址从低地址向高地址增长，big endian是高位数据优先，即高位放在低地址。
 //                               little endian是低位数据优先，低位放在低地址。
 // 网络字节序采用大端。
-static inline uint32_t judgement_byte_order(void)
+static inline bl_uint32_t judgement_byte_order(void)
 {
-    uint32_t x = 0x01;
+    bl_uint32_t x = 0x01;
     if (0x01 == *(char *)&x) {
         printf("little endian \n");
         return 1;
@@ -75,7 +75,7 @@ static inline uint32_t judgement_byte_order(void)
 
 
 MISC_HELPER_EX void test(void);
-MISC_HELPER_EX uint32_t random_num(uint32_t range);
+MISC_HELPER_EX bl_uint32_t random_num(bl_uint32_t range);
 
 #ifdef __cplusplus
 }

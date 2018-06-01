@@ -5,7 +5,7 @@
 # @file    Makefile
 # @brief   
 # @author  gnsyxiang <gnsyxiang@163.com>
-# @date    28/02 2018 17:02
+# @date    08/05 2018 17:43
 # @version v0.0.1
 # 
 # @since    note
@@ -13,34 +13,98 @@
 # 
 #     change log:
 #     NO.     Author              Date            Modified
-#     00      zhenquan.qiu        28/02 2018      create the file
+#     00      zhenquan.qiu        08/05 2018      create the file
 # 
-#     last modified: 28/02 2018 17:02
+#     last modified: 08/05 2018 17:43
 # ===============================================================
-
-TO_TOP_DIR := ../../..
-
-include $(TO_TOP_DIR)/configs/com-var-def.mk
-include $(TO_TOP_DIR)/configs/com-ruler-def.mk
 
 # --------------
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= cjson
+TARGET_LIB_NAME ?= hardware
+
+# ------------------
+# output information
+# ------------------
+MSG_CC 	?= CC
+MSG_LD 	?= LD
+MSG_LIB ?= LIB_COPY
+MSG_INC ?= INC_COPY
+
+# ----------------
+# cmd redefinition
+# ----------------
+RM 		:= rm -rf
+ECHO 	:= echo
+MKDIR 	:= mkdir -p
+LN 		:= ln -s
+CP 		:= cp -ar
+
+ADB_SHELL := adb shell
+ADB_PUSH  := adb push
 
 # -------
 # version
 # -------
 MAJOR_VERSION 	?= 1
-MINOR_VERSION 	?= 7
-RELEASE_VERSION ?= 4
+MINOR_VERSION 	?= 0
+RELEASE_VERSION ?= 0
 
 TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
 TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
 TARGET_LIB_SO 	:= lib$(TARGET_LIB_NAME).so
 
+# ----------
+# output dir
+# ----------
+OBJ_DIR ?= objs
+LIB_DIR ?= lib
+INC_DIR ?= include
+SRC_DIR ?= src
+TST_DIR ?= test
+DEM_DIR ?= demo
+
 TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
+
+# --------
+# compiler
+# --------
+CFLAGS 		:=
+LIB_CFLAGS 	:=
+LDFLAGS 	:=
+
+#SYSTEM_32_64 	?= -m32
+
+#TARGET_SYSTEM   := x1800
+#TARGET_SYSTEM   := xiaomi
+
+#HOOK 		:= -DUSR_HOOK
+
+ifeq ($(TARGET_SYSTEM), x1800)
+	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
+	GCC_NAME 	:= mips-linux-gnu-
+
+	CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
+	LDFLAGS 	+= -T configs/ldscript-mips.lds
+
+	DEVICE_TEST_PATH 	 	:= /usr/data/xia/base-lib
+else
+	ifeq ($(TARGET_SYSTEM), xiaomi)
+		GCC_PATH 	:= ~/office/xiaomi/gcc/toolchain-sunxi-musl/toolchain/bin/
+		GCC_NAME 	:= arm-openwrt-linux-
+
+		CROSS_TOOL 	:= $(GCC_PATH)/$(GCC_NAME)
+		LDFLAGS 	+= -T configs/ldscript-arm.lds
+		CFLAGS 		+= -DNO_backtrace
+
+		DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
+	endif
+endif
+
+CC 	 	:= $(CROSS_TOOL)gcc
+CXX 	:= $(CROSS_TOOL)g++
+STRIP  	:= $(CROSS_TOOL)strip
 
 # ------
 # cflags
@@ -55,7 +119,7 @@ else
 endif
 
 CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
-CFLAGS     += -I$(INC_DIR)
+CFLAGS     += -I$(INC_DIR) -I../../include
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
@@ -66,9 +130,9 @@ SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
 LD_COM_FLAG := $(SYSTEM_32_64)
 
-LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
-LDFLAGS 	+= -L$(LIB_DIR)
-LDFLAGS 	+= -l$(TARGET_LIB_NAME)
+LDFLAGS 	+= $(LD_COM_FLAG) -Wl,-rpath=$(LIB_DIR):../../lib 
+LDFLAGS 	+= -L$(LIB_DIR) -L../../lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lbase-lib
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
@@ -92,11 +156,9 @@ TARGET_DEMO_DEP_C := $(patsubst %.c, $(OBJ_DIR)/%.d, $(TARGET_DEMO_SRC_C))
 TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
 TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
-###########################################
-#all: $(TARGET_LIB) $(TARGET_DEMO)
-all: $(TARGET_LIB)
-	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/lib
-	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/include
+#################################################
+
+all: $(TARGET_LIB) $(TARGET_DEMO)
 
 $(TARGET_LIB): $(TARGET_PATH) handle_lib
 
@@ -144,7 +206,7 @@ $(TARGET_DEMO_DEP_C): $(OBJ_DIR)/%.d : %.c
 
 sinclude $(TARGET_DEMO_DEPS)
 
-#########################################################
+#################################################
 err_no_targets:
 	@echo "error: use \"targets = your_target\" to specify your target to make!"
 	exit 1
@@ -154,7 +216,7 @@ slient_targets=err_no_targets
 endif
 
 .SILENT: $(slient_targets)
-#########################################################
+#################################################
 DEVICE_TEST_PATH_LIB 	:= $(DEVICE_TEST_PATH)/lib
 
 push:
@@ -195,7 +257,7 @@ note:
 	doxygen configs/Doxyfile
 
 debug:
-	echo $(TARGET_PATH)
+	echo $(SRC_DIR)
 
 .PHONY: all clean distclean debug
 

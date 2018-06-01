@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    log_helper.h
@@ -17,13 +17,14 @@
  * 
  *     last modified: 19/12 2017 14:01
  */
-#ifndef _BASE_LIB_LOG_H_
-#define _BASE_LIB_LOG_H_
-#include <libgen.h>
+#ifndef __BASE_LIB_LOG_H_
+#define __BASE_LIB_LOG_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <errno.h>
 
 #ifndef BASE_LIB_LOG_GB
 #define BASE_LIB_LOG_EX extern
@@ -40,7 +41,7 @@ enum {
     LOG_VERBOSE,
 };
 
-BASE_LIB_LOG_EX void log_debug(int level, const char *file, int line, const char *fmt, ...);
+BASE_LIB_LOG_EX void log_debug(int level, const char *file, int line, int num, const char *fmt, ...);
 
 /*
 #define LOG_DEBUG(level, ...) \
@@ -48,7 +49,7 @@ BASE_LIB_LOG_EX void log_debug(int level, const char *file, int line, const char
 */
 
 #define LOG_DEBUG(level, ...) \
-	log_debug(level, __FILE__, __LINE__, __VA_ARGS__)
+	log_debug(level, __FILE__, __LINE__, errno,  __VA_ARGS__)
 
 #define log_d(...)      LOG_DEBUG(LOG_DEBUG,	__VA_ARGS__)
 #define log_i(...)      LOG_DEBUG(LOG_INFO,		__VA_ARGS__)
