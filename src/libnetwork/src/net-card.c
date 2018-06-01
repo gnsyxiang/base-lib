@@ -45,7 +45,8 @@
 	} while(0)
 
 #define DEF_IFR_VAR()								\
-    struct ifreq ifr = {0};							\
+    struct ifreq ifr;								\
+	memset(&ifr, '\0', sizeof(struct ifreq));		\
     strcpy(ifr.ifr_name, netcard_name);
 
 static bl_int32_t get_netcard_info(const bl_int8_t *netcard_name, bl_int8_t *ip, bl_int32_t cmd)

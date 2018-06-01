@@ -98,6 +98,8 @@ else
 	endif
 endif
 
+CFLAGS 	+= -Wno-error=missing-braces
+
 CC 	 	:= $(CROSS_TOOL)gcc
 CXX 	:= $(CROSS_TOOL)g++
 STRIP  	:= $(CROSS_TOOL)strip
