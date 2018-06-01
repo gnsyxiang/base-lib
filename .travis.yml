@@ -1,0 +1,26 @@
+# ===============================================================
+# 
+# Release under GPLv2.
+# 
+# @file    .travis.yml
+# @brief   
+# @author  gnsyxiang <gnsyxiang@163.com>
+# @date    01/06 2018 15:51
+# @version v0.0.1
+# 
+# @since    note
+# @note     note
+# 
+#     change log:
+#     NO.     Author              Date            Modified
+#     00      zhenquan.qiu        01/06 2018      create the file
+# 
+#     last modified: 01/06 2018 15:51
+# ===============================================================
+
+language: c
+
+
+
+
+script: true
