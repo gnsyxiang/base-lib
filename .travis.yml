@@ -23,4 +23,4 @@ language: c
 
 
 
-script: true
+script: make distclean && make
