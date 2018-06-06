@@ -167,7 +167,7 @@ ssize_t read_pcm(record_handle_t *record_handle, void *buf)
 		} else if (r == -ESTRPIPE) {
 			log_e("<<<<<<<<<<<<<<< Need suspend >>>>>>>>>>>>>>>");
 		} else if (r < 0) {
-			log_e("snd_pcm_readi: [%s]", snd_strerror(r));
+			/*log_e("snd_pcm_readi: [%s]", snd_strerror(r));*/
 			return -1;
 		}
 

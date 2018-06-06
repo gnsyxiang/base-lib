@@ -21,6 +21,7 @@
 
 #include <hex_helper.h>
 #include <log_helper.h>
+#include <pthread_helper.h>
 
 #include "mic-read.h"
 
@@ -35,7 +36,7 @@ typedef struct mic_data_dst {
 #include <wav_helper.h>
 #define DEMO_WAV_NAME		"haha.wav"
 #define BIT_PER_SAMPLE		16 //get_bit_per_sample(BIT_PER_SAMPLE_STR)
-#define WAV_CNT_LEN			(100)
+#define WAV_CNT_LEN			(50)
 
 static wav_file_t *demo_wav_file;
 static int demo_wav_cnt;
@@ -63,17 +64,48 @@ void parse_xiaomi_data(mic_data_dst_t *buf, int len)
 		mic_read_get_data(channel_8, CHANNELS_8_LEN);
 		/*print_hex(channel_8, CHANNELS_8_LEN);*/
 
-		while (buf_len-- > 0) {
-			if (*tmp++ != 0x00)
+		int discard_totol_num = 0;
+		int num_cnt = 0;
+		int find_0_channel_flag = 0;
+		int i = 1;
+		while (discard_totol_num < buf_len - 2 - 1) {
+			int tmp_num = *(tmp + num_cnt);
+			if (!find_0_channel_flag && tmp_num != 0x00) {
+				tmp++;
+				discard_totol_num++;
+				num_cnt = 0;
+				find_0_channel_flag = 0;
 				continue;
-			if ((*tmp++ & 0x07) != 0)
-				continue;
+			}
 
-			break;
+			find_0_channel_flag = 1;
+
+			if (i == 1)
+				num_cnt += 5;
+			else
+				num_cnt += 4;
+
+			tmp_num = *(tmp + num_cnt);
+
+			if ((tmp_num & 0x07) != i) {
+				tmp++;
+				discard_totol_num++;
+				num_cnt = 0;
+				find_0_channel_flag = 0;
+				continue;
+			}
+
+			if (i == 1)
+				discard_totol_num += 5;
+			else
+				discard_totol_num += 4;
+
+			i++;
 		}
 
-		buf_len = tmp - channel_8 - 2;
-		memcpy(data_tmp, tmp - 2, CHANNELS_8_LEN -buf_len);
+		buf_len = tmp - channel_8;
+		/*log_i("buf_len: %d", buf_len);*/
+		memcpy(data_tmp, tmp, CHANNELS_8_LEN -buf_len);
 
 		memset(channel_8, 1, CHANNELS_8_LEN);
 		mic_read_get_data(channel_8, buf_len);
@@ -102,6 +134,27 @@ void parse_xiaomi_data(mic_data_dst_t *buf, int len)
 }
 #endif
 
+static int control_flag;
+
+static void *read_data_control_loop(void *argv)
+{
+	sleep(2);
+
+	log_i("+++++++++++++++ 1");
+	control_flag = 1;
+	mic_read_pause();
+	log_i("+++++++++++++++ 2");
+
+	sleep(3);
+
+	log_i("+++++++++++++++ 3");
+	control_flag = 0;
+	mic_read_resume();
+	log_i("+++++++++++++++ 4");
+
+	return NULL;
+}
+
 int main(int argc, char *argv[])
 {
 	static mic_data_dst_t mic_data[FRAME_CNT];
@@ -111,6 +164,8 @@ int main(int argc, char *argv[])
 #ifdef SAVE_PCM
 	demo_wav_file = wav_file_create(DEMO_WAV_NAME, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
 #endif
+
+	create_a_attached_thread(NULL, read_data_control_loop, NULL);
 
 	while (1) {
 #ifdef PARSE_XIAOMI_DATA
