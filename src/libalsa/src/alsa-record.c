@@ -163,9 +163,9 @@ ssize_t read_pcm(record_handle_t *record_handle, void *buf)
 			snd_pcm_wait(record_handle->handle, 1000);
 		} else if (r == -EPIPE) {
 			snd_pcm_prepare(record_handle->handle);
-			log_e("<<<<<<<<<<<<<<< Buffer Underrun >>>>>>>>>>>>>>>\n");
+			log_e("<<<<<<<<<<<<<<< Buffer Underrun >>>>>>>>>>>>>>>");
 		} else if (r == -ESTRPIPE) {
-			log_e("<<<<<<<<<<<<<<< Need suspend >>>>>>>>>>>>>>>\n");
+			log_e("<<<<<<<<<<<<<<< Need suspend >>>>>>>>>>>>>>>");
 		} else if (r < 0) {
 			log_e("snd_pcm_readi: [%s]", snd_strerror(r));
 			return -1;
@@ -179,9 +179,57 @@ ssize_t read_pcm(record_handle_t *record_handle, void *buf)
 	return result;
 }
 
-void alsa_record_get_data(record_handle_t *record_handle, void *buf)
+int alsa_record_get_data(record_handle_t *record_handle, void *buf)
 {
-	if (read_pcm(record_handle, buf) != record_handle->frame_num)
-		printf("some thing is wrong while read mic data\n");
+	return (read_pcm(record_handle, buf) != record_handle->frame_num);
+}
+
+static int alsa_can_pause;
+
+void alsa_record_pause(record_handle_t *record_handle)
+{
+	int err;
+
+	if (alsa_can_pause) {
+		if ((err = snd_pcm_pause(record_handle->handle, 1)) < 0) {
+			/*mp_msg(MSGT_AO,MSGL_ERR,MSGTR_AO_ALSA_PcmPauseError, snd_strerror(err));*/
+			return;
+		}
+		/*mp_msg(MSGT_AO,MSGL_V,"alsa-pause: pause supported by hardware\n");*/
+	} else {
+		if ((err = snd_pcm_drop(record_handle->handle)) < 0) {
+			log_e("snd_pcm_drop error");
+			/*mp_msg(MSGT_AO,MSGL_ERR,MSGTR_AO_ALSA_PcmDropError, snd_strerror(err));*/
+			return;
+		}
+	}
+}
+
+void alsa_record_resume(record_handle_t *record_handle)
+{
+	int err;
+
+	if (snd_pcm_state(record_handle->handle) == SND_PCM_STATE_SUSPENDED) {
+		log_i("------1");
+		/*mp_msg(MSGT_AO,MSGL_INFO,MSGTR_AO_ALSA_PcmInSuspendModeTryingResume);*/
+		while ((err = snd_pcm_resume(record_handle->handle)) == -EAGAIN)
+			sleep(1);
+	}
+
+	if (alsa_can_pause) {
+		if ((err = snd_pcm_pause(record_handle->handle, 0)) < 0) {
+		log_i("------2");
+			/*mp_msg(MSGT_AO,MSGL_ERR,MSGTR_AO_ALSA_PcmResumeError, snd_strerror(err));*/
+			return;
+		}
+		log_i("------3");
+		/*mp_msg(MSGT_AO,MSGL_V,"alsa-resume: resume supported by hardware\n");*/
+	} else {
+		if ((err = snd_pcm_prepare(record_handle->handle)) < 0) {
+		log_i("------4");
+			/*mp_msg(MSGT_AO,MSGL_ERR,MSGTR_AO_ALSA_PcmPrepareError, snd_strerror(err));*/
+			return;
+		}
+	}
 }
 

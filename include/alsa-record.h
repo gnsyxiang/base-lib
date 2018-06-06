@@ -93,7 +93,10 @@ typedef struct {
 record_handle_t *alsa_record_init(record_params_t record_params);
 void alsa_record_clean(record_handle_t * record_handle);
 
-void alsa_record_get_data(record_handle_t *record_handle, void *buf);
+void alsa_record_pause(record_handle_t *record_handle);
+void alsa_record_resume(record_handle_t *record_handle);
+
+int alsa_record_get_data(record_handle_t *record_handle, void *buf);
 
 #ifdef __cplusplus
 }

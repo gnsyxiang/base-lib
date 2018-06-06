@@ -21,12 +21,12 @@
 
 #include <ringbuf.h>
 #include <log_helper.h>
+#include <pthread_helper.h>
 
 #define MIC_READ_GB
 #include "mic-read.h"
 #undef MIC_READ_GB
 #include "alsa-record.h"
-#include "pthread_helper.h"
 
 static record_handle_t *mic_read_alsa_fd;
 static pringbuf_t mic_read_ringbuf;
@@ -55,7 +55,10 @@ static void *mic_read_loop(void *args)
 	while (1) {
 		/*log_i("ringbuf user size: %d", mic_read_ringbuf->size - mic_read_ringbuf->remain_size);*/
 
-		alsa_record_get_data(mic_read_alsa_fd, buf);
+		if (alsa_record_get_data(mic_read_alsa_fd, buf)) {
+			usleep(10 * 1000);
+			continue;
+		}
 
 		ringbuf_in(mic_read_ringbuf, buf, sizeof(buf));
 	}
@@ -83,5 +86,15 @@ void mic_read_clean(void)
 {
 	ringbuf_destroy(mic_read_ringbuf);
 	alsa_record_clean(mic_read_alsa_fd);
+}
+
+void mic_read_pause(void)
+{
+	alsa_record_pause(mic_read_alsa_fd);
+}
+
+void mic_read_resume(void)
+{
+	alsa_record_resume(mic_read_alsa_fd);
 }
 

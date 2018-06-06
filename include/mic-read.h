@@ -60,6 +60,9 @@ extern "C" {
 MIC_READ_EX void mic_read_init(void);
 MIC_READ_EX void mic_read_clean(void);
 
+MIC_READ_EX void mic_read_pause(void);
+MIC_READ_EX void mic_read_resume(void);
+
 MIC_READ_EX void mic_read_get_data(void *buf, int len);
 
 #ifdef __cplusplus
