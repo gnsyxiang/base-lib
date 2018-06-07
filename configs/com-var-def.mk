@@ -70,6 +70,7 @@ LDFLAGS 	:=
 #TARGET_SYSTEM   := xiaomi
 
 #HOOK 		:= -DUSR_HOOK
+STRIP_OBJ 	:= y
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin

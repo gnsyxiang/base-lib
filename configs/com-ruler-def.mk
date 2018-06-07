@@ -34,4 +34,10 @@ define run-dir-makefile-make
 	done
 endef
 
+ifeq ($(STRIP_OBJ), y)
+define strip_obj
+		$(STRIP) --strip-unneeded $@;
+endef
+endif
+
 

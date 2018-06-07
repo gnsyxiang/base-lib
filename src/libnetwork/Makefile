@@ -104,12 +104,12 @@ $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(MKDIR) $(LIB_DIR)
 	$(CC) $^ $(LIB_LDFLAGS) -o $@
-	#$(STRIP) --strip-unneeded $@
+	$(strip_obj)
 
 $(TARGET_DEMO): $(TARGET_DEMO_OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(CC) $^ $(LDFLAGS) -o $@
-	#$(STRIP) --strip-unneeded $@
+	$(strip_obj)
 
 handle_lib: clean_lib
 	$(LN) $(TARGET_LIB) $(LIB_DIR)/$(TARGET_LIB_MAJ)
