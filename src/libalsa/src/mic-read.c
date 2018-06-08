@@ -53,8 +53,6 @@ static void *mic_read_loop(void *args)
 	static mic_data_t buf[FRAME_CNT];
 
 	while (1) {
-		/*log_i("ringbuf user size: %d", mic_read_ringbuf->size - mic_read_ringbuf->remain_size);*/
-
 		if (alsa_record_get_data(mic_read_alsa_fd, buf)) {
 			usleep(10 * 1000);
 			continue;
@@ -68,6 +66,10 @@ static void *mic_read_loop(void *args)
 
 void mic_read_get_data(void *buf, int len)
 {
+	/*log_i("ringbuf size: %d, remain size: %d, use size: %d",*/
+			/*mic_read_ringbuf->size, mic_read_ringbuf->remain_size, */
+			/*mic_read_ringbuf->size - mic_read_ringbuf->remain_size);*/
+
 	ringbuf_out(mic_read_ringbuf, buf, len);
 }
 
