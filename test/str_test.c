@@ -31,25 +31,43 @@ static void str_test(void)
 
 	str_get_file_extension_name(file_name, ext_name);
 	
-	printf("file_name: %s, ext_name: %s \n", file_name, ext_name);
+	log_i("file_name: %s, ext_name: %s ", file_name, ext_name);
 }
-
 
 static void strcmp_hook_test(void)
 {
 	char *hook_test = "test";
 
 	if(strcmp(hook_test, "test"))
-		printf("Incorrect password\n");
+		log_i("Incorrect password");
 	else
-		printf("Correct password\n");
+		log_i("Correct password");
+}
+
+void getch_test(void)
+{
+#define GETCH_BUF_LEN	(6)
+	char buf[GETCH_BUF_LEN + 1] = {0};
+	fflush(stdin);
+
+	printf("input a password: ");
+	getch();
+
+	for (int i = 0; i < GETCH_BUF_LEN; i++) {
+		buf[i] = getch();
+		putchar('*');
+	}
+	printf("\n");
+
+	log_i("buf: %s ", buf);
 }
 
 static void str_test_init(void)
 {
 	handle_test_cmd_t str_test_cmd[] = {
 		/*{"10", str_test},*/
-		{"10", strcmp_hook_test},
+		/*{"10", strcmp_hook_test},*/
+		{"10", getch_test},
 	};
 
 	register_test_cmd(str_test_cmd, ARRAY_NUM(str_test_cmd));

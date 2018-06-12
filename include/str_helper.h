@@ -61,7 +61,15 @@ STR_HELPER_EX void str_get_file_name_no_extension_name(const char *, char *);
  *
  * @return return the new string after the replacement
  */
-const char *str_replace_substr(const char *src, const char *oldstr, const char *newstr, int num);
+STR_HELPER_EX const char *str_replace_substr(const char *src, const char *oldstr, const char *newstr, int num);
+
+
+/**
+ * @brief get a single character
+ *
+ * @return a character
+ */
+STR_HELPER_EX int getch(void);
 
 #ifdef __cplusplus
 }
