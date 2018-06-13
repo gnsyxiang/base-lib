@@ -78,7 +78,7 @@ static void wav_test(void)
 #define bit_per_sample(wav_file)	wav_file->fmt->fmt_bits_per_sample
 #define data_len(wav_file)			wav_file->data->data_sz
 
-static inline void add_blank_time(wav_file_t *wav_file, wav_file_t *new_wav_file, int len)
+static void add_blank_time(wav_file_t *wav_file, wav_file_t *new_wav_file, int len)
 {
 	if (len <= 0) {
 		log_e("len is less than zero");
@@ -90,13 +90,15 @@ static inline void add_blank_time(wav_file_t *wav_file, wav_file_t *new_wav_file
 	free_mem(blank_voice);
 }
 
-#define WAV_MS_LEN		(15)
 
-static inline int calc_blank_bytes(wav_file_t *wav_file, int time_s)
+static int calc_blank_bytes(wav_file_t *wav_file, int time_s, int blank_bytes_len)
 {
-    int total_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
-	/*int blank_bytes = (total_bytes - data_len(wav_file)) / 2;*/
-	int blank_bytes = total_bytes;
+	int blank_bytes;
+
+	if (time_s == 0)
+		blank_bytes = blank_bytes_len;
+	else
+		blank_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
 
 	switch (bit_per_sample(wav_file) / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
@@ -154,21 +156,32 @@ wav_over:
 	wav_file_clean(wav_file);
 }
 
+#define WAV_MS_LEN				(15)
+#define FRONT_BLANK_AUDIO_LEN	(2)
+
 #define COMBINE_WAKEUP_ASR_WAV
 
 void stretch_appointed_time(const char *src_name, const char *dst_name, int time_s)
 {
+	int len;
 	wav_file_t *wav_file = wav_file_open(src_name);
 	wav_file_t *new_wav_file = wav_file_create(dst_name, 
 			channels(wav_file), sample_rate(wav_file), bit_per_sample(wav_file));
 
-	/*add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_s));*/
-	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, 5));
+    int total_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
+
+	len = calc_blank_bytes(wav_file, FRONT_BLANK_AUDIO_LEN, 0);
+	total_bytes -= len;
+
+	add_blank_time(wav_file, new_wav_file, len);
 
 #ifdef COMBINE_WAKEUP_ASR_WAV
-	wav_file_t *wakeup_file = wav_file_open("wav/xiaodu-48k-jiaozhun.wav");
+	wav_file_t *wakeup_file = wav_file_open("wav/092_0_0.wav");
 
-	char *wakeup_voice = alloc_mem(data_len(wakeup_file));
+	len = data_len(wakeup_file);
+	total_bytes -= len;
+
+	char *wakeup_voice = alloc_mem(len);
 	wav_file_read(wakeup_file, wakeup_voice, data_len(wakeup_file));
 	wav_file_write(new_wav_file, wakeup_voice, data_len(wakeup_file));
 
@@ -176,12 +189,14 @@ void stretch_appointed_time(const char *src_name, const char *dst_name, int time
 	wav_file_clean(wakeup_file);
 #endif
 
+	len = data_len(wav_file);
+	total_bytes -= len;
+
 	char *voice = alloc_mem(data_len(wav_file));
 	wav_file_read(wav_file, voice, data_len(wav_file));
 	wav_file_write(new_wav_file, voice, data_len(wav_file));
 
-	/*add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, time_s));*/
-	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, 5));
+	add_blank_time(wav_file, new_wav_file, calc_blank_bytes(wav_file, 0, total_bytes));
 
 	free_mem(voice);
 	wav_file_clean(new_wav_file);
@@ -260,8 +275,8 @@ void wav_handle(const char *base_path, const char *name, unsigned char d_type, v
 			system(buf);
 		}
 	} else if (d_type == DT_REG) {
-		cut_audio(src_name, dst_name, 20); //8
-		/*stretch_appointed_time(src_name, dst_name, WAV_MS_LEN);*/
+		/*cut_audio(src_name, dst_name, 20); //8*/
+		stretch_appointed_time(src_name, dst_name, WAV_MS_LEN);
 		/*save_wav_to_channel(src_name, dst_name);*/
 	} else
 		log_e("error");
