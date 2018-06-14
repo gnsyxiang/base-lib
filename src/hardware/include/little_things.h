@@ -1,14 +1,21 @@
-/*
- * Copyright (C) 2016 Ingenic Semiconductor
- *
- * SunWenZhong(Fighter) <wenzhong.sun@ingenic.com, wanmyqawdr@126.com>
- *
- * Little things from everywhere, Thank you for your work!
- *
- * For project-5
- *
- * Release under GPLv2
- *
+/**
+ * 
+ * Release under GPLv2.
+ * 
+ * @file    little_things.h
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    14/06 2018 10:00
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        14/06 2018      create the file
+ * 
+ *     last modified: 14/06 2018 10:00
  */
 
 

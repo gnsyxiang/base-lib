@@ -62,6 +62,9 @@ static void socket_server(void)
 
 void socket_test_init(void)
 {
+	printf(" 1. socket client test \n");
+	printf(" 2. socket server test \n");
+
 	handle_test_cmd_t socket_test_cmd[] = {
 		{"1", socket_client},
 		{"2", socket_server},

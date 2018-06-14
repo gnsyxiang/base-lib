@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    parse_cmd.c
@@ -35,7 +35,7 @@ void do_initcalls(void)
 {
 	init_call *init_ptr = &_init_start;
 	for (; init_ptr < &_init_end; init_ptr++) {
-		printf("init address: %p\n", init_ptr);
+		/*printf("init address: %p\n", init_ptr);*/
 		(*init_ptr)();
 	}
 }

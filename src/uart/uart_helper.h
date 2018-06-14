@@ -1,17 +1,22 @@
-/****************************************************************
- * Filename: uart_helper.h
- * -------------------------------
- * Copyright(C),
- * Author: zhenquan.qiu
- * Version: V1.0.0
- * Last modified: 13/11 2017 22:31
- * Description:
- *
- * Change Log:
- * NO.	Author		    Date		Modified
- * 00	zhenquan.qiu	13/11 2017
- ****************************************************************/
-
+/**
+ * 
+ * Release under GPLv2.
+ * 
+ * @file    uart_helper.h
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    14/06 2018 10:01
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        14/06 2018      create the file
+ * 
+ *     last modified: 14/06 2018 10:01
+ */
 #ifndef __UART_HELPER_H_
 #define __UART_HELPER_H_
 

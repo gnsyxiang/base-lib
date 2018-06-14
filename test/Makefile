@@ -1,15 +1,21 @@
 # ===============================================================
-# Filename: Makefile
-# -------------------------------
-# Copyright(C),
-# Author: zhenquan.qiu
-# Version: V1.0.0
-# Last modified: 23/09 2017 17:06
-# Description:
-#
-# Change Log:
-# NO.	Author		    Date		Modified
-# 00	zhenquan.qiu	23/09 2017
+# 
+# Release under GPLv2.
+# 
+# @file    Makefile
+# @brief   
+# @author  gnsyxiang <gnsyxiang@163.com>
+# @date    14/06 2018 10:00
+# @version v0.0.1
+# 
+# @since    note
+# @note     note
+# 
+#     change log:
+#     NO.     Author              Date            Modified
+#     00      zhenquan.qiu        14/06 2018      create the file
+# 
+#     last modified: 14/06 2018 10:00
 # ===============================================================
 
 ROOT := $(shell pwd)

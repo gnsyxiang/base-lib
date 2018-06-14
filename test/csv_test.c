@@ -48,6 +48,8 @@ static void csv_test(void)
 
 static void csv_test_init(void)
 {
+	printf("12. csv test \n");
+
 	handle_test_cmd_t csv_test_cmd[] = {
 		{"12", csv_test},
 	};

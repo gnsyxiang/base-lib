@@ -56,6 +56,9 @@ static void net_v1_server_test(void)
 
 static void net_v1_test_init(void)
 {
+	printf("13. net_v1 client test \n");
+	printf("14. net_v1 server test \n");
+
 	handle_test_cmd_t net_v1_test_cmd[] = {
 		{"13", net_v1_client_test},
 		{"14", net_v1_server_test},

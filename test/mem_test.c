@@ -100,6 +100,8 @@ static void stack_size_test(void)
 
 static void mem_test_init(void)
 {
+	printf(" 3. heap memory test \n");
+
 	handle_test_cmd_t mem_test_cmd[] = {
 		/*{"3", mem_test},*/
 		/*{"3", heap_stack_address_test},*/

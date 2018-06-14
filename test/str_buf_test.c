@@ -41,6 +41,8 @@ static void str_buf_test(void)
 
 static void str_buf_test_init(void)
 {
+	printf("11. str_buf test \n");
+
 	handle_test_cmd_t str_buf_test_cmd[] = {
 		{"11", str_buf_test},
 	};

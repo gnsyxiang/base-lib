@@ -29,22 +29,6 @@ void dis_func(void)
 	printf("-----------------------------------------------\n");
 	printf("enter the sequence number, select the function \n");
 	printf("-----------------------------------------------\n");
-	printf(" 1. socket client test \n");
-	printf(" 2. socket server test \n");
-	printf(" 3. heap memory test \n");
-	printf(" 4. time test \n");
-	printf(" 5. wav test \n");
-	printf(" 6. add blank to wav \n");
-	printf(" 7. serial send test \n");
-	printf(" 8. serial receive test \n");
-	printf(" 9. file test \n");
-	printf("10. str test \n");
-	printf("11. str_buf test \n");
-	printf("12. csv test \n");
-	printf("13. net_v1 client test \n");
-	printf("14. net_v1 server test \n");
-	printf("15. ring buffer test \n");
-
 	printf("input your number: ");
 
 	fflush(stdout);

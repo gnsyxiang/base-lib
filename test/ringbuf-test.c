@@ -1,16 +1,22 @@
-/****************************************************************
- * Filename: ringbuf-test.c
- * -------------------------------
- * Copyright(C),
- * Author: zhenquan.qiu
- * Version: V1.0.0
- * Last modified: 20/09 2017 18:21
- * Description:
+/**
  * 
- * Change Log:
- * NO.	Author		    Date		Modified
- * 00	zhenquan.qiu	20/09 2017
- ****************************************************************/
+ * Release under GPLv2.
+ * 
+ * @file    ringbuf-test.c
+ * @brief   
+ * @author  gnsyxiang <gnsyxiang@163.com>
+ * @date    14/06 2018 09:51
+ * @version v0.0.1
+ * 
+ * @since    note
+ * @note     note
+ * 
+ *     change log:
+ *     NO.     Author              Date            Modified
+ *     00      zhenquan.qiu        14/06 2018      create the file
+ * 
+ *     last modified: 14/06 2018 09:51
+ */
 #include <stdio.h>
 #include <unistd.h>
 
@@ -90,6 +96,8 @@ static void ringbuf_test(void)
 
 static void ringbuf_test_init(void)
 {
+	printf("15. ring buffer test \n");
+
 	handle_test_cmd_t ringbuf_test_cmd[] = {
 		{"15", ringbuf_test},
 	};

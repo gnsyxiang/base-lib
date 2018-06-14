@@ -300,9 +300,11 @@ static void synthetic_audio(void)
 
 static void wav_test_init(void)
 {
+	printf(" 5. wav test \n");
+	printf(" 6. add blank to wav \n");
+
 	handle_test_cmd_t wav_test_cmd[] = {
 		{"5", wav_test},
-		/*{"6", create_new_wav},*/
 		{"6", synthetic_audio},
 	};
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    time_test.c
@@ -54,6 +54,8 @@ static void time_test(void)
 
 static void time_test_init(void)
 {
+	printf(" 4. time test \n");
+
 	handle_test_cmd_t time_test_cmd[] = {
 		{"4", time_test}
 	};

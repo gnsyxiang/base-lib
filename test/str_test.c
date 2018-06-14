@@ -64,6 +64,8 @@ void getch_test(void)
 
 static void str_test_init(void)
 {
+	printf("10. str test \n");
+
 	handle_test_cmd_t str_test_cmd[] = {
 		/*{"10", str_test},*/
 		/*{"10", strcmp_hook_test},*/

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 xxx Co., Ltd.
+ *
  * Release under GPLv2.
  * 
  * @file    file_test.c
@@ -46,6 +46,8 @@ static void file_test(void)
 
 static void file_test_init(void)
 {
+	printf(" 9. file test \n");
+
 	handle_test_cmd_t file_test_cmd[] = {
 		{"9", file_test},
 	};
