@@ -111,7 +111,7 @@ BASE_LIB_WAV_HELPER_EX void wav_file_flush(wav_file_t *wav_file);
 BASE_LIB_WAV_HELPER_EX void wav_file_rewind(wav_file_t *wav_file);
 BASE_LIB_WAV_HELPER_EX int wav_file_over(wav_file_t *wav_file);
 
-inline int wav_file_seek(wav_file_t *wav_file, long offset, int whence)
+int wav_file_seek(wav_file_t *wav_file, long offset, int whence)
 {
 	return fseek(wav_file->fp, offset, whence);
 }
