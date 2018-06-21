@@ -157,8 +157,7 @@ void save_wav(int (*voice_time)[2], int wav_num)
 #define cur_time_s(frame_cnt)	((frame_cnt) * FRAME_TO_MS / 1000)
 #define cur_time_ms(frame_cnt)	((frame_cnt) * FRAME_TO_MS % 1000)
 
-void vad_handle(const char *src_wav_name, const char *dst_wav_name, 
-		const int front_time, const int back_time)
+void vad_handle(const char *src_wav_name)
 {
 	int voice_time[2000][2] = {0};
 
@@ -230,12 +229,9 @@ static void dis_help_info(const char *name)
 {
 	printf("vad cutting wav \n");
 	printf("\t -s	src dir \n");
-	printf("\t -d	dst dir \n");
-	printf("\t -f	front blank time \n");
-	printf("\t -b	back blank time \n");
 	printf("\t -h	help info \n");
 	printf("eg:  \n");
-	printf("\t ./main -s wav/src -d wav/dst -f 2 -b 2 \n");
+	printf("\t ./main -s wav/src \n");
 }
 
 #include <string.h>
@@ -244,11 +240,8 @@ static void dis_help_info(const char *name)
 int main(int argc, char** argv)
 {
 	char src_wav_name[WAV_NAME_LEN];
-	char dst_wav_name[WAV_NAME_LEN];
-	int front_time = 0;
-	int back_time = 0;
 
-	if (argc < 9) {
+	if (argc < 2) {
 		dis_help_info(argv[0]);
 		exit(0);
 	}
@@ -260,16 +253,6 @@ int main(int argc, char** argv)
 				memset(src_wav_name, '\0', WAV_NAME_LEN);
 				strcpy(src_wav_name, optarg);
 				break;
-			case 'd':
-				memset(dst_wav_name, '\0', WAV_NAME_LEN);
-				strcpy(dst_wav_name, optarg);
-				break;
-			case 'f':
-				front_time = atoi(optarg);
-				break;
-			case 'b':
-				back_time = atoi(optarg);
-				break;
 			case 'h':
 			default:
 				dis_help_info(argv[0]);
@@ -279,7 +262,7 @@ int main(int argc, char** argv)
 
 	register_linux_signal_hanler(argv[0]);
 
-	vad_handle(src_wav_name, dst_wav_name, front_time, back_time);
+	vad_handle(src_wav_name);
 
 	return 0;
 }
