@@ -20,4 +20,9 @@
 #     last modified: 21/06 2018 14:49
 # ===============================================================
 
-./main -s ./vad-test.wav | tee time_stamp.txt
+wav_path=wav
+src_path=${wav_path}/src
+dst_path=${wav_path}/dst
+
+./main -s ${src_path}/vad-test.wav | 
+tee ${wav_path}/time_stamp.txt
