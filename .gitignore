@@ -66,6 +66,9 @@ demo
 *.pcm
 *.txt
 
+# 
+!project/vad/lib/libMNPCVAD.so
+
 
 
 
