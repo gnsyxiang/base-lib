@@ -154,8 +154,8 @@ void save_wav(int (*voice_time)[2], int wav_num)
 #define FRAME_CONTINUE_STOP_CNT		(3)			// 尾断点连续语音时间
 #define MID_BLANK_TIME_CNT			(22)		// 中间音频空白时间
 
-#define cur_time_s(frame_num)	((frame_num) * FRAME_TO_MS / 1000)
-#define cur_time_ms(frame_num)	((frame_num) * FRAME_TO_MS % 1000)
+#define cur_time_s(frame_cnt)	((frame_cnt) * FRAME_TO_MS / 1000)
+#define cur_time_ms(frame_cnt)	((frame_cnt) * FRAME_TO_MS % 1000)
 
 void vad_handle(const char *src_wav_name, const char *dst_wav_name, 
 		const int front_time, const int back_time)
@@ -169,17 +169,16 @@ void vad_handle(const char *src_wav_name, const char *dst_wav_name,
 	wav_file_t *wav_file = wav_file_open(src_wav_name);
 
 	short buf[FRAME_POINT_CNT] = {0};
-	int frame_num = 0;					// 处理音频的帧数
+	int frame_cnt = 0;					// 处理音频的帧数
 	int is_a_voice_flag = 0;
-	int voice_num = 0;
+	int mid_time_cnt = 0;				// 语音中间停顿计数
+	int voice_cnt = 0;
 
 	int front_time_cnt = 0;				// 连续语音计数，方可判断语音开始
 	int is_voice_start_flag = 0;		// 判断语音是否开始
 
 	int back_time_cnt = 0;				// 连续语音计数，方可判断语音结束
 	int is_voice_stop_flag = 0;			// 判断语音是否结束
-
-	int mid_time_cnt = 0;				// 语音中间停顿计数
 
 	while (1) {
 		if (wav_file_read(wav_file, buf, FRAME_POINT_CNT * sizeof(short)) <= 0)
@@ -208,22 +207,26 @@ void vad_handle(const char *src_wav_name, const char *dst_wav_name,
 
 		if (is_voice_start_flag && !is_a_voice_flag) {
 			is_a_voice_flag = 1;
-			printf("%d.%03d \t", cur_time_s(frame_num - FRAME_CONTINUE_START_CNT), cur_time_ms(frame_num - FRAME_CONTINUE_START_CNT));
+			printf("time: %d.%03d \t", 
+					cur_time_s(frame_cnt - FRAME_CONTINUE_START_CNT), 
+					cur_time_ms(frame_cnt - FRAME_CONTINUE_START_CNT));
 		} else if (is_a_voice_flag && is_voice_stop_flag && mid_time_cnt++ == MID_BLANK_TIME_CNT) {
 			is_a_voice_flag = 0;
-			printf("%d.%03d \n", cur_time_s(frame_num - FRAME_CONTINUE_STOP_CNT), cur_time_ms(frame_num - FRAME_CONTINUE_STOP_CNT));
-			voice_num++;
+			printf("%d.%03d \n", 
+					cur_time_s(frame_cnt - FRAME_CONTINUE_STOP_CNT - MID_BLANK_TIME_CNT), 
+					cur_time_ms(frame_cnt - FRAME_CONTINUE_STOP_CNT - MID_BLANK_TIME_CNT));
+			voice_cnt++;
 		}
 
-		frame_num++;
+		frame_cnt++;
 	}
 
-	/*log_i("voice_num: %d", voice_num);*/
+	log_i("voice_cnt: %d", voice_cnt);
 
 	wav_file_clean(wav_file);
 }
 
-void dis_help_info(const char *name)
+static void dis_help_info(const char *name)
 {
 	printf("vad cutting wav \n");
 	printf("\t -s	src dir \n");
