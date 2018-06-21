@@ -34,7 +34,8 @@
 
 static int calc_blank_bytes(wav_file_t *wav_file, float time_s)
 {
-	int blank_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
+	int blank_bytes = time_s * 
+		channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
 
 	switch (bit_per_sample(wav_file) / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
@@ -51,13 +52,14 @@ static int calc_blank_bytes(wav_file_t *wav_file, float time_s)
 #define SAMPLE_RATE		(16000)
 #define BIT_PER_SAMPLE	(16)
 
-void time_stamp_to_wav(const char *file_name, float start_time, float stop_time)
+void time_stamp_to_wav(const char *src_name, const char *file_name, 
+		float start_time, float stop_time)
 {
 	log_i("start_time: %f", start_time);
 	log_i("stop_time: %f \n", stop_time);
 
 	wav_file_t *new_wav_file = wav_file_create(file_name, CHANNELS, SAMPLE_RATE, BIT_PER_SAMPLE);
-	wav_file_t *test_wav_file = wav_file_open("vad-test.wav");
+	wav_file_t *test_wav_file = wav_file_open(src_name);
 
 	int start_byte = calc_blank_bytes(test_wav_file, start_time);
 	int copy_bytes = calc_blank_bytes(test_wav_file, stop_time - start_time);
@@ -85,28 +87,34 @@ void time_stamp_to_wav(const char *file_name, float start_time, float stop_time)
 static void dis_help_info(const char *name)
 {
 	printf("time stamp to wav \n");
-	printf("\t -f	file name \n");
+	printf("\t -t	the src file name \n");
+	printf("\t -f	the new file name \n");
 	printf("\t -s	start time stamp \n");
 	printf("\t -p	stop time stamp \n");
 	printf("\t -h	help info \n");
 	printf("eg:  \n");
-	printf("\t ./main -f name.wav -s 2 -p 2 \n");
+	printf("\t ./main -t src.wav -f name.wav -s 2 -p 2 \n");
 }
 
 int main(int argc, char **argv)
 {
 	char file_name[WAV_NAME_LEN];
+	char src_name[WAV_NAME_LEN];
 	float start_time;
 	float stop_time;
 
-	if (argc < 7) {
+	if (argc < 9) {
 		dis_help_info(argv[0]);
 		exit(0);
 	}
 
 	int opt;
-	while (-1 != (opt = getopt(argc, argv, "f:s:p:h"))) {
+	while (-1 != (opt = getopt(argc, argv, "f:s:p:t:h"))) {
 		switch (opt) {
+			case 't':
+				memset(src_name, '\0', WAV_NAME_LEN);
+				strcpy(src_name, optarg);
+				break;
 			case 'f':
 				memset(file_name, '\0', WAV_NAME_LEN);
 				strcpy(file_name, optarg);
@@ -124,7 +132,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	time_stamp_to_wav(file_name, start_time, stop_time);
+	time_stamp_to_wav(src_name, file_name, start_time, stop_time);
 
 	return 0;
 }
