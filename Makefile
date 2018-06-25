@@ -27,7 +27,11 @@ include configs/com-ruler-def.mk
 TARGET_DEMO 	?= main
 TARGET_LIB_NAME ?= base-lib
 
-subdir-src 		:= src/libcjson src/libalsa src/libnetwork
+ifeq ($(TARGET_SYSTEM), x1800)
+subdir-src 		:= src/libcjson src/libnetwork
+else
+subdir-src 		:= src/libcjson src/libnetwork src/libalsa
+endif
 
 # -------
 # version

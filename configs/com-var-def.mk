@@ -64,7 +64,7 @@ CFLAGS 		:=
 LIB_CFLAGS 	:=
 LDFLAGS 	:=
 
-SYSTEM_32_64 	?= -m32
+#SYSTEM_32_64 	?= -m32
 
 #TARGET_SYSTEM   := x1800
 #TARGET_SYSTEM   := xiaomi
