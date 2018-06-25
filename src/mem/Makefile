@@ -18,27 +18,25 @@
 #     last modified: 28/02 2018 17:02
 # ===============================================================
 
-include configs/com-var-def.mk
-include configs/com-ruler-def.mk
+TO_TOP_DIR 	:= ../..
+
+include $(TO_TOP_DIR)/configs/com-var-def.mk
+include $(TO_TOP_DIR)/configs/com-ruler-def.mk
+
+subdir-src 		:= libpagemap procmem procrank
 
 # --------------
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= base-lib
-
-ifeq ($(TARGET_SYSTEM), x1800)
-subdir-src 		:= src/mem src/libcjson src/libnetwork
-else
-subdir-src 		:= src/mem src/libcjson src/libnetwork src/libalsa
-endif
+TARGET_LIB_NAME ?= alsa-record
 
 # -------
 # version
 # -------
 MAJOR_VERSION 	?= 1
 MINOR_VERSION 	?= 0
-RELEASE_VERSION ?= 1
+RELEASE_VERSION ?= 0
 
 TARGET_LIB 	  	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION).$(MINOR_VERSION).$(RELEASE_VERSION)
 TARGET_LIB_MAJ 	:= lib$(TARGET_LIB_NAME).so.$(MAJOR_VERSION)
@@ -59,7 +57,7 @@ else
 endif
 
 CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
-CFLAGS     += -I$(INC_DIR)
+CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/include
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
@@ -70,9 +68,10 @@ SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
 LD_COM_FLAG := $(SYSTEM_32_64)
 
-LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
-LDFLAGS 	+= -L$(LIB_DIR)
-LDFLAGS 	+= -l$(TARGET_LIB_NAME) -ldl
+LDFLAGS 	:=
+LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR):$(TO_TOP_DIR)/lib $(LD_COM_FLAG)
+LDFLAGS 	+= -L$(LIB_DIR) -L$(TO_TOP_DIR)/lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lasound -lbase-lib
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
@@ -97,8 +96,12 @@ TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
 TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
 ###########################################
-all: $(TARGET_LIB) $(TARGET_DEMO)
+all:
 	$(run-dir-makefile-make)
+
+#all: $(TARGET_LIB) $(TARGET_DEMO)
+	#$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/lib
+	#$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/include
 
 $(TARGET_LIB): $(TARGET_PATH) handle_lib
 
@@ -190,16 +193,11 @@ index-clean:
 	$(RM) *.out
 	$(RM) tags
 
-demo:
-	$(MKDIR) $(DEM_DIR)/$(LIB_DIR)
-	$(CP) $(LIB_DIR) $(DEM_DIR)
-	$(CP) $(TARGET_DEMO) $(DEM_DIR)
-
 note:
 	doxygen configs/Doxyfile
 
 debug:
-	echo $(TARGET_PATH)
+	echo $(LDFLAGS)
 
 .PHONY: all clean distclean debug
 
