@@ -49,16 +49,6 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # ------
 # cflags
 # ------
-
-DEBUG_SWITCH := debug
-
-ifeq ($(DEBUG_SWITCH), debug)
-	CFLAGS     += -g
-else
-	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
-endif
-
-CFLAGS     += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
 CFLAGS     += -I$(INC_DIR)
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
@@ -105,12 +95,12 @@ $(TARGET_LIB): $(TARGET_PATH) handle_lib
 $(TARGET_PATH): $(OBJS)
 	$(ECHO) $(MSG_LD) $@
 	$(MKDIR) $(LIB_DIR)
-	$(CC) $^ $(LIB_LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $^ $(LIB_LDFLAGS) -o $@
 	$(strip_obj)
 
 $(TARGET_DEMO): $(TARGET_DEMO_OBJS)
 	$(ECHO) $(MSG_LD) $@
-	$(CC) $^ $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 	$(strip_obj)
 
 handle_lib: clean_lib
@@ -199,7 +189,7 @@ note:
 	doxygen configs/Doxyfile
 
 debug:
-	echo $(TARGET_PATH)
+	echo $(CFLAGS)
 
 .PHONY: all clean distclean debug
 

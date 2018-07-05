@@ -66,11 +66,18 @@ LDFLAGS 	:=
 
 #SYSTEM_32_64 	?= -m32
 
-#TARGET_SYSTEM   := x1800
+TARGET_SYSTEM   := x1800
 #TARGET_SYSTEM   := xiaomi
 
 #HOOK 		:= -DUSR_HOOK
-STRIP_OBJ 	:= y
+#STRIP_OBJ 	:= y
+
+DEBUG_SWITCH := debug
+ifeq ($(DEBUG_SWITCH), debug)
+	CFLAGS     += -g -O0 -rdynamic -fasynchronous-unwind-tables
+else
+	CFLAGS     += -O2 -Wno-error=unused-result -Werror=return-type
+endif
 
 ifeq ($(TARGET_SYSTEM), x1800)
 	GCC_PATH 	:= ~/office/ingenic/gcc/mips-gcc520-32bit/bin
@@ -100,6 +107,7 @@ else
 endif
 
 CFLAGS 	+= -Wno-error=missing-braces
+CFLAGS  += -Wall -Werror -std=gnu99 $(SYSTEM_32_64) $(HOOK)
 
 CC 	 	:= $(CROSS_TOOL)gcc
 CXX 	:= $(CROSS_TOOL)g++
