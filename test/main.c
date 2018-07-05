@@ -19,6 +19,7 @@
  */
 #include <stdio.h>
 
+#include "signal_helper.h"
 #include "parse_cmd.h"
 #include "log_helper.h"
 
@@ -36,6 +37,8 @@ void dis_func(void)
 
 int main(int argc, const char *argv[])
 {
+	register_linux_signal_hanler(argv[0]);
+
 	do_initcalls();
 
 	dis_func();
