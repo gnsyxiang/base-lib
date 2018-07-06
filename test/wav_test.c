@@ -91,14 +91,14 @@ static void add_blank_time(wav_file_t *wav_file, wav_file_t *new_wav_file, int l
 }
 
 
-static int calc_blank_bytes(wav_file_t *wav_file, int time_s, int blank_bytes_len)
+static int calc_blank_bytes(wav_file_t *wav_file, int time_ms, int blank_bytes_len)
 {
 	int blank_bytes;
 
-	if (time_s == 0)
+	if (time_ms == 0)
 		blank_bytes = blank_bytes_len;
 	else
-		blank_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
+		blank_bytes = time_ms * channels(wav_file) * sample_rate(wav_file) / 1000 * bit_per_sample(wav_file) / 8;
 
 	switch (bit_per_sample(wav_file) / 8) {
 		case 2: blank_bytes = ALIGN2(blank_bytes); break;
@@ -110,7 +110,7 @@ static int calc_blank_bytes(wav_file_t *wav_file, int time_s, int blank_bytes_le
 	return blank_bytes;
 }
 
-void cut_audio(const char *src_name, const char *dst_name, int time_s)
+void cut_audio(const char *src_name, const char *dst_name, int time_ms)
 {
 	wav_file_t *wav_file = wav_file_open(src_name);
 
@@ -136,7 +136,7 @@ void cut_audio(const char *src_name, const char *dst_name, int time_s)
 
 		wav_cnt = 0;
 		while (1) {
-			if (wav_cnt++ == sample_rate(wav_file) * time_s / FRAME_CNT)
+			if (wav_cnt++ == sample_rate(wav_file) * time_ms / 1000 / FRAME_CNT)
 				break;
 
 			ret = wav_file_read(wav_file, cut_buf, frame_len);
@@ -156,27 +156,26 @@ wav_over:
 	wav_file_clean(wav_file);
 }
 
-#define WAV_MS_LEN				(15)
-#define FRONT_BLANK_AUDIO_LEN	(2)
+#define WAV_MS_LEN				(15000)
+#define FRONT_BLANK_AUDIO_LEN	(2000)
 
 #define COMBINE_WAKEUP_ASR_WAV
 
-void stretch_appointed_time(const char *src_name, const char *dst_name, int time_s)
+void stretch_appointed_time(const char *src_name, const char *dst_name, int time_ms)
 {
 	int len;
 	wav_file_t *wav_file = wav_file_open(src_name);
 	wav_file_t *new_wav_file = wav_file_create(dst_name, 
 			channels(wav_file), sample_rate(wav_file), bit_per_sample(wav_file));
 
-    int total_bytes = time_s * channels(wav_file) * sample_rate(wav_file) * bit_per_sample(wav_file) / 8;
+    int total_bytes = time_ms * channels(wav_file) * sample_rate(wav_file) / 1000 * bit_per_sample(wav_file) / 8;
 
 	len = calc_blank_bytes(wav_file, FRONT_BLANK_AUDIO_LEN, 0);
 	total_bytes -= len;
-
 	add_blank_time(wav_file, new_wav_file, len);
 
 #ifdef COMBINE_WAKEUP_ASR_WAV
-	wav_file_t *wakeup_file = wav_file_open("wav/092_0_0.wav");
+	wav_file_t *wakeup_file = wav_file_open("wav/wakeup.wav");
 
 	len = data_len(wakeup_file);
 	total_bytes -= len;

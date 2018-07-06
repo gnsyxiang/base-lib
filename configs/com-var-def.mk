@@ -66,7 +66,7 @@ LDFLAGS 	:=
 
 #SYSTEM_32_64 	?= -m32
 
-TARGET_SYSTEM   := x1800
+#TARGET_SYSTEM   := x1800
 #TARGET_SYSTEM   := xiaomi
 
 #HOOK 		:= -DUSR_HOOK
