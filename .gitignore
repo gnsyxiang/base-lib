@@ -69,7 +69,4 @@ demo
 # 
 !project/vad/lib/libMNPCVAD.so
 
-
-
-
-
+src/*/configs

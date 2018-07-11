@@ -57,7 +57,6 @@ SO_NAME 	:= -Wl,-soname=$(TARGET_LIB_MAJ)
 
 LD_COM_FLAG := $(SYSTEM_32_64)
 
-LDFLAGS 	:=
 LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR) $(LD_COM_FLAG)
 LDFLAGS 	+= -L$(LIB_DIR) -L$(TO_TOP_DIR)/lib
 #LDFLAGS 	+= -l$(TARGET_LIB_NAME)
@@ -86,7 +85,11 @@ TARGET_DEMO_DEPS  ?= $(TARGET_DEMO_DEP_C)
 TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
 ###########################################
-all: $(TARGET_LIB) $(TARGET_DEMO)
+all: depend $(TARGET_LIB) $(TARGET_DEMO)
+
+depend:
+	$(RM) configs
+	$(LN) $(TO_TOP_DIR)/configs configs
 
 #$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/lib
 #$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/include
@@ -168,6 +171,7 @@ clean:
 	$(RM) $(TARGET_DEMO_OBJS)
 	$(RM) $(TARGET_DEMO_DEPS)
 	$(RM) $(TARGET_DEMO)
+	$(RM) configs
 
 distclean: clean index-clean
 	$(run-dir-makefile-clean-distclean)
