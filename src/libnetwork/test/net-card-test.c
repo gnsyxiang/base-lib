@@ -20,10 +20,11 @@
 #include <stdio.h>
 
 #include <log_helper.h>
+#include <parse_cmd.h>
 
 #include "net-card.h"
 
-int main(int argc, char* argv[])
+void net_card_test(void)
 {
 	bl_int8_t netcard_name[2][64] = {0};
 	bl_int8_t ip[64] = {0};
@@ -45,6 +46,17 @@ int main(int argc, char* argv[])
 		log_i("netmask: %s ", netmask);
 		log_i("gateway: %s ", gateway);
 	}
-
-	return 0;
 }
+
+static void net_card_test_init(void)
+{
+	printf("1. net card test \n");
+
+	handle_test_cmd_t net_card_test_cmd[] = {
+		{"1", net_card_test},
+	};
+
+	register_test_cmd(net_card_test_cmd, ARRAY_NUM(net_card_test_cmd));
+}
+DECLARE_INIT(net_card_test_init);
+
