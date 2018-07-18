@@ -70,3 +70,12 @@ demo
 !project/vad/lib/libMNPCVAD.so
 
 src/*/configs
+
+lib/
+
+src/com-lib/alsa-lib-1.1.6/
+src/com-lib/jpeg-9/
+src/com-lib/zlib/
+src/com-lib/build/
+src/com-lib/install/
+

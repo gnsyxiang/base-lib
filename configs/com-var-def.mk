@@ -43,6 +43,10 @@ ECHO 	:= echo
 MKDIR 	:= mkdir -p
 LN 		:= ln -s
 CP 		:= cp -ar
+WGET   	:= wget
+TAR_GZ 	:= tar -xzvf
+TAR_BZ2 := tar -xjvf
+
 
 ADB_SHELL := adb shell
 ADB_PUSH  := adb push
@@ -56,6 +60,14 @@ INC_DIR ?= include
 SRC_DIR ?= src
 TST_DIR ?= test
 DEM_DIR ?= demo
+
+BUILD 		:= x86_64-linux-gnu
+
+ROOT 		:= $(shell pwd)
+BUILD_DIR 	:= $(ROOT)/build
+INSTALL_DIR := $(ROOT)/install
+
+PREFIX  := $(INSTALL_DIR)
 
 # --------
 # compiler
