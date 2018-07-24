@@ -39,6 +39,9 @@ typedef struct socket_tag {
 	int fd;
 	int loop_flag;
 
+	struct sockaddr_in sock_addr;
+	socklen_t sock_len;
+
 	pthread_mutex_t mutex;
 }socket_t;
 
@@ -60,10 +63,10 @@ void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout_s);
 void socket_udp_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
 void socket_tcp_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
 
-int socket_udp_send_msg(socket_t *sk, const char *msg, int len,
-		struct sockaddr_in *sock_addr);
-int socket_udp_recv_msg(socket_t *sk, char *msg, int len, 
-		struct sockaddr_in *sock_addr);
+void socket_udp_set_sockaddr_in(socket_t *sk, int port, char *ip);
+
+int socket_udp_send_msg(socket_t *sk, const char *msg, int len);
+int socket_udp_recv_msg(socket_t *sk, char *msg, int len);
 
 #ifdef __cplusplus
 }

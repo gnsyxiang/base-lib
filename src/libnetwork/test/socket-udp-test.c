@@ -35,22 +35,17 @@ void socket_udp_client_cb(void *argv)
 	log_i("fd: %d ", sk->fd);
 
 	int ret;
-	char send_msg[MSG_LEN] , recv_msg[MSG_LEN+1];
+	char send_msg[MSG_LEN];
+	char recv_msg[MSG_LEN+1];
 
-	struct sockaddr_in server_addr;
+	socket_udp_set_sockaddr_in(sk, sk->port, sk->ip);
 
-	server_addr.sin_family	= AF_INET;
-	server_addr.sin_port	= htons(sk->port);
-	if(inet_pton(AF_INET , sk->ip, &server_addr.sin_addr) <= 0) {
-		log_e("inet_pton error");
-	}
-
-		memset(send_msg, '\0', sizeof(send_msg));
+	memset(send_msg, '\0', sizeof(send_msg));
 	while (fgets(send_msg, MSG_LEN, stdin) != NULL) {
-		ret = socket_udp_send_msg(sk, send_msg, strlen(send_msg), &server_addr);
+		ret = socket_udp_send_msg(sk, send_msg, strlen(send_msg));
 
 		memset(recv_msg, '\0', sizeof(recv_msg));
-		ret = socket_udp_recv_msg(sk, recv_msg, MSG_LEN, NULL);
+		ret = socket_udp_recv_msg(sk, recv_msg, MSG_LEN);
 		log_i("ret: %d, msg: %s", ret, recv_msg);
 
 		memset(send_msg, '\0', sizeof(send_msg));
@@ -73,15 +68,14 @@ void socket_udp_server_cb(void *argv)
 
 	int ret;
 	char msg[MSG_LEN];
-	struct sockaddr_in client_addr;
 
 	while (1) {
 		memset(msg, '\0', sizeof(msg));
 
-		ret = socket_udp_recv_msg(sk, msg, MSG_LEN, &client_addr);
+		ret = socket_udp_recv_msg(sk, msg, MSG_LEN);
 		log_i("ret: %d, msg: %s", ret, msg);
 
-		socket_udp_send_msg(sk, msg, ret, &client_addr);
+		socket_udp_send_msg(sk, msg, ret);
 	}
 }
 

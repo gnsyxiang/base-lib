@@ -44,6 +44,9 @@ static socket_t *init_socket_tag(int fd, int port, char *ip, int type)
 	sk->port		= port;
 	sk->type 		= type;
 
+	memset(&sk->sock_addr, '\0', sizeof(struct sockaddr_in));
+	sk->sock_len = sizeof(struct sockaddr_in);
+
 	pthread_mutex_init(&sk->mutex, NULL);
 
 	if (ip) {
@@ -236,11 +239,19 @@ void socket_tcp_wait_for_connect(socket_t *sk, socket_cb_t socket_cb)
 	log_i("over accept while");
 }
 
-int socket_udp_send_msg(socket_t *sk, const char *msg, int len,
-		struct sockaddr_in *sock_addr)
+void socket_udp_set_sockaddr_in(socket_t *sk, int port, char *ip)
+{
+	sk->sock_addr.sin_family	= AF_INET;
+	sk->sock_addr.sin_port		= htons(port);
+	if(inet_pton(AF_INET , ip, &sk->sock_addr.sin_addr) <= 0) {
+		log_e("inet_pton error");
+	}
+}
+
+int socket_udp_send_msg(socket_t *sk, const char *msg, int len)
 {
 	int ret = sendto(sk->fd, msg, len, 0, 
-			(struct sockaddr *)sock_addr, sizeof(struct sockaddr_in));
+			(struct sockaddr *)&sk->sock_addr, sk->sock_len);
 	if(ret < 0) {
 		log_e("sendto error");
 	}
@@ -248,13 +259,10 @@ int socket_udp_send_msg(socket_t *sk, const char *msg, int len,
 	return ret;
 }
 
-int socket_udp_recv_msg(socket_t *sk, char *msg, int len, 
-		struct sockaddr_in *sock_addr)
+int socket_udp_recv_msg(socket_t *sk, char *msg, int len)
 {
-	socklen_t sock_len;
-
 	int ret = recvfrom(sk->fd, msg, len, 0, 
-			(struct sockaddr *)sock_addr, &sock_len);
+			(struct sockaddr *)&sk->sock_addr, &sk->sock_len);
 	if(ret < 0) {
 		log_e("recvfrom error");
 	}
