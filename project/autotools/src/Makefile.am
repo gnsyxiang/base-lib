@@ -5,7 +5,7 @@
 # @file    Makefile.am
 # @brief   
 # @author  gnsyxiang <gnsyxiang@163.com>
-# @date    25/07 2018 14:55
+# @date    25/07 2018 14:23
 # @version v0.0.1
 # 
 # @since    note
@@ -15,12 +15,19 @@
 #     NO.     Author              Date            Modified
 #     00      zhenquan.qiu        25/07 2018      create the file
 # 
-#     last modified: 25/07 2018 14:55
+#     last modified: 25/07 2018 14:23
 # ===============================================================
 
-SUBDIRS=src test
+AUTOMAKE_OPTIONS=foreign
+
+noinst_LIBRARIES=libdemo.a
+libdemo_a_SOURCES=demo.c
+#INCLUDES=-I$(top_srcdir)/inc
+AM_CFLAGS = -I$(top_srcdir)/inc
 
 distclean-local:
-	-rm -rf *.in *.log *.status *.m4 *.cache *.h \
-		AUTHORS ChangeLog compile configure COPYING depcomp INSTALL \
-		install-sh missing NEWS README stamp-h1
+	-rm Makefile.in
+
+#swapincludedir=$(includedir)/swap
+#swapinclude_HEADERS=$(top_srcdir)/src/include/swap.h
+

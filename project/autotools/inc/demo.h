@@ -2,10 +2,10 @@
  * 
  * Release under GPLv2.
  * 
- * @file    hello.c
+ * @file    demo.h
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    25/07 2018 11:16
+ * @date    25/07 2018 14:21
  * @version v0.0.1
  * 
  * @since    note
@@ -15,14 +15,23 @@
  *     NO.     Author              Date            Modified
  *     00      zhenquan.qiu        25/07 2018      create the file
  * 
- *     last modified: 25/07 2018 11:16
+ *     last modified: 25/07 2018 14:21
  */
-#include <stdio.h>
+#ifndef __DEMO_H_
+#define __DEMO_H_
 
-int main(int argc, char **argv)
-{
-	printf("hello world \n");
-	
-	return 0;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define LIB_SO_NMAE		"libdemo.so"
+
+void demo_init(void);
+void demo_clean(void);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif
 
