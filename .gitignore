@@ -79,3 +79,21 @@ src/com-lib/zlib/
 src/com-lib/build/
 src/com-lib/install/
 
+# for autotools ignore
+*.log
+aclocal.m4
+autom4te.cache/
+config.h.in
+configure
+Makefile.in
+compile
+depcomp
+install-sh
+missing
+.deps/
+Makefile
+config.h
+config.status
+stamp-h1
+
+
