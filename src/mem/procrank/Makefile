@@ -46,7 +46,7 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # cflags
 # ------
 CFLAGS     += -D_GNU_SOURCE
-CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/include
+CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/$(INC_DIR)
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable -Wno-error=unused-but-set-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 

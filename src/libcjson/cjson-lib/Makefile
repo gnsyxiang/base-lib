@@ -85,8 +85,8 @@ TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 ###########################################
 #all: $(TARGET_LIB) $(TARGET_DEMO)
 all: $(TARGET_LIB)
-	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/lib
-	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/include
+	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/$(LIB_DIR)
+	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/$(INC_DIR)
 
 $(TARGET_LIB): $(TARGET_PATH) handle_lib
 

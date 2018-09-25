@@ -45,7 +45,7 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # ------
 # cflags
 # ------
-CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/include
+CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/$(INC_DIR)
 CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
@@ -84,8 +84,8 @@ TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
 ###########################################
 all: depend $(TARGET_LIB) $(TARGET_DEMO)
-	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/lib
-	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/include
+	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/$(LIB_DIR)
+	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/$(INC_DIR)
 
 depend:
 	$(RM) configs

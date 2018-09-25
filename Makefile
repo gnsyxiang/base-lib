@@ -180,11 +180,6 @@ index-clean:
 	$(RM) *.out
 	$(RM) tags
 
-demo:
-	$(MKDIR) $(DEM_DIR)/$(LIB_DIR)
-	$(CP) $(LIB_DIR) $(DEM_DIR)
-	$(CP) $(TARGET_DEMO) $(DEM_DIR)
-
 note:
 	doxygen configs/Doxyfile
 

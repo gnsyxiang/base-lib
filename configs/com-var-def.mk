@@ -56,7 +56,7 @@ ADB_PUSH  := adb push
 # ----------
 OBJ_DIR ?= objs
 LIB_DIR ?= lib
-INC_DIR ?= include
+INC_DIR ?= inc
 SRC_DIR ?= src
 TST_DIR ?= test
 DEM_DIR ?= demo
