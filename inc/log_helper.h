@@ -56,7 +56,7 @@ BASE_LIB_LOG_EX void log_debug(int level, const char *file, int line, int num, c
 #define log_w(...)      LOG_DEBUG(LOG_WARN,		__VA_ARGS__)
 #define log_e(...)      LOG_DEBUG(LOG_ERROR,	__VA_ARGS__)
 
-void log_set_debug_level(int level);
+int log_init(const char *name, int level, int save_flag);
 
 #ifdef __cplusplus
 }

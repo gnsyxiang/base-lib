@@ -74,9 +74,10 @@ TIME_HELPER_EX void format_time(char *time);
  * @param void
  * @return void
  */
-time_t get_sys_time_ms(void);
+TIME_HELPER_EX time_t get_sys_time_ms(void);
 
-TIME_HELPER_EX void time_ms_to_timeval(size_t time_ms, struct timeval * const time);
+TIME_HELPER_EX void time_ms_to_timeval(
+        size_t time_ms, struct timeval * const time);
 
 #ifdef __cplusplus
 }
