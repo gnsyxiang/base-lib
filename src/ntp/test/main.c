@@ -24,9 +24,11 @@
 
 int main(int argc, char const* argv[])
 {
-    ntp_init(0);
+    ntp_init(10);
 
-    sleep(5);
+    while (1) {
+        sleep(1);
+    }
 
     ntp_clean();
 

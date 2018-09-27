@@ -18,6 +18,7 @@
  *     last modified: 27/09 2018 12:41
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
@@ -167,6 +168,20 @@ static void disp_ntp_resp_time(const struct ntp_resp * const ntp_resp)
     log_i("-----------------------over\n");
 }
 
+void update_localtime(const struct timeval *newtime)
+{
+    if (getuid() != 0 && geteuid() != 0){
+        log_e( "不是 root 用户，无法进行时间校准，被迫终止!");
+        exit(1);
+    }
+
+    if(settimeofday(newtime, NULL) == -1) {
+        log_e("设置时间失败!");
+    } else {
+        log_i("设置时间成功!");
+    }
+}
+
 static void recv_packet()
 {
 #define BUF_LEN     (1024)
@@ -178,6 +193,8 @@ static void recv_packet()
     parse_ntp_packet((unsigned int *)&buf, &ntp_resp);
 
     disp_ntp_resp_time(&ntp_resp);
+
+    update_localtime(&ntp_resp.new_time);
 }
 
 static void socket_cb(void *data)
@@ -187,7 +204,7 @@ static void socket_cb(void *data)
     while (ntp_loop_is_runnint) {
         recv_packet();
 
-        sleep(1);
+        sleep(gsync_time_s);
 
         send_packet();
     }
