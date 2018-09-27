@@ -44,9 +44,6 @@ static socket_t *init_socket_tag(int fd, int port, char *ip, int type)
 	sk->port		= port;
 	sk->type 		= type;
 
-	memset(&sk->sock_addr, '\0', sizeof(struct sockaddr_in));
-	sk->sock_len = sizeof(struct sockaddr_in);
-
 	pthread_mutex_init(&sk->mutex, NULL);
 
 	if (ip) {
@@ -58,6 +55,13 @@ static socket_t *init_socket_tag(int fd, int port, char *ip, int type)
 
 		strcpy(sk->ip, ip);
 	}
+
+	memset(&sk->sock_addr, '\0', sizeof(struct sockaddr_in));
+	sk->sock_len = sizeof(struct sockaddr_in);
+
+	sk->sock_addr.sin_family        = AF_INET;
+	sk->sock_addr.sin_addr.s_addr	= inet_addr(sk->ip);
+	sk->sock_addr.sin_port          = htons(sk->port);
 
 	return sk;
 }
@@ -161,20 +165,35 @@ void socket_tcp_server_clean(socket_t *sk)
 	return clean_socket_client(sk);
 }
 
-void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout_s)
+void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout_s, void *data)
 {
-	struct sockaddr_in addr;
+	struct sockaddr_in addr_src, addr_dst;
 	int status;
 	int time_cnt = 0;
 
-	memset(&addr, '\0', sizeof(addr));
+    int addr_len = sizeof(struct sockaddr_in);
 
-	addr.sin_family			= AF_INET;
-	addr.sin_port			= htons(sk->port);
-	addr.sin_addr.s_addr	= inet_addr(sk->ip);
+    memset(&addr_src, '\0', addr_len);
+
+	addr_src.sin_family         = AF_INET;
+	addr_src.sin_port           = htons(0);
+	addr_src.sin_addr.s_addr    = htonl(INADDR_ANY);
+
+    status = bind(sk->fd, (const struct sockaddr *)&addr_src, addr_len);//bind
+	if (-1 == status) {
+		log_e("bind error!");
+		close(sk->fd);
+		return ;
+	}
+
+	memset(&addr_dst, '\0', addr_len);
+
+	addr_dst.sin_family			= AF_INET;
+	addr_dst.sin_port			= htons(sk->port);
+	addr_dst.sin_addr.s_addr	= inet_addr(sk->ip);
 
 	do {
-		status = connect(sk->fd, (const struct sockaddr *)&addr, sizeof(addr));
+		status = connect(sk->fd, (const struct sockaddr *)&addr_dst, addr_len);
 		if (status < 0) {
 			sleep(1);
 		}
@@ -185,7 +204,7 @@ void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout_s)
 	} else {
 		log_i("connect to server");
 
-		socket_cb(sk);
+		socket_cb(data);
 	}
 }
 
@@ -248,7 +267,7 @@ void socket_udp_set_sockaddr_in(socket_t *sk, int port, char *ip)
 	}
 }
 
-int socket_udp_send_msg(socket_t *sk, const char *msg, int len)
+int socket_udp_send_msg(socket_t *sk, const void *msg, int len)
 {
 	int ret = sendto(sk->fd, msg, len, 0, 
 			(struct sockaddr *)&sk->sock_addr, sk->sock_len);
@@ -259,7 +278,7 @@ int socket_udp_send_msg(socket_t *sk, const char *msg, int len)
 	return ret;
 }
 
-int socket_udp_recv_msg(socket_t *sk, char *msg, int len)
+int socket_udp_recv_msg(socket_t *sk, void *msg, int len)
 {
 	int ret = recvfrom(sk->fd, msg, len, 0, 
 			(struct sockaddr *)&sk->sock_addr, &sk->sock_len);

@@ -59,14 +59,14 @@ socket_t *socket_tcp_server_init(int port, char *ip);
 void socket_udp_server_clean(socket_t *sk);
 void socket_tcp_server_clean(socket_t *sk);
 
-void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout_s);
+void socket_connect(socket_t *sk, socket_cb_t socket_cb, int timeout_s, void *data);
 void socket_udp_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
 void socket_tcp_wait_for_connect(socket_t *sk, socket_cb_t socket_cb);
 
 void socket_udp_set_sockaddr_in(socket_t *sk, int port, char *ip);
 
-int socket_udp_send_msg(socket_t *sk, const char *msg, int len);
-int socket_udp_recv_msg(socket_t *sk, char *msg, int len);
+int socket_udp_send_msg(socket_t *sk, const void *msg, int len);
+int socket_udp_recv_msg(socket_t *sk, void *msg, int len);
 
 #ifdef __cplusplus
 }

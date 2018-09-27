@@ -35,7 +35,7 @@ void socket_tcp_client_test(void)
 {
 	socket_t *sk = socket_tcp_client_init(TEST_PORT, TEST_IP);
 
-	socket_connect(sk, socket_tcp_client_cb, 3);
+	socket_connect(sk, socket_tcp_client_cb, 3, NULL);
 
 	socket_tcp_client_clean(sk);
 }
