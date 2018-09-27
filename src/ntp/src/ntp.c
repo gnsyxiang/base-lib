@@ -35,21 +35,14 @@
 #define DEFAULT_NTP_PORT    (123)
 #define DEFAULT_NTP_SERVER  "120.25.115.20"
 
-static int ntp_loop_is_runnint = 0;
-static int ntp_loop_is_over = 0;
-static socket_t *client_sk = NULL;
-static unsigned int gsync_time_s = 0;
-
 #define JAN_1970        0x83aa7e80
 #define NTPFRAC(x)      (4294 * (x) + ((1981 * (x))>>11))
 #define USEC(x)         (((x) >> 12) - 759 * ((((x) >> 10) + 32768) >> 16))
 
-#define LI 0
-#define VN 3
-#define MODE 3
-#define STRATUM 0
-#define POLL 4
-#define PREC -6
+static int ntp_loop_is_runnint = 0;
+static int ntp_loop_is_over = 0;
+static socket_t *client_sk = NULL;
+static unsigned int gsync_time_s = 0;
 
 struct ntp_time
 {
@@ -63,32 +56,33 @@ struct ntp_resp{
     struct timeval new_time;
 };
 
-void mk_ntp_packet(unsigned int *packet, unsigned int len)
+static void mk_ntp_packet(unsigned int *packet)
 {
     struct timeval now;
+    gettimeofday(&now, NULL);
 
-    memset(packet, '\0', len);
+#define LI 0
+#define VN 3
+#define MODE 3
+#define STRATUM 0
+#define POLL 4
+#define PREC -6
 
     packet[0] = htonl((LI << 30) | (VN << 27) | (MODE << 24) 
             | (STRATUM << 16) | (POLL << 8) | (PREC & 0xff));
-    packet[1] = htonl(1<<16);
-    packet[2] = htonl(1<<16);
-
-    gettimeofday(&now, NULL);
+    packet[1] = htonl(1 << 16);
+    packet[2] = htonl(1 << 16);
 
     packet[10] = htonl(now.tv_sec + JAN_1970);
     packet[11] = htonl(NTPFRAC(now.tv_usec));
 }
 
-void parse_ntp_packet(unsigned int *packet, struct ntp_resp *ntp_resp)
+static void parse_ntp_packet(unsigned int *packet, struct ntp_resp *ntp_resp)
 {
-    int ret;
-    unsigned int data[12];
     struct timeval now;
-    struct ntp_time orig_time, recv_time, tras_time, dest_time;
-
     gettimeofday(&now, NULL);
 
+    struct ntp_time orig_time, recv_time, tras_time, dest_time;
     dest_time.time_s  = now.tv_sec + JAN_1970;
     dest_time.time_us = NTPFRAC(now.tv_usec);
 
@@ -146,9 +140,9 @@ void parse_ntp_packet(unsigned int *packet, struct ntp_resp *ntp_resp)
     ntp_resp->new_time = new_time;
 }
 
-void send_packet(void)
+static void send_packet(void)
 {
-    unsigned int packet[12];
+    unsigned int packet[12] = {0};
     unsigned int packet_len = sizeof(packet);
 
     if (packet_len != 48) {
@@ -156,7 +150,7 @@ void send_packet(void)
         return;
     }
 
-    mk_ntp_packet(packet, packet_len);
+    mk_ntp_packet(packet);
 
     int ret = socket_udp_send_msg(client_sk, packet, packet_len);
     if (packet_len != ret) {
@@ -164,7 +158,7 @@ void send_packet(void)
     }
 }
 
-void disp_ntp_resp_time(const struct ntp_resp * const ntp_resp)
+static void disp_ntp_resp_time(const struct ntp_resp * const ntp_resp)
 {
     log_i("----start: ");
     disp_timeval(&ntp_resp->dly_time, "dly_time");
@@ -173,20 +167,20 @@ void disp_ntp_resp_time(const struct ntp_resp * const ntp_resp)
     log_i("-----------------------over\n");
 }
 
-void recv_packet()
+static void recv_packet()
 {
 #define BUF_LEN     (1024)
     char buf[BUF_LEN];
     struct ntp_resp ntp_resp;
 
-    int ret = socket_udp_recv_msg(client_sk, buf, 1024);
+    socket_udp_recv_msg(client_sk, buf, 1024);
 
     parse_ntp_packet((unsigned int *)&buf, &ntp_resp);
 
     disp_ntp_resp_time(&ntp_resp);
 }
 
-void socket_cb(void *data)
+static void socket_cb(void *data)
 {
     send_packet();
 
@@ -201,9 +195,8 @@ void socket_cb(void *data)
     ntp_loop_is_over = 1;
 }
 
-void *ntp_loop(void *data)
+static void *ntp_loop(void *data)
 {
-
     client_sk = socket_udp_client_init(DEFAULT_NTP_PORT, DEFAULT_NTP_SERVER);
 
     socket_connect(client_sk, socket_cb, 3, NULL);
