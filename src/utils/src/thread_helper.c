@@ -2,7 +2,7 @@
  *
  * Release under GPLv2.
  * 
- * @file    pthread_helper.c
+ * @file    thread_helper.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    13/12 2017 16:19
@@ -22,11 +22,12 @@
 #include <sched.h>
 #include <assert.h>
 
-#define PTHREAD_HELPER_GB
-#include "pthread_helper.h"
-#undef PTHREAD_HELPER_GB
+#define UTILS_THREAD_HELPER_GB
+#include "thread_helper.h"
+#undef  UTILS_THREAD_HELPER_GB
 
-void create_a_attached_thread(pthread_t *thread, start_routine_t start_routine, void *arg)
+void create_a_attached_thread(pthread_t *thread, 
+        start_routine_t start_routine, void *arg)
 {
 	pthread_attr_t attr;
 
@@ -44,7 +45,8 @@ void create_a_attached_thread(pthread_t *thread, start_routine_t start_routine, 
 	assert(!error);
 }
 
-void create_a_lower_attached_thread(pthread_t *thread, start_routine_t start_routine, void *arg)
+void create_a_lower_attached_thread(pthread_t *thread, 
+        start_routine_t start_routine, void *arg)
 {
 	int policy;
 	struct sched_param param;
@@ -54,7 +56,7 @@ void create_a_lower_attached_thread(pthread_t *thread, start_routine_t start_rou
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 	//设置继承的调度策略
-	//必需设置inher的属性为 PTHREAD_EXPLICIT_SCHED，否则设置线程的优先级会被忽略
+	//必需设置inher的属性为PTHREAD_EXPLICIT_SCHED，否则设置线程的优先级会被忽略
 	pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
 
 	pthread_attr_getschedpolicy(&attr, &policy);

@@ -17,8 +17,8 @@
  * 
  *     last modified: 19/12 2017 14:01
  */
-#ifndef __BASE_LIB_LOG_H_
-#define __BASE_LIB_LOG_H_
+#ifndef __UTILS_LOG_HELPER_H_
+#define __UTILS_LOG_HELPER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,10 +26,10 @@ extern "C" {
 
 #include <errno.h>
 
-#ifndef BASE_LIB_LOG_GB
-#define BASE_LIB_LOG_EX extern
+#ifndef UTILS_LOG_GB
+#define UTILS_LOG_EX extern
 #else
-#define BASE_LIB_LOG_EX
+#define UTILS_LOG_EX
 #endif
 
 enum {
@@ -41,7 +41,8 @@ enum {
     LOG_VERBOSE,
 };
 
-BASE_LIB_LOG_EX void log_debug(int level, const char *file, int line, int num, const char *fmt, ...);
+UTILS_LOG_EX void log_debug(int level, 
+        const char *file, int line, int err_no, const char *fmt, ...);
 
 /*
 #define LOG_DEBUG(level, ...) \

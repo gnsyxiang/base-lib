@@ -34,16 +34,20 @@
  *        int tm_mday;      //日期 - 取值区间为[1,31]
  *        int tm_mon;       //月份 - 取值区间为[0,11]
  *        int tm_year;      //年份 - 其值从1900开始
- *        int tm_wday;      //星期 - 取值区间为[0,6]，其中0代表星期天，1代表星期一，以此类推
- *        int tm_yday;      //天数 - 取值区间为[0,365]，其中0代表1月1日，1代表1月2日，以此类推
- *        int tm_isdst;     //夏令时标识符，实行夏令时的时候，tm_isdst为正。不实行夏令时的进候，tm_isdst为0；不了解情况时，tm_isdst()为负。
+ *        int tm_wday;      //星期 - 取值区间为[0,6]，
+ *                                   其中0代表星期天，1代表星期一，以此类推
+ *        int tm_yday;      //天数 - 取值区间为[0,365]，
+ *                                   其中0代表1月1日，1代表1月2日，以此类推
+ *        int tm_isdst;     //夏令时标识符，实行夏令时的时候，
+ *                            tm_isdst为正。不实行夏令时的进候，
+ *                            tm_isdst为0；不了解情况时，tm_isdst()为负。
  *    }
  */
 #include <stdio.h>
 
-#define TIME_HELPER_GB
+#define UTILS_TIMER_HELPER_GB
 #include "time_helper.h"
-#undef TIME_HELPER_GB
+#undef  UTILS_TIMER_HELPER_GB
 
 #define BASE_NUM	(1000)
 #define BASE_NUM_2	(1000 * 1000)
@@ -62,7 +66,7 @@ time_t get_sys_time_ms(void)
 	return (take_multiplier_1000(tv.tv_sec) + take_integet_1000(tv.tv_usec));
 }
 
-struct timespec cur_delay_ms(bl_uint32_t timeout_ms)
+struct timespec cur_delay_ms(unsigned int timeout_ms)
 {
     struct timeval tv;
     struct timespec ts;
@@ -71,7 +75,8 @@ struct timespec cur_delay_ms(bl_uint32_t timeout_ms)
     gettimeofday(&tv, NULL);
 
     ts.tv_sec = time(NULL) + take_integet_1000(timeout_ms);
-    ts.tv_nsec = take_multiplier_1000(tv.tv_usec) + BASE_NUM_2 * take_remainder_1000(timeout_ms);
+    ts.tv_nsec = take_multiplier_1000(tv.tv_usec) 
+        + BASE_NUM_2 * take_remainder_1000(timeout_ms);
 
     ts.tv_sec += ts.tv_nsec / BASE_NUM_3;
     ts.tv_nsec %= BASE_NUM_3;
@@ -87,8 +92,10 @@ void time_ms_to_timeval(size_t time_ms, struct timeval * const time)
 
 /* int clock_gettime(clockid_t clk_id, struct timespec *tp);
  * param: clockid_t
- *        CLOCK_REALTIME: 实际时间, 用户可以通过date或系统调用去修改, 系统休眠，仍然会运行(系统恢复时，kernel去作补偿)
- *        CLOCK_MONTONIC: 单调时间，从某个时间开始到现在过去的时间。用户不能修改这个时间，系统休眠, 该时间不会增加
+ *        CLOCK_REALTIME: 实际时间, 用户可以通过date或系统调用去修改, 
+ *                        系统休眠，仍然会运行(系统恢复时，kernel去作补偿)
+ *        CLOCK_MONTONIC: 单调时间，从某个时间开始到现在过去的时间。
+ *                        用户不能修改这个时间，系统休眠, 该时间不会增加
  *        CLOCK_MONOTONIC_RAW: 
  *        CLOCK_BOOTTIME: 与CLOCK_MONOTONIC类似，但是当suspend时，会依然增加
  */

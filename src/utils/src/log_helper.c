@@ -25,9 +25,9 @@
 
 #include "time_helper.h"
 
-#define BASE_LIB_LOG_GB
+#define UTILS_LOG_GB
 #include "log_helper.h"
-#undef BASE_LIB_LOG_GB
+#undef  UTILS_LOG_GB
 
 #define ANSI_COLOR_RED     "\x1b[1;31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -60,7 +60,7 @@ static void log_output(const char *pri_buf, const char *log_buf, int len)
     printf("%s", pri_buf);
 }
 
-static int _log_debug(int type, int level, int num, 
+static int _log_debug(int type, int level, int err_no, 
         char * const fmt_buf, char * const buf)
 {
     int len = 0;
@@ -71,7 +71,7 @@ static int _log_debug(int type, int level, int num,
     len +=  sprintf(buf + len, "%s", fmt_buf);
 
 	if (level <= LOG_ERROR) {
-		len +=  sprintf(buf + len, " [errno string: %s]", strerror(num));
+		len +=  sprintf(buf + len, " [err_no string: %s]", strerror(err_no));
         if (type)
             len += snprintf(buf + len, LOG_BUF_SIZE - len, ANSI_COLOR_RESET);
 	}
@@ -81,7 +81,8 @@ static int _log_debug(int type, int level, int num,
     return len;
 }
 
-void log_debug(int level, const char *file, int line, int num, const char *fmt, ...)
+void log_debug(int level, const char *file, int line, 
+        int err_no, const char *fmt, ...)
 {
     int len = 0;
 
@@ -104,8 +105,8 @@ void log_debug(int level, const char *file, int line, int num, const char *fmt, 
     vsnprintf(fmt_buf, LOG_BUF_SIZE, fmt, var_args);
     va_end(var_args);
 
-           _log_debug(1, level, num, fmt_buf, pri_buf + len);
-    len += _log_debug(0, level, num, fmt_buf, log_buf + len);
+           _log_debug(1, level, err_no, fmt_buf, pri_buf + len);
+    len += _log_debug(0, level, err_no, fmt_buf, log_buf + len);
 
     log_output(pri_buf, log_buf, len);
 }
