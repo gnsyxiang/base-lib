@@ -45,6 +45,8 @@
  */
 #include <stdio.h>
 
+#include "log_helper.h"
+
 #define UTILS_TIMER_HELPER_GB
 #include "time_helper.h"
 #undef  UTILS_TIMER_HELPER_GB
@@ -56,6 +58,12 @@
 #define take_integet_1000(num)		((num) / BASE_NUM)
 #define take_remainder_1000(num)	((num) % BASE_NUM)
 #define take_multiplier_1000(num)	((num) * BASE_NUM)
+
+void disp_timeval(const struct timeval *timeval, const char *info)
+{
+    log_i("%s->tv_sec : %ld", info, timeval->tv_sec);
+    log_i("%s->tv_usec: %ld", info, timeval->tv_usec);
+}
 
 time_t get_sys_time_ms(void)
 {

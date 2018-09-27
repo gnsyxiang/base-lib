@@ -77,6 +77,9 @@ UTILS_TIMER_EX time_t get_sys_time_ms(void);
 UTILS_TIMER_EX void time_ms_to_timeval(size_t time_ms, 
         struct timeval * const time);
 
+UTILS_TIMER_EX void disp_timeval(const struct timeval *timeval, 
+        const char *info);
+
 #ifdef __cplusplus
 }
 #endif
