@@ -25,6 +25,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <netdb.h>
 
 #include <log_helper.h>
 
@@ -287,5 +288,45 @@ int socket_udp_recv_msg(socket_t *sk, void *msg, int len)
 	}
 
 	return ret;
+}
+
+int hostname_to_ip(const char *hostname, char * const ip)
+{
+    struct hostent *hptr = gethostbyname(hostname);
+    if (!hptr) {
+        log_e("gethostbyname error");
+        return -1;
+    }
+
+    log_i("official hostname: %s",hptr->h_name);
+
+    char **pptr;
+    for(pptr = hptr->h_aliases; *pptr != NULL; pptr++)
+        log_i("\talias hostname: %s", *pptr);
+
+    switch (hptr->h_addrtype) {
+        case AF_INET: {
+            int save_ip_flag = 0;
+            char str[INET_ADDRSTRLEN] = {0};
+
+            pptr = hptr->h_addr_list;
+
+            for(; *pptr != NULL; pptr++) {
+                inet_ntop(hptr->h_addrtype, *pptr, str, sizeof(str));
+                log_i("\taddr: %s", str);
+
+                if (!save_ip_flag) {
+                    save_ip_flag = 1;
+                    strncpy(ip, str, INET_ADDRSTRLEN);
+                }
+            }
+            break;
+        }
+        default:
+            log_e("unknown address type");
+            break;
+    }
+
+    return 0;
 }
 

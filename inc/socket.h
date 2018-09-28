@@ -68,6 +68,8 @@ void socket_udp_set_sockaddr_in(socket_t *sk, int port, char *ip);
 int socket_udp_send_msg(socket_t *sk, const void *msg, int len);
 int socket_udp_recv_msg(socket_t *sk, void *msg, int len);
 
+int hostname_to_ip(const char *hostname, char * const ip);
+
 #ifdef __cplusplus
 }
 #endif
