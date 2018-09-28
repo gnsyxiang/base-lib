@@ -24,7 +24,7 @@
 
 int main(int argc, char const* argv[])
 {
-    ntp_init(10);
+    ntp_init("ntp1.aliyun.com", 5);
 
     while (1) {
         sleep(1);

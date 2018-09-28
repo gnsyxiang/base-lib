@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
+#include <netdb.h>
 
 #include "thread_helper.h"
 #include "log_helper.h"
@@ -32,30 +33,31 @@
 #include "ntp.h"
 #undef BASE_LIB_NTP_GB
 
+#define NTP_HOSTNAME_LEN    (64)
 #define DEFAULT_SYNC_TIME   (1 * 60)
 #define DEFAULT_NTP_PORT    (123)
-#define DEFAULT_NTP_SERVER  "120.25.115.20"
 
 #define JAN_1970        0x83aa7e80
 #define NTPFRAC(x)      (4294 * (x) + ((1981 * (x))>>11))
 #define USEC(x)         (((x) >> 12) - 759 * ((((x) >> 10) + 32768) >> 16))
 
-static int ntp_loop_is_runnint = 0;
-static int ntp_loop_is_over = 0;
-static socket_t *client_sk = NULL;
-static unsigned int gsync_time_s = 0;
-
-struct ntp_time
-{
-	unsigned int time_s;
-	unsigned int time_us;
-};
-
-struct ntp_resp{
+typedef struct _ntp_status_t {
     struct timeval dly_time;
     struct timeval off_time;
     struct timeval new_time;
-};
+
+    int ntp_loop_is_over;
+    int ntp_loop_is_runnint;
+} ntp_status_t;
+
+typedef struct _ntp_usr_conf_t {
+    char hostname[NTP_HOSTNAME_LEN];
+    unsigned int sync_time_s;
+}ntp_usr_conf_t;
+
+static ntp_usr_conf_t ntp_usr_conf;
+static ntp_status_t ntp_status;
+static socket_t *client_sk = NULL;
 
 static void mk_ntp_packet(unsigned int *packet)
 {
@@ -78,7 +80,13 @@ static void mk_ntp_packet(unsigned int *packet)
     packet[11] = htonl(NTPFRAC(now.tv_usec));
 }
 
-static void parse_ntp_packet(unsigned int *packet, struct ntp_resp *ntp_resp)
+struct ntp_time
+{
+	unsigned int time_s;
+	unsigned int time_us;
+};
+
+static void parse_ntp_packet(unsigned int *packet)
 {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -136,9 +144,9 @@ static void parse_ntp_packet(unsigned int *packet, struct ntp_resp *ntp_resp)
     new_time.tv_sec  = dest_time.time_s - JAN_1970 + off_time.tv_sec;
     new_time.tv_usec = USEC(dest_time.time_us) + off_time.tv_usec;
 
-    ntp_resp->dly_time = dly_time;
-    ntp_resp->off_time = off_time;
-    ntp_resp->new_time = new_time;
+    ntp_status.dly_time = dly_time;
+    ntp_status.off_time = off_time;
+    ntp_status.new_time = new_time;
 }
 
 static void send_packet(void)
@@ -159,16 +167,28 @@ static void send_packet(void)
     }
 }
 
-static void disp_ntp_resp_time(const struct ntp_resp * const ntp_resp)
+static void disp_ntp_resp_time(const ntp_status_t * const ntp_status)
 {
     log_i("----start: ");
-    disp_timeval(&ntp_resp->dly_time, "dly_time");
-    disp_timeval(&ntp_resp->off_time, "off_time");
-    disp_timeval(&ntp_resp->new_time, "new_time");
+    disp_timeval(&ntp_status->dly_time, "dly_time");
+    disp_timeval(&ntp_status->off_time, "off_time");
+    disp_timeval(&ntp_status->new_time, "new_time");
     log_i("-----------------------over\n");
 }
 
-void update_localtime(const struct timeval *newtime)
+static void recv_packet()
+{
+#define BUF_LEN     (1024)
+    char buf[BUF_LEN];
+
+    socket_udp_recv_msg(client_sk, buf, 1024);
+
+    parse_ntp_packet((unsigned int *)&buf);
+
+    disp_ntp_resp_time(&ntp_status);
+}
+
+static void update_localtime(const struct timeval *newtime)
 {
     if (getuid() != 0 && geteuid() != 0){
         log_e( "不是 root 用户，无法进行时间校准，被迫终止!");
@@ -182,54 +202,52 @@ void update_localtime(const struct timeval *newtime)
     }
 }
 
-static void recv_packet()
-{
-#define BUF_LEN     (1024)
-    char buf[BUF_LEN];
-    struct ntp_resp ntp_resp;
-
-    socket_udp_recv_msg(client_sk, buf, 1024);
-
-    parse_ntp_packet((unsigned int *)&buf, &ntp_resp);
-
-    disp_ntp_resp_time(&ntp_resp);
-
-    update_localtime(&ntp_resp.new_time);
-}
-
 static void socket_cb(void *data)
 {
     send_packet();
 
-    while (ntp_loop_is_runnint) {
+    while (ntp_status.ntp_loop_is_runnint) {
         recv_packet();
 
-        sleep(gsync_time_s);
+        update_localtime(&ntp_status.new_time);
+
+        sleep(ntp_usr_conf.sync_time_s);
 
         send_packet();
     }
 
-    ntp_loop_is_over = 1;
+    ntp_status.ntp_loop_is_over = 1;
 }
 
 static void *ntp_loop(void *data)
 {
-    client_sk = socket_udp_client_init(DEFAULT_NTP_PORT, DEFAULT_NTP_SERVER);
+    char ip[INET_ADDRSTRLEN] = {0};
+
+    hostname_to_ip(ntp_usr_conf.hostname, ip);
+
+    client_sk = socket_udp_client_init(DEFAULT_NTP_PORT, ip);
 
     socket_connect(client_sk, socket_cb, 3, NULL);
 
     return NULL;
 }
 
-void ntp_init(unsigned int sync_time_s)
+void ntp_init(const char *hostname, unsigned int sync_time_s)
 {
+    int hostname_len = strlen(hostname);
+    if (!hostname || hostname_len + 1 >= NTP_HOSTNAME_LEN) {
+        log_e("hostname is error ");
+        return ;
+    }
+
     if (0 == sync_time_s)
         sync_time_s = DEFAULT_SYNC_TIME;
 
-    gsync_time_s = sync_time_s;
+    ntp_usr_conf.sync_time_s = sync_time_s;
+    strncpy(ntp_usr_conf.hostname, hostname, hostname_len);
 
-    ntp_loop_is_runnint = 1;
-    ntp_loop_is_over = 0;
+    ntp_status.ntp_loop_is_runnint = 1;
+    ntp_status.ntp_loop_is_over = 0;
 
     create_a_attached_thread(NULL, ntp_loop, NULL);
 
@@ -243,9 +261,9 @@ void net_sync_time(void)
 
 void ntp_clean(void)
 {
-    ntp_loop_is_runnint = 0;
+    ntp_status.ntp_loop_is_runnint = 0;
 
-    while (!ntp_loop_is_over) {
+    while (!ntp_status.ntp_loop_is_over) {
         sleep(1);
     }
 

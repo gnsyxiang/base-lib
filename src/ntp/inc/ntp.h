@@ -30,7 +30,7 @@ extern "C" {
 #define BASE_LIB_NTP_EX
 #endif
 
-BASE_LIB_NTP_EX void ntp_init(unsigned int sync_time_s);
+BASE_LIB_NTP_EX void ntp_init(const char *hostname, unsigned int sync_time_s);
 
 BASE_LIB_NTP_EX void net_sync_time(void);
 
