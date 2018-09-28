@@ -24,10 +24,11 @@
 
 int main(int argc, char const* argv[])
 {
-    ntp_init("ntp1.aliyun.com", 5);
+    ntp_init("ntp1.aliyun.com", 10);
 
     while (1) {
-        sleep(1);
+        sleep(2);
+        net_sync_time();
     }
 
     ntp_clean();

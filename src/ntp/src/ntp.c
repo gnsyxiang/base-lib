@@ -46,6 +46,8 @@ typedef struct _ntp_status_t {
     struct timeval off_time;
     struct timeval new_time;
 
+    int pfd[2];
+
     int ntp_loop_is_over;
     int ntp_loop_is_runnint;
 } ntp_status_t;
@@ -202,6 +204,19 @@ static void update_localtime(const struct timeval *newtime)
     }
 }
 
+static void ntp_update_notify(void)
+{
+    char ch;
+    write(ntp_status.pfd[1], &ch, sizeof(ch));
+}
+
+void net_sync_time(void)
+{
+    send_packet();
+
+    ntp_update_notify();
+}
+
 static void socket_cb(void *data)
 {
     send_packet();
@@ -211,7 +226,25 @@ static void socket_cb(void *data)
 
         update_localtime(&ntp_status.new_time);
 
-        sleep(ntp_usr_conf.sync_time_s);
+        fd_set read_fs;
+        FD_ZERO(&read_fs);
+        FD_SET(ntp_status.pfd[0], &read_fs);
+
+        int max_fd = ntp_status.pfd[0];
+        struct timeval time_out;
+        time_out.tv_sec  = ntp_usr_conf.sync_time_s;
+        time_out.tv_usec = 0;
+
+        int ret = select(max_fd+1, &read_fs, NULL, NULL, &time_out);
+        if (ret < 0) {
+            log_e("select error");
+            continue;
+        }
+
+        if (FD_ISSET(ntp_status.pfd[0], &read_fs)) {
+            char ch;
+            read(ntp_status.pfd[0], &ch, sizeof(ch));
+        }
 
         send_packet();
     }
@@ -247,16 +280,13 @@ void ntp_init(const char *hostname, unsigned int sync_time_s)
     strncpy(ntp_usr_conf.hostname, hostname, hostname_len);
 
     ntp_status.ntp_loop_is_runnint = 1;
-    ntp_status.ntp_loop_is_over = 0;
+    ntp_status.ntp_loop_is_over    = 0;
+
+    pipe(ntp_status.pfd);
 
     create_a_attached_thread(NULL, ntp_loop, NULL);
 
     log_i("ntp sync time is running");
-}
-
-void net_sync_time(void)
-{
-
 }
 
 void ntp_clean(void)
