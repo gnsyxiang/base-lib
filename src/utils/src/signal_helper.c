@@ -35,9 +35,9 @@
 #include <math.h>
 #include <ctype.h>
 
-#define SIGNAL_HELPER_GB
+#define UTILS_SIGNAL_GB
 #include "signal_helper.h"
-#undef SIGNAL_HELPER_GB
+#undef UTILS_SIGNAL_GB
 
 static char *global_app_name;
 
@@ -101,17 +101,17 @@ void register_linux_signal_hanler(const char *app_name)
     act.sa_handler = sig_handler;
 
     sigaction(SIGQUIT, &act, NULL);
-    sigaction(SIGILL, &act, NULL);
+    sigaction(SIGILL,  &act, NULL);
     sigaction(SIGTRAP, &act, NULL);
     sigaction(SIGABRT, &act, NULL);
-    sigaction(SIGFPE, &act, NULL);
+    sigaction(SIGFPE,  &act, NULL);
     sigaction(SIGSEGV, &act, NULL);
-    sigaction(SIGBUS, &act, NULL);
-    sigaction(SIGSYS, &act, NULL);
+    sigaction(SIGBUS,  &act, NULL);
+    sigaction(SIGSYS,  &act, NULL);
     sigaction(SIGXCPU, &act, NULL);
     sigaction(SIGXFSZ, &act, NULL);
 
-    sigaction(SIGINT, &act, NULL);
+    sigaction(SIGINT,  &act, NULL);
     sigaction(SIGUSR1, &act, NULL);
     sigaction(SIGUSR2, &act, NULL);
 

@@ -18,13 +18,22 @@
  *     last modified: 29/09 2018 09:42
  */
 #include <stdio.h>
+#include <unistd.h>
+
+#include "signal_helper.h"
 
 extern void log_test(void);
 extern void list_test(void);
 
 int main(int argc, char const* argv[])
 {
+    register_linux_signal_hanler(argv[0]);
+
     list_test();
+
+    while (1) {
+        sleep(1);
+    }
 
     return 0;
 }
