@@ -2,10 +2,10 @@
  * 
  * Release under GPLv2.
  * 
- * @file    main.c
+ * @file    list_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    29/09 2018 09:03
+ * @date    29/09 2018 09:49
  * @version v0.0.1
  * 
  * @since    note
@@ -15,14 +15,13 @@
  *     NO.     Author              Date            Modified
  *     00      zhenquan.qiu        29/09 2018      create the file
  * 
- *     last modified: 29/09 2018 09:03
+ *     last modified: 29/09 2018 09:49
  */
 #include <stdio.h>
 #include <string.h>
 
-#include <log_helper.h>
-
-#include "list.h" 
+#include "log_helper.h"
+#include "list.h"
 
 #define MAX_NAME_LEN 32
 #define MAX_ID_LEN 10
@@ -34,7 +33,7 @@ typedef struct stud {
     char id[MAX_ID_LEN];
 } stud_t;
 
-int main(int argc, char const* argv[])
+void list_test(void)
 {
     stud_t stu_1;
     stud_t stu_2;
@@ -63,7 +62,5 @@ int main(int argc, char const* argv[])
     }
 
     list_del(&stu_1.list);
-
-    return 0;
 }
 
