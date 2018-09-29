@@ -13,3 +13,9 @@ bookmark
 * [AWK程序设计语言](http://awk.readthedocs.io/en/latest/chapter-one.html)
 * [awk使用shell变量及shell使用awk中的变量](https://blog.csdn.net/rj042/article/details/72860177)
 
+
+## 工具
+
+### pcb
+
+* [立创EDA](https://lceda.cn/)
