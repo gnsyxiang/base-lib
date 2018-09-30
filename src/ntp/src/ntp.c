@@ -24,10 +24,10 @@
 #include <sys/time.h>
 #include <netdb.h>
 
-#include "thread_helper.h"
-#include "log_helper.h"
-#include "socket.h"
-#include "time_helper.h"
+#include <utils/thread_helper.h>
+#include <utils/log_helper.h>
+#include <utils/time_helper.h>
+#include <network/socket.h>
 
 #define BASE_LIB_NTP_GB
 #include "ntp.h"
