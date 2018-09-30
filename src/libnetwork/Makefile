@@ -58,7 +58,7 @@ LD_COM_FLAG := $(SYSTEM_32_64)
 
 LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR):$(TO_TOP_DIR)/lib $(LD_COM_FLAG)
 LDFLAGS 	+= -L$(LIB_DIR) -L$(TO_TOP_DIR)/lib
-LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lbase-lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lutils -lbase-lib
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
@@ -84,8 +84,7 @@ TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
 ###########################################
 all: depend $(TARGET_LIB) $(TARGET_DEMO)
-	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/$(LIB_DIR)
-	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/$(INC_DIR)
+	$(cp-lib-inc)
 
 include $(TO_TOP_DIR)/configs/com-target-def.mk
 

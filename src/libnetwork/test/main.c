@@ -19,8 +19,8 @@
  */
 #include <stdio.h>
 
-#include <signal_helper.h>
-#include <log_helper.h>
+#include <utils/signal_helper.h>
+#include <utils/log_helper.h>
 #include <parse_cmd.h>
 
 static char usr_input[10];
