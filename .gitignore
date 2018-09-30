@@ -69,6 +69,7 @@ demo
 # 
 !project/vad/lib/libMNPCVAD.so
 
+#ignore dirs
 src/*/configs
 
 lib/
@@ -78,6 +79,10 @@ src/com-lib/jpeg-9/
 src/com-lib/zlib/
 src/com-lib/build/
 src/com-lib/install/
+
+inc/network
+inc/ntp
+inc/utils
 
 # for autotools ignore
 *.log

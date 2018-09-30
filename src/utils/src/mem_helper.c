@@ -23,9 +23,9 @@
 
 #include "log_helper.h"
 
-#define BASE_LIB_MEM_HELPER_GB
+#define UTILS_MEM_GB
 #include "mem_helper.h"
-#undef BASE_LIB_MEM_HELPER_GB
+#undef  UTILS_MEM_GB
 
 void *alloc_mem(int len)
 {
@@ -51,7 +51,8 @@ void *_realloc_mem(void **pp, int size)
 
 int _realloc_mem_by_size(void **pp, int len, int size)
 {
-	for (size = size < REALLOC_SIZE ? REALLOC_SIZE : size; size < len; size <<= 1);	
+	for (size = size < REALLOC_SIZE ? REALLOC_SIZE : size;
+            size < len; size <<= 1);	
 
 	if(!_realloc_mem(pp, size))
 		return -1;
