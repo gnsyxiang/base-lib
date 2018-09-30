@@ -65,6 +65,7 @@ demo
 *.wav
 *.pcm
 *.txt
+*.db
 
 # 
 !project/vad/lib/libMNPCVAD.so
@@ -83,6 +84,7 @@ src/com-lib/install/
 inc/network
 inc/ntp
 inc/utils
+inc/zk-sqlite
 
 # for autotools ignore
 *.log
