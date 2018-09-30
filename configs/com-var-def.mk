@@ -60,6 +60,7 @@ INC_DIR ?= inc
 SRC_DIR ?= src
 TST_DIR ?= test
 DEM_DIR ?= demo
+CON_DIR ?= configs
 
 BUILD 		:= x86_64-linux-gnu
 

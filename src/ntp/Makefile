@@ -27,7 +27,7 @@ include $(TO_TOP_DIR)/configs/com-ruler-def.mk
 # target setting
 # --------------
 TARGET_DEMO 	?= main
-TARGET_LIB_NAME ?= network
+TARGET_LIB_NAME ?= ntp
 
 # -------
 # version
@@ -58,7 +58,7 @@ LD_COM_FLAG := $(SYSTEM_32_64)
 
 LDFLAGS 	+= -Wl,-rpath=$(LIB_DIR):$(TO_TOP_DIR)/lib $(LD_COM_FLAG)
 LDFLAGS 	+= -L$(LIB_DIR) -L$(TO_TOP_DIR)/lib
-LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lbase-lib
+LDFLAGS 	+= -l$(TARGET_LIB_NAME) -lnetwork -lutils
 LDFLAGS 	+= -lpthread
 LIB_LDFLAGS := $(SO_NAME) -shared $(LD_COM_FLAG)
 
