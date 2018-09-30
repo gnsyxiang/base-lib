@@ -84,8 +84,7 @@ TARGET_DEMO_OBJS  ?= $(TARGET_DEMO_OBJ_C)
 
 ###########################################
 all: depend $(TARGET_LIB) $(TARGET_DEMO)
-	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/$(LIB_DIR)
-	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/$(INC_DIR)
+	$(cp-lib-inc)
 
 include $(TO_TOP_DIR)/configs/com-target-def.mk
 

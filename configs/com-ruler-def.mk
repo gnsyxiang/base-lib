@@ -34,6 +34,13 @@ define run-dir-makefile-make
 	done
 endef
 
+define cp-lib-inc
+	$(MKDIR) $(TO_TOP_DIR)/$(INC_DIR)/$(TARGET_LIB_NAME)
+	\
+	$(CP) $(LIB_DIR)/$(TARGET_LIB_SO)* 	$(TO_TOP_DIR)/$(LIB_DIR)
+	$(CP) $(INC_DIR)/* 					$(TO_TOP_DIR)/$(INC_DIR)/$(TARGET_LIB_NAME)
+endef
+
 ifeq ($(STRIP_OBJ), y)
 define strip_obj
 		$(STRIP) --strip-unneeded $@;
