@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#include <typedef_helper.h>
+#include <utils/typedef_helper.h>
 
 #define NET_DEV_NAME	"/proc/net/dev"
 
