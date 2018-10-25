@@ -45,8 +45,9 @@ TARGET_PATH := $(LIB_DIR)/$(TARGET_LIB)
 # ------
 # cflags
 # ------
-CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/$(INC_DIR)
-CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable
+CFLAGS     += -I$(INC_DIR) -I$(TO_TOP_DIR)/$(INC_DIR) -I$(SRC_DIR)
+CFLAGS 	   += -Wno-error=unused-function -Wno-error=unused-variable \
+			  -Wno-error=pointer-to-int-cast -Wno-error=int-to-pointer-cast
 LIB_CFLAGS += $(CFLAGS) -fPIC
 
 # -------

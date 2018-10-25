@@ -24,16 +24,20 @@
 
 extern void log_test(void);
 extern void list_test(void);
+extern void timer_test(void);
 
 int main(int argc, char const* argv[])
 {
     register_linux_signal_hanler(argv[0]);
 
     list_test();
+    timer_test();
 
-    while (1) {
-        sleep(1);
-    }
+    // while (1) {
+        // sleep(1);
+    // }
+
+    sleep(4);
 
     return 0;
 }
