@@ -17,8 +17,8 @@
  * 
  *     last modified: 28/12 2017 16:31
  */
-#ifndef _MISC_HELPER_H_
-#define _MISC_HELPER_H_
+#ifndef __UTILS_MISC_HELPER_H_
+#define __UTILS_MISC_HELPER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,10 +29,10 @@ extern "C" {
 
 #include "typedef_helper.h"
 
-#ifndef MISC_HELPER_GB
-#define MISC_HELPER_EX extern
+#ifndef UTILS_MISC_GB
+#define UTILS_MISC_EX extern
 #else
-#define MISC_HELPER_EX
+#define UTILS_MISC_EX
 #endif
 
 #define FOR_ZERO_TO_LEN(len) for (bl_uint32_t i = 0; i < (len); i++)
@@ -74,8 +74,8 @@ static inline bl_uint32_t judgement_byte_order(void)
 
 
 
-MISC_HELPER_EX void test(void);
-MISC_HELPER_EX bl_uint32_t random_num(bl_uint32_t range);
+UTILS_MISC_EX void test(void);
+UTILS_MISC_EX bl_uint32_t random_num(bl_uint32_t range);
 
 #ifdef __cplusplus
 }

@@ -22,9 +22,9 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define MISC_HELPER_GB
+#define UTILS_MISC_GB
 #include "misc_helper.h"
-#undef MISC_HELPER_GB
+#undef UTILS_MISC_GB
 
 /* 栈的开口方向：
  * 开口向下的栈先分配大地址，从下到上地址编号依次变大
