@@ -17,8 +17,8 @@
  * 
  *     last modified: 09/05 2018 14:15
  */
-#ifndef __BASE_LIB_RINGBUF_H_
-#define __BASE_LIB_RINGBUF_H_
+#ifndef __UTILS_RINGBUF_H_
+#define __UTILS_RINGBUF_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,5 +84,5 @@ RINGBUF_EX int ringbuf_remove(pringbuf_t pringbuf, unsigned int size);
 }
 #endif
 
-#endif /* end _RINGBUF_H_ */
+#endif /* end __UTILS_RINGBUF_H_ */
 
