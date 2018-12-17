@@ -37,7 +37,6 @@ typedef struct rb_list_node {
 
 #define RB_LIST_NODE_LEN    sizeof(struct rb_list_node)
 
-static uint32_t pic_num;
 static rb_list_node_t rb_list_head;
 
 void rb_list_init(void)
@@ -80,6 +79,9 @@ int rb_list_get(char *buf, int *len)
     list_for_each_entry(tmp, &(rb_list_head.list), list) {
         memcpy(buf, tmp->buf, tmp->len);
         *len = tmp->len;
+
+        free(tmp->buf);
+        list_del(&tmp->list);
         break;
     }
 
