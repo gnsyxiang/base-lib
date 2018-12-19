@@ -30,11 +30,13 @@ extern "C" {
 #define RB_LIST_EX
 #endif
 
-void rb_list_init(void);
-int rb_list_clean(void);
+struct rb_list_head;
 
-int rb_list_put(char *buf, int len);
-int rb_list_get(char *buf, int *len);
+struct rb_list_head *rb_list_init(void);
+void rb_list_clean(struct rb_list_head *rb_list_head);
+
+int rb_list_put(struct rb_list_head *rb_list_head, char *buf, int len);
+int rb_list_get(struct rb_list_head *rb_list_head, char *buf, int *len);
 
 #ifdef __cplusplus
 }

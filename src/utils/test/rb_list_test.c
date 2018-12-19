@@ -24,17 +24,19 @@
 
 int rb_list_test(void)
 {
-    rb_list_init();
+    struct rb_list_head *rb_list_head = rb_list_init();
 
-    char *buf = "12345";
-    rb_list_put(buf, 5);
+    for (int i = 0; i < 5; i++) {
+        rb_list_put(rb_list_head, (char *)&i, 1);
+    }
 
-    char tmp[10] = {0};
     int len = 0;
-    rb_list_get(tmp, &len);
-    log_i("tmp: %s, len: %d", tmp, len);
+    for (int i = 0; i < 5; i++) {
+        rb_list_get(rb_list_head, (char *)&i, &len);
+        log_i("tmp: %d, len: %d", i, len);
+    }
 
-    rb_list_clean();
+    rb_list_clean(rb_list_head);
 
     return 0;
 }
