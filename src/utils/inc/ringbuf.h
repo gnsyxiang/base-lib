@@ -17,15 +17,15 @@
  * 
  *     last modified: 09/05 2018 14:15
  */
-#ifndef __UTILS_RINGBUF_H_
-#define __UTILS_RINGBUF_H_
+#ifndef __BASE_LIB_RINGBUF_H_
+#define __BASE_LIB_RINGBUF_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <pthread.h>
 #include <limits.h>
+#include <stdint.h>
 
 #ifndef RINGBUF_GB
 #define RINGBUF_EX extern
@@ -33,56 +33,143 @@ extern "C" {
 #define RINGBUF_EX
 #endif
 
-typedef struct ringbuf {
-    unsigned int head;
-    unsigned int tail;
+typedef struct ringbuf* prb_t;
 
-    unsigned int size;
-    unsigned int remain_size;
+/**
+ * @brief ringbuf init
+ *
+ * @param size: the ringbuf size
+ *
+ * @return ringbuf handler for success, otherwise NULL
+ */
+RINGBUF_EX prb_t rb_init(uint32_t size);
 
-    pthread_mutex_t mutex;
-    pthread_cond_t in_cond;
-    pthread_cond_t out_cond;
+/**
+ * @brief ringbuf clean resources
+ *
+ * @param rb: the ringbuf handler
+ *
+ * @return none
+ */
+RINGBUF_EX void rb_clean(prb_t rb);
 
-    unsigned int in_sleep_cnt;
-    unsigned int out_sleep_cnt;
+/**
+ * @brief judge the ringbuf whether it is empty
+ *
+ * @param rb: the ringbuf handler
+ *
+ * @return one for empty, zero for hasing data
+ */
+RINGBUF_EX uint32_t rb_is_empty(prb_t rb);
 
-    char buf[0];
-}ringbuf_t;
-typedef struct ringbuf* pringbuf_t;
+/**
+ * @brief judge the ringbuf whether it is full
+ *
+ * @param rb: the ringbuf handler
+ *
+ * @return one for full, zero for 
+ */
+RINGBUF_EX uint32_t rb_is_full(prb_t rb);
 
-RINGBUF_EX pringbuf_t ringbuf_init(unsigned int size);
-RINGBUF_EX void ringbuf_destroy(pringbuf_t pringbuf);
+/**
+ * @brief return the ringbuf remain size
+ *
+ * @param rb: the ringbuf handler
+ *
+ * @return the remain size of ringbuf
+ */
+RINGBUF_EX uint32_t rb_remain_size(prb_t rb);
 
-RINGBUF_EX int ringbuf_is_full(pringbuf_t pringbuf);
-RINGBUF_EX int ringbuf_is_empty(pringbuf_t pringbuf);
+/**
+ * @brief put data into ringbuf
+ *
+ * @param rb: the ringbuf handler
+ * @param buf: the input data
+ * @param size: the data size
+ * @param timeout_ms: timeout ms
+ *
+ * @return: the input data 
+ */
+RINGBUF_EX int32_t rb_in_timeout(
+        prb_t rb, void *buf, uint32_t size, uint32_t timeout_ms);
 
-RINGBUF_EX int ringbuf_in_timeout(pringbuf_t pringbuf, void *buf, unsigned int size, unsigned int timeout_ms);
-static inline
-int ringbuf_in(pringbuf_t pringbuf, void *buf, unsigned int size)
-{
-    return ringbuf_in_timeout(pringbuf, buf, size, INT_MAX);
-}
 
-RINGBUF_EX int ringbuf_out_timeout(pringbuf_t pringbuf, void *buf, unsigned int size, unsigned int timeout_ms);
-static inline
-int ringbuf_out(pringbuf_t pringbuf, void *buf, unsigned int size)
-{
-    return ringbuf_out_timeout(pringbuf, buf, size, INT_MAX);
-}
+/**
+ * @brief 
+ *
+ * @param pringbuf
+ * @param buf
+ * @param size
+ *
+ * @return 
+ */
+#define rb_in(pringbuf, buf, size) \
+        rb_in_timeout(pringbuf, buf, size, INT_MAX)
 
-RINGBUF_EX int ringbuf_out_peek_timeout(pringbuf_t pringbuf, void *buf, unsigned int size, unsigned int timeout_ms);
-static inline
-int ringbuf_out_peek(pringbuf_t pringbuf, void *buf, unsigned int size)
-{
-    return ringbuf_out_peek_timeout(pringbuf, buf, size, INT_MAX);
-}
+/**
+ * @brief get data from ringbuf
+ *
+ * @param rb
+ * @param buf
+ * @param size
+ * @param timeout_ms
+ *
+ * @return 
+ */
+RINGBUF_EX int32_t rb_out_timeout(
+        prb_t rb, void *buf, uint32_t size, uint32_t timeout_ms);
 
-RINGBUF_EX int ringbuf_remove(pringbuf_t pringbuf, unsigned int size);
+
+/**
+ * @brief 
+ *
+ * @param pringbuf
+ * @param buf
+ * @param size
+ *
+ * @return 
+ */
+#define rb_out(pringbuf, buf, size) \
+        rb_out_timeout(pringbuf, buf, size, INT_MAX)
+
+/**
+ * @brief 
+ *
+ * @param rb
+ * @param buf
+ * @param size
+ * @param timeout_ms
+ *
+ * @return 
+ */
+RINGBUF_EX int32_t rb_out_peek_timeout(
+        prb_t rb, void *buf, uint32_t size, uint32_t timeout_ms);
+
+/**
+ * @brief 
+ *
+ * @param pringbuf
+ * @param buf
+ * @param size
+ *
+ * @return 
+ */
+#define rb_out_peek(pringbuf, buf, size) \
+        rb_out_peek_timeout(pringbuf, buf, size, INT_MAX)
+
+/**
+ * @brief 
+ *
+ * @param rb
+ * @param size
+ *
+ * @return 
+ */
+RINGBUF_EX int32_t rb_remove(prb_t rb, uint32_t size);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* end __UTILS_RINGBUF_H_ */
+#endif /* end _RINGBUF_H_ */
 

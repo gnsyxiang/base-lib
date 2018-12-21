@@ -27,6 +27,7 @@ extern void list_test(void);
 extern void timer_test(void);
 extern int rb_list_test(void);
 extern int test_haha(void);
+extern int rb_test(void);
 
 int main(int argc, char const* argv[])
 {
@@ -41,8 +42,7 @@ int main(int argc, char const* argv[])
 
     // sleep(4);
     // test_haha();
-
-    rb_list_test();
+    rb_test();
 
     return 0;
 }

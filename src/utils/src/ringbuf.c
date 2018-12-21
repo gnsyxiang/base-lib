@@ -20,231 +20,233 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 #define RINGBUF_GB
 #include "ringbuf.h"
 #undef RINGBUF_GB
 
+#include "log_helper.h"
 #include "time_helper.h"
 #include "typedef_helper.h"
+#include "mem_helper.h"
 
-static int ringbuf_out_timeout_base(pringbuf_t pringbuf, void *buf,
-        unsigned int size, unsigned int timeout_ms, int delete_data_flag);
+struct ringbuf {
+    uint32_t head;
+    uint32_t tail;
 
-pringbuf_t ringbuf_init(unsigned int size)
+    uint32_t size;
+    uint32_t remain_size;
+
+    pthread_mutex_t mutex;
+    pthread_cond_t in_cond;
+    pthread_cond_t out_cond;
+
+    uint32_t in_sleep_cnt;
+    uint32_t out_sleep_cnt;
+
+    char buf[0];                // 不用指针，如果是协议的话，方便整包发送
+};
+
+#define RINGBUF_LEN     (sizeof(struct ringbuf))
+
+prb_t rb_init(uint32_t size)
 {
-    pringbuf_t pringbuf;
-
     if (size < 0) {
-        printf("size is less than zero");
+        log_e("size is less than zero");
         return NULL;
     }
 
     size = ALIGN4(size);
-
-    pringbuf = (pringbuf_t)malloc(sizeof(*pringbuf) + size);
-    if (!pringbuf) {
-        printf("malloc faild \n");
+    prb_t rb = (prb_t)alloc_mem(RINGBUF_LEN + size);
+    if (!rb) {
+        log_e("malloc faild");
         return NULL;
     }
+    
+    rb->head = 0;
+    rb->tail = 0;
 
-    pringbuf->head = 0;
-    pringbuf->tail = 0;
+    rb->size = size;
+    rb->remain_size = size;
 
-    pringbuf->size = size;
-    pringbuf->remain_size = size;
+    pthread_mutex_init(&rb->mutex, NULL);
+    pthread_cond_init(&rb->in_cond, NULL);
+    pthread_cond_init(&rb->out_cond, NULL);
 
-    pthread_mutex_init(&pringbuf->mutex, NULL);
-    pthread_cond_init(&pringbuf->in_cond, NULL);
-    pthread_cond_init(&pringbuf->out_cond, NULL);
-
-    return pringbuf;
+    return rb;
 }
 
-void ringbuf_destroy(pringbuf_t pringbuf)
+void rb_clean(prb_t rb)
 {
-    if (!pringbuf) {
-        printf("ringbuf is NULL \n");
+    if (!rb) {
+        log_e("ringbuf is NULL");
         return;
     }
 
-    pthread_mutex_destroy(&pringbuf->mutex);
-    pthread_cond_destroy(&pringbuf->in_cond);
-    pthread_cond_destroy(&pringbuf->out_cond);
+    pthread_mutex_destroy(&rb->mutex);
+    pthread_cond_destroy(&rb->in_cond);
+    pthread_cond_destroy(&rb->out_cond);
 
-    free(pringbuf);
+    free(rb);
 }
 
-int ringbuf_in_timeout(
-        pringbuf_t pringbuf,
-        void *buf,
-        unsigned int size,
-        unsigned int timeout_ms)
+int32_t rb_in_timeout(prb_t rb, void *buf, uint32_t size, uint32_t timeout_ms)
 {
-    int tail;
+    int32_t tail;
 
-    pthread_mutex_lock(&pringbuf->mutex);
+    pthread_mutex_lock(&rb->mutex);
 
     /* the ringbuf can't save the current data */
-    while (size > pringbuf->remain_size) {
+    while (size > rb->remain_size) {
         struct timespec ts = cur_delay_ms(timeout_ms);
-        int ret;
+        int32_t ret;
 
-        pringbuf->in_sleep_cnt++;
-        ret = pthread_cond_timedwait(&pringbuf->out_cond, &pringbuf->mutex, &ts);   //receive the signal and return 0
-        pringbuf->in_sleep_cnt--;
+        rb->in_sleep_cnt++;
+        /* receive the signal and return 0 */
+        ret = pthread_cond_timedwait(&rb->out_cond, &rb->mutex, &ts);
+        rb->in_sleep_cnt--;
 
         /* if timed out, discard this data */
         if (ret) {
-            pthread_mutex_unlock(&pringbuf->mutex);
+            pthread_mutex_unlock(&rb->mutex);
             return -ret;
         }
     }
 
-    tail = pringbuf->tail;
+    tail = rb->tail;
 
-    if (tail + size < pringbuf->size) {
-        memcpy(pringbuf->buf + tail, buf, size);
-        pringbuf->tail = tail + size;
+    if (tail + size < rb->size) {
+        memcpy(rb->buf + tail, buf, size);
+        rb->tail = tail + size;
     } else {
-        int sz = pringbuf->size - tail;
+        int32_t sz = rb->size - tail;
 
-        memcpy(pringbuf->buf + tail, buf, sz);
-        memcpy(pringbuf->buf, buf + sz, size - sz);
+        memcpy(rb->buf + tail, buf, sz);
+        memcpy(rb->buf, buf + sz, size - sz);
 
-        pringbuf->tail = size - sz;
+        rb->tail = size - sz;
     }
 
-    if (pringbuf->remain_size > 0) {
-        pringbuf->remain_size -= size;
+    if (rb->remain_size > 0) {
+        rb->remain_size -= size;
     }
 
-    if (pringbuf->out_sleep_cnt) {
-        pthread_cond_broadcast(&pringbuf->in_cond);
+    if (rb->out_sleep_cnt) {
+        pthread_cond_broadcast(&rb->in_cond);
     }
 
-    pthread_mutex_unlock(&pringbuf->mutex);
+    pthread_mutex_unlock(&rb->mutex);
 
     return size;
 }
 
-int ringbuf_out_timeout(
-        pringbuf_t pringbuf,
+static int32_t rb_out_timeout_base(
+        prb_t rb,
         void *buf,
-        unsigned int size,
-        unsigned int timeout_ms)
-{
-    return ringbuf_out_timeout_base(pringbuf, buf, size, timeout_ms, 1);
-}
-
-int ringbuf_out_peek_timeout(
-        pringbuf_t pringbuf,
-        void *buf,
-        unsigned int size,
-        unsigned int timeout_ms)
-{
-    return ringbuf_out_timeout_base(pringbuf, buf, size, timeout_ms, 0);
-}
-
-static int ringbuf_out_timeout_base(
-        pringbuf_t pringbuf,
-        void *buf,
-        unsigned int size,
-        unsigned int timeout_ms,
-        int delete_data_flag)
+        uint32_t size,
+        uint32_t timeout_ms,
+        int32_t del_data_flag)
 {
     int head;
 
-    pthread_mutex_lock(&pringbuf->mutex);
+    pthread_mutex_lock(&rb->mutex);
 
-    /* printf("size: %d, remain_size: %d \n", pringbuf->size, pringbuf->remain_size); */
+    /* printf("size: %d, remain_size: %d \n", rb->size, rb->remain_size); */
 
     /* there is not enough data in the ringbuf */
-    while (pringbuf->size - pringbuf->remain_size < size) {
+    while (rb->size - rb->remain_size < size) {
         struct timespec ts = cur_delay_ms(timeout_ms);
         int ret;
 
-        pringbuf->out_sleep_cnt++;
-        ret = pthread_cond_timedwait(&pringbuf->in_cond, &pringbuf->mutex, &ts);    //receive the signal and return 0
-        pringbuf->out_sleep_cnt--;
+        rb->out_sleep_cnt++;
+        /* receive the signal and return 0 */
+        ret = pthread_cond_timedwait(&rb->in_cond, &rb->mutex, &ts);    
+        rb->out_sleep_cnt--;
 
         /* if timed out, discard this data */
         if (ret) {
-            pthread_mutex_unlock(&pringbuf->mutex);
+            pthread_mutex_unlock(&rb->mutex);
             return -ret;
         }
     }
 
-    head = pringbuf->head;
+    head = rb->head;
 
-    if (head + size < pringbuf->size) {
-        memcpy(buf, pringbuf->buf + head, size);
+    if (head + size < rb->size) {
+        memcpy(buf, rb->buf + head, size);
 
-        if (delete_data_flag)
-            pringbuf->head = head + size;
+        if (del_data_flag)
+            rb->head = head + size;
     } else {
-        int sz = pringbuf->size - head;
+        int sz = rb->size - head;
 
-        memcpy(buf, pringbuf->buf + head, sz);
-        memcpy(buf + sz, pringbuf->buf, size - sz);
+        memcpy(buf, rb->buf + head, sz);
+        memcpy(buf + sz, rb->buf, size - sz);
 
-        if (delete_data_flag)
-            pringbuf->head = size - sz;
+        if (del_data_flag)
+            rb->head = size - sz;
     }
 
-    if (delete_data_flag) {
-        if (pringbuf->remain_size < pringbuf->size) {
-            pringbuf->remain_size += size;
+    if (del_data_flag) {
+        if (rb->remain_size < rb->size) {
+            rb->remain_size += size;
         }
 
-        if (pringbuf->in_sleep_cnt) {
-            pthread_cond_broadcast(&pringbuf->out_cond);
+        if (rb->in_sleep_cnt) {
+            pthread_cond_broadcast(&rb->out_cond);
         }
     }
 
-    pthread_mutex_unlock(&pringbuf->mutex);
+    pthread_mutex_unlock(&rb->mutex);
 
     return size;
 }
 
-int ringbuf_remove(pringbuf_t pringbuf, unsigned int size)
+int32_t rb_out_timeout(prb_t rb, void *buf, uint32_t size, uint32_t timeout_ms)
 {
-    pthread_mutex_lock(&pringbuf->mutex);
+    return rb_out_timeout_base(rb, buf, size, timeout_ms, 1);
+}
 
-    if (size < pringbuf->size - pringbuf->remain_size) {
-        pringbuf->head = (pringbuf->head + size) % pringbuf->size;
-        pringbuf->remain_size += size;
+int32_t rb_out_peek_timeout(prb_t rb, void *buf, uint32_t size, uint32_t timeout_ms)
+{
+    return rb_out_timeout_base(rb, buf, size, timeout_ms, 0);
+}
+
+int32_t rb_remove(prb_t rb, uint32_t size)
+{
+    pthread_mutex_lock(&rb->mutex);
+
+    if (size < rb->size - rb->remain_size) {
+        rb->head = (rb->head + size) % rb->size;
+        rb->remain_size += size;
     } else {
-        size = pringbuf->size - pringbuf->remain_size;
-        pringbuf->head = pringbuf->tail;
-        pringbuf->remain_size = pringbuf->size;
+        size = rb->size - rb->remain_size;
+        rb->head = rb->tail;
+        rb->remain_size = rb->size;
     }
 
-    if (pringbuf->in_sleep_cnt) {
-        pthread_cond_broadcast(&pringbuf->out_cond);
+    if (rb->in_sleep_cnt) {
+        pthread_cond_broadcast(&rb->out_cond);
     }
 
-    pthread_mutex_unlock(&pringbuf->mutex);
+    pthread_mutex_unlock(&rb->mutex);
 
     return size;
 }
 
-int ringbuf_is_empty(pringbuf_t pringbuf)
+uint32_t rb_is_empty(prb_t rb)
 {
-    if (pringbuf->remain_size == pringbuf->size) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return (rb->remain_size == rb->size)? 1 : 0;
 }
 
-int ringbuf_is_full(pringbuf_t pringbuf)
+uint32_t rb_is_full(prb_t rb)
 {
-    if (pringbuf->remain_size == 0) {
-        return 1;
-    } else {
-        return 0;
-    }
+    return (rb->remain_size == 0)? 1 : 0;
 }
 
+uint32_t rb_remain_size(prb_t rb)
+{
+    return rb->remain_size;
+}
 
