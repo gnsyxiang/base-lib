@@ -17,8 +17,8 @@
  * 
  *     last modified: 28/12 2017 15:32
  */
-#ifndef _FILE_HELPER_H_
-#define _FILE_HELPER_H_
+#ifndef __UTILS_FILE_HELPER_H_
+#define __UTILS_FILE_HELPER_H_
 
 #ifdef __cplusplus
 extern "C" {
