@@ -1,11 +1,11 @@
 /**
- * 
+ *
  * Release under GPLv2.
  * 
  * @file    main.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    29/09 2018 09:42
+ * @date    28/12 2017 16:39
  * @version v0.0.1
  * 
  * @since    note
@@ -13,36 +13,39 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        29/09 2018      create the file
+ *     00      zhenquan.qiu        28/12 2017      create the file
  * 
- *     last modified: 29/09 2018 09:42
+ *     last modified: 28/12 2017 16:39
  */
 #include <stdio.h>
-#include <unistd.h>
 
 #include "signal_helper.h"
+#include "parse_cmd.h"
+#include "log_helper.h"
 
-extern void log_test(void);
-extern void list_test(void);
-extern void timer_test(void);
-extern int rb_list_test(void);
-extern int test_haha(void);
-extern int rb_test(void);
+static char usr_input[10];
 
-int main(int argc, char const* argv[])
+void dis_func(void)
 {
-    register_linux_signal_hanler(argv[0]);
+	printf("-----------------------------------------------\n");
+	printf("enter the sequence number, select the function \n");
+	printf("-----------------------------------------------\n");
+	printf("input your number: ");
 
-    // list_test();
-    // timer_test();
+	fflush(stdout);
+}
 
-    // while (1) {
-        // sleep(1);
-    // }
+int main(int argc, const char *argv[])
+{
+	register_linux_signal_hanler(argv[0]);
 
-    // sleep(4);
-    // test_haha();
-    rb_test();
+	do_initcalls();
+
+	dis_func();
+
+	scanf("%s", usr_input);
+
+	match_test_cmd(usr_input);
 
     return 0;
 }

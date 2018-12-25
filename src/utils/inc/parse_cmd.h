@@ -17,17 +17,17 @@
  * 
  *     last modified: 20/12 2017 16:30
  */
-#ifndef _BASE_LIB_PARSE_CMD_H_
-#define _BASE_LIB_PARSE_CMD_H_
+#ifndef __UTILS_PARSE_CMD_H_
+#define __UTILS_PARSE_CMD_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef BASE_LIB_PARSE_CMD_GB
-#define BASE_LIB_PARSE_CMD_EX extern
+#ifndef PARSE_CMD_GB
+#define PARSE_CMD_EX extern
 #else
-#define BASE_LIB_PARSE_CMD_EX
+#define PARSE_CMD_EX
 #endif
 
 #define MAX_TEST_CMD (20)
@@ -50,9 +50,9 @@ typedef struct _handle_test_cmd_list_tag {
 	handle_test_cmd_t handle_test_cmd[MAX_TEST_CMD];
 }handle_test_cmd_list_t;
 
-BASE_LIB_PARSE_CMD_EX void do_initcalls(void);
-BASE_LIB_PARSE_CMD_EX void match_test_cmd(const char *str);
-BASE_LIB_PARSE_CMD_EX void register_test_cmd(handle_test_cmd_t *cmd_array, int num);
+PARSE_CMD_EX void do_initcalls(void);
+PARSE_CMD_EX void match_test_cmd(const char *str);
+PARSE_CMD_EX void register_test_cmd(handle_test_cmd_t *cmd_array, int num);
 
 #ifdef __cplusplus
 }

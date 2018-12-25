@@ -22,9 +22,9 @@
 
 #include "log_helper.h"
 
-#define BASE_LIB_PARSE_CMD_GB
+#define PARSE_CMD_GB
 #include "parse_cmd.h"
-#undef BASE_LIB_PARSE_CMD_GB
+#undef PARSE_CMD_GB
 
 static handle_test_cmd_list_t handle_test_cmd_list;
 
