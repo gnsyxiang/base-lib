@@ -2,7 +2,7 @@
  * 
  * Release under GPLv2.
  * 
- * @file    ringbuf-test.c
+ * @file    rb_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    21/12 2018 14:06
@@ -24,6 +24,7 @@
 #include "thread_helper.h"
 #include "ringbuf.h"
 #include "log_helper.h"
+#include "parse_cmd.h"
 
 static  prb_t test_rf;
 
@@ -41,12 +42,12 @@ void *test_rb_loop(void *args)
     return NULL;
 }
 
-int rb_test(void)
+static void rb_test(void)
 {
     test_rf = rb_init(5);
     if (!test_rf) {
         log_e("video ringbuf init faild");
-        return -1;
+        return ;
     }
 
     create_a_attached_thread(NULL, test_rb_loop, NULL);
@@ -65,6 +66,17 @@ int rb_test(void)
     }
 
     rb_clean(test_rf);
-    
-    return 0;
 }
+
+static void rb_test_init(void)
+{
+	printf(" 1. ringbuf test \n");
+
+	handle_test_cmd_t rb_test_cmd[] = {
+		{"1", rb_test},
+	};
+
+	register_test_cmd(rb_test_cmd, ARRAY_NUM(rb_test_cmd));
+}
+DECLARE_INIT(rb_test_init);
+
