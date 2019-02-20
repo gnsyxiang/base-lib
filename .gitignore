@@ -74,7 +74,6 @@ demo
 src/*/configs
 
 lib/
-inc
 
 src/com-lib/alsa-lib-1.1.6/
 src/com-lib/jpeg-9/
