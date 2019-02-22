@@ -70,10 +70,10 @@ static void rb_test(void)
 
 static void rb_test_init(void)
 {
-	printf(" 1. ringbuf test \n");
+	printf("10. ringbuf test \n");
 
 	handle_test_cmd_t rb_test_cmd[] = {
-		{"1", rb_test},
+		{"10", rb_test},
 	};
 
 	register_test_cmd(rb_test_cmd, ARRAY_NUM(rb_test_cmd));

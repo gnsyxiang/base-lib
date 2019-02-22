@@ -24,7 +24,7 @@
 #include "log_helper.h"
 #include "dir_helper.h"
 
-void dir_file_cb(const char * const name, unsigned char d_type, void *args)
+static void dir_file_cb(const char * const name, unsigned char d_type, void *args)
 {
     log_i("name: %s, args: %s", name, args);
 
@@ -74,12 +74,12 @@ static void dir_filter_test(void)
 
 static void dir_test_init(void)
 {
-	printf(" 3. dir test \n");
-	printf(" 4. dir filter test \n");
+	printf("30. dir test \n");
+	printf("31. dir filter test \n");
 
 	handle_test_cmd_t dir_test_cmd[] = {
-		{"3", dir_test},
-		{"4", dir_filter_test},
+		{"30", dir_test},
+		{"31", dir_filter_test},
 	};
 
 	register_test_cmd(dir_test_cmd, ARRAY_NUM(dir_test_cmd));

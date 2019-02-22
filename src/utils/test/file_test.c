@@ -46,10 +46,10 @@ static void file_test(void)
 
 static void file_test_init(void)
 {
-	printf(" 9. file test \n");
+	printf("40. file test \n");
 
 	handle_test_cmd_t file_test_cmd[] = {
-		{"9", file_test},
+		{"40", file_test},
 	};
 
 	register_test_cmd(file_test_cmd, ARRAY_NUM(file_test_cmd));
