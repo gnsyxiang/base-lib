@@ -78,6 +78,15 @@ int read_dir_file(const char * const path,
 int scan_dir_sort_file(const char * const dir, filter_t filter, 
 		dir_file_cb_t dir_file_cb, void *args);
 
+/**
+ * @brief 判断文件是否是目录
+ *
+ * @param filename: 文件名
+ *
+ * @return 目录返回0，非目录返回-1
+ */
+int is_dir(const char * const filename);
+
 #ifdef __cplusplus
 }
 #endif

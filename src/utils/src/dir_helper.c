@@ -98,6 +98,7 @@ int scan_dir_sort_file(const char * const dir, filter_t filter,
 		dir_file_cb_t dir_file_cb, void *args)
 {
     assert(dir);
+    assert(dir_file_cb);
 
 	struct dirent **namelist; // struct dirent * namelist[];
 
@@ -110,7 +111,28 @@ int scan_dir_sort_file(const char * const dir, filter_t filter,
 		while (cnt < num) {
             // log_i("%s", namelist[cnt]->d_name);
             // log_i("%d", namelist[cnt]->d_type);
-			dir_file_cb(namelist[cnt]->d_name, namelist[cnt]->d_type, args);
+            switch (namelist[cnt]->d_type) {
+                case DT_REG:
+                    dir_file_cb(namelist[cnt]->d_name, namelist[cnt]->d_type, args);
+                    break;
+
+                case DT_DIR: {
+                    int len = strlen(namelist[cnt]->d_name) + strlen(dir) + 1 + 1;	//1 for space('\0'), 1 for '/'
+                    char *sub_dir = alloc_mem(len);
+
+                    sprintf(sub_dir, "%s/%s", dir, namelist[cnt]->d_name);
+                    // log_i("path: %s, sub_dir: %s, ", dir, sub_dir);
+
+                    dir_file_cb(namelist[cnt]->d_name, namelist[cnt]->d_type, args);
+
+                    scan_dir_sort_file(sub_dir, filter, dir_file_cb, args);
+
+                    free(sub_dir);
+                    break;
+                }
+                default:
+                    break;
+            }
 
 			free(namelist[cnt++]);
 		}
@@ -118,5 +140,19 @@ int scan_dir_sort_file(const char * const dir, filter_t filter,
 	free(namelist);
 
     return 0;
+}
+
+int is_dir(const char * const filename)
+{
+    struct stat stat;
+
+    lstat(filename, &stat);
+    if (S_ISDIR(stat.st_mode)) {
+        return 0;
+    }
+
+    // printf("%s size is : %ld\n", filename, stat.st_size);
+
+    return -1;
 }
 

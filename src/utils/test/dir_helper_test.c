@@ -28,6 +28,8 @@ void dir_file_cb(const char * const name, unsigned char d_type, void *args)
 {
     log_i("name: %s, args: %s", name, args);
 
+    // log_i("is dir: %d", is_dir(name));
+
     switch (d_type) {
         case DT_REG:
             break;
@@ -51,9 +53,23 @@ static int filter_dot(const struct dirent *d)
     return (strcmp(d->d_name, "..") && strcmp(d->d_name, "."));
 }
 
+// 文件筛选器，指定当前目录下的“.o”文件
+static int filter_o(const struct dirent *d)
+{
+    size_t len = strlen(d->d_name);
+    if (len >= 2 \
+            && d->d_name[len - 2] == '.' \
+            && d->d_name[len - 1] == 'o') {
+        return 1;
+    }
+
+    return 0;
+}
+
 static void dir_filter_test(void)
 {
-    scan_dir_sort_file(".", filter_dot, dir_file_cb, "haha");
+    // scan_dir_sort_file("./", filter_dot, dir_file_cb, "haha");
+    scan_dir_sort_file("./objs/src", filter_o, dir_file_cb, "haha");
 }
 
 static void dir_test_init(void)
