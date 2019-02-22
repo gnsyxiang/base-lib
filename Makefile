@@ -26,7 +26,8 @@ TARGET_LIB_NAME ?= base-lib
 include configs/com-var-def.mk
 include configs/com-ruler-def.mk
 
-subdir-src 		:= src/utils
+subdir-src 		:= src/utils \
+				   src/libnetwork
 
 ###########################################
 all: $(DEPEND_DIR)
