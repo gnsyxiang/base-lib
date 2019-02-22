@@ -62,6 +62,8 @@ TST_DIR ?= test
 DEM_DIR ?= demo
 CON_DIR ?= configs
 
+DEPEND_DIR ?= depend_dir
+
 BUILD 		:= x86_64-linux-gnu
 
 ROOT 		:= $(shell pwd)
@@ -111,11 +113,11 @@ else
 
 		DEVICE_TEST_PATH 	 	:= /data/xia/base-lib
 	else
-		ifeq ($(SYSTEM_32_64), -m32)
-			LDFLAGS 	+= -T configs/ldscript-m32.lds
-		else
-			LDFLAGS 	+= -T configs/ldscript.lds
-		endif
+		# ifeq ($(SYSTEM_32_64), -m32)
+			# LDFLAGS 	+= -T configs/ldscript-m32.lds
+		# else
+			# LDFLAGS 	+= -T configs/ldscript.lds
+		# endif
 	endif
 endif
 

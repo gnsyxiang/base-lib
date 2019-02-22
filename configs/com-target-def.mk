@@ -18,7 +18,59 @@
 #     last modified: 30/09 2018 10:37
 # ===============================================================
 
+###################################################
+$(DEPEND_DIR):
+	$(MKDIR) $(LIB_DIR)
 
+###################################################
+$(TARGET_LIB): $(TARGET_PATH) handle_lib
+
+$(TARGET_PATH): $(OBJS)
+	$(ECHO) $(MSG_LD) $@
+	$(CC) $(CFLAGS) $^ $(LIB_LDFLAGS) -o $@
+	$(strip_obj)
+
+handle_lib: clean_lib
+	$(LN) $(TARGET_LIB) $(LIB_DIR)/$(TARGET_LIB_MAJ)
+	$(LN) $(TARGET_LIB_MAJ) $(LIB_DIR)/$(TARGET_LIB_SO)
+
+clean_lib:
+	$(RM) $(LIB_DIR)/$(TARGET_LIB_MAJ)
+	$(RM) $(LIB_DIR)/$(TARGET_LIB_SO)
+
+###################################################
+$(DEMO): $(DEMO_OBJS)
+	$(ECHO) $(MSG_LD) $@
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(strip_obj)
+
+###################################################
+# --------
+# make *.c
+# --------
+$(OBJ_C): $(OBJ_DIR)/%.o : %.c
+	$(MKDIR) $(dir $@)
+	$(ECHO) $(MSG_CC) $<
+	$(CC) -c $(LIB_CFLAGS) $< -o $@
+
+$(DEP_C): $(OBJ_DIR)/%.d : %.c
+	$(MKDIR) $(dir $@);
+	$(CC) -MM $(LIB_CFLAGS) -MT $(@:%.d=%.o) $< >$@
+
+sinclude $(DEPS)
+
+$(DEMO_OBJ_C): $(OBJ_DIR)/%.o : %.c
+	$(MKDIR) $(dir $@)
+	$(ECHO) $(MSG_CC) $<
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(DEMO_DEP_C): $(OBJ_DIR)/%.d : %.c
+	$(MKDIR) $(dir $@);
+	$(CC) -MM $(CFLAGS) -MT $(@:%.d=%.o) $< >$@
+
+sinclude $(DEMO_DEPS)
+
+###################################################
 index: index-clean
 	$(ECHO) generate index
 	ctags -R
@@ -31,40 +83,19 @@ index-clean:
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(DEPS)
-	$(RM) $(TARGET_DEMO_OBJS)
-	$(RM) $(TARGET_DEMO_DEPS)
-	$(RM) $(TARGET_DEMO)
-	$(RM) $(CON_DIR)
+	$(RM) $(DEMO_OBJS)
+	$(RM) $(DEMO_DEPS)
+	$(RM) $(DEMO)
 
 distclean: clean index-clean
+ifeq ($(TARGET_LIB_NAME)x, base-libx)
+	$(run-dir-makefile-clean-distclean)
+	$(RM) $(INC_DIR)
+endif
 	$(RM) $(OBJ_DIR)
 	$(RM) $(LIB_DIR)
 
-depend:
-	$(RM) $(CON_DIR)
-	$(LN) $(TO_TOP_DIR)/$(CON_DIR) $(CON_DIR)
-
-$(TARGET_LIB): $(TARGET_PATH) handle_lib
-
-$(TARGET_PATH): $(OBJS)
-	$(ECHO) $(MSG_LD) $@
-	$(MKDIR) $(LIB_DIR)
-	$(CC) $(CFLAGS) $^ $(LIB_LDFLAGS) -o $@
-	$(strip_obj)
-
-$(TARGET_DEMO): $(TARGET_DEMO_OBJS)
-	$(ECHO) $(MSG_LD) $@
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
-	$(strip_obj)
-
-handle_lib: clean_lib
-	$(LN) $(TARGET_LIB) $(LIB_DIR)/$(TARGET_LIB_MAJ)
-	$(LN) $(TARGET_LIB_MAJ) $(LIB_DIR)/$(TARGET_LIB_SO)
-
-clean_lib:
-	$(RM) $(LIB_DIR)/$(TARGET_LIB_MAJ)
-	$(RM) $(LIB_DIR)/$(TARGET_LIB_SO)
-
+###################################################
 note:
 	doxygen configs/Doxyfile
 
@@ -78,4 +109,7 @@ slient_targets=err_no_targets
 endif
 
 .SILENT: $(slient_targets)
+
+#########################################################
+.PHONY: all clean distclean debug
 

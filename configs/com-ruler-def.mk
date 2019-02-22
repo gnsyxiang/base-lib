@@ -18,10 +18,10 @@
 #     last modified: 25/05 2018 16:15
 # ===============================================================
 
-
 define run-dir-makefile-clean-distclean
 	for dir in $(subdir-src); 			\
 	do 									\
+		$(ECHO) "--->> "$$dir; 			\
 		$(MAKE) -C $$dir $@ || exit 1; 	\
 	done
 endef
