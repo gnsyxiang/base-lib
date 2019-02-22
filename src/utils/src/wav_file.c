@@ -48,6 +48,8 @@ int wav_file_open(const char * const name, wav_file_t * const wav_file)
         return -2;
     }
 
+    wav_file->pcm_len = wav_file->wav_header.data.length - 44;
+
     return 0;
 }
 
@@ -85,19 +87,17 @@ int wav_file_close(wav_file_t * const wav_file)
         write(wav_file->fd, &wav_file->wav_header, sizeof(wav_file->wav_header));
     }
 
-    close(wav_file->fd);
-
-    return 0;
+    return close(wav_file->fd);
 }
 
-int wav_file_read(const wav_file_t * const wav_file, char *buf, int len)
+int wav_file_read(const wav_file_t * const wav_file, char * const buf, int len)
 {
     assert(wav_file && buf && len > 0);
 
     return read(wav_file->fd, buf, len);
 }
 
-int wav_file_write(wav_file_t * const wav_file, char *buf, int len)
+int wav_file_write(wav_file_t * const wav_file, const char * const buf, int len)
 {
     assert(wav_file && buf && len > 0);
 

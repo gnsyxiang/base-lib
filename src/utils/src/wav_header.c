@@ -25,7 +25,113 @@
 #include "wav_header.h"
 #undef U_WAV_HEADER_GB
 
+#define FORMAT_PCM	(1)			// 表示存储pcm数据
 // #define WAV_P_HEADER
+
+static void wav_create_header(wav_header_t *wav_header, 
+        uint32_t channel, uint32_t sample_rate, uint32_t sample_length);
+static int check_wav_header_valid(wav_header_t *wav_header);
+#ifdef WAV_P_HEADER
+static char *format_to_str(uint16_t fmt);
+static void print_wav_header(wav_header_t *wav_header);
+#endif
+
+int wav_header_r(int fd, wav_header_t * wav_header)
+{
+	assert((fd >=0) && wav_header);
+
+	if (read(fd, &wav_header->riff, WAV_HEADER_RIFF_LEN) != WAV_HEADER_RIFF_LEN
+     || read(fd, &wav_header->fmt,  WAV_HEADER_FMT_LEN)  != WAV_HEADER_FMT_LEN
+     || read(fd, &wav_header->data, WAV_HEADER_DATA_LEN) != WAV_HEADER_DATA_LEN) {
+
+		fprintf(stderr, "Error WAV_ReadHeader\n");
+		return -1;
+	}
+
+    if (check_wav_header_valid(wav_header) < 0)
+        return -2;
+
+#ifdef WAV_P_HEADER
+    print_wav_header(wav_header);
+#endif
+
+    return 0;
+}
+
+int wav_header_w(int fd, wav_header_t * wav_header,
+    uint32_t channel, uint32_t sample_rate, uint32_t sample_length)
+{
+	assert((fd >=0) && wav_header);
+
+    wav_create_header(wav_header, channel, sample_rate, sample_length);
+	
+	if (check_wav_header_valid(wav_header) < 0)
+		return -1;
+
+	if (write(fd, &wav_header->riff, WAV_HEADER_RIFF_LEN) != WAV_HEADER_RIFF_LEN
+     || write(fd, &wav_header->fmt,  WAV_HEADER_FMT_LEN)  != WAV_HEADER_FMT_LEN
+     || write(fd, &wav_header->data, WAV_HEADER_DATA_LEN) != WAV_HEADER_DATA_LEN) {
+		
+		fprintf(stderr, "Error WAV_WriteHeader\n");
+		return -2;
+	}
+
+#ifdef WAV_P_HEADER
+    print_wav_header(wav_header);
+#endif
+
+    return 0;
+}
+
+void wav_update_header(wav_header_t *wav_header,  uint32_t pcm_len)
+{
+	assert((pcm_len > 0) && wav_header);
+
+    wav_header->data.length = pcm_len + 44;
+    wav_header->riff.len    = pcm_len + 44 - 8;
+}
+
+/********************************************************/
+
+static int check_wav_header_valid(wav_header_t *wav_header)
+{
+	if (wav_header->riff.magic != WAV_RIFF
+            || wav_header->riff.type != WAV_WAVE
+            || wav_header->fmt.magic != WAV_FMT
+            || wav_header->fmt.size != LE_INT(16)
+            || (wav_header->fmt.channel != LE_SHORT(1)
+                && wav_header->fmt.channel != LE_SHORT(2)
+                && wav_header->fmt.channel != LE_SHORT(3)
+                && wav_header->fmt.channel != LE_SHORT(4)
+                && wav_header->fmt.channel != LE_SHORT(5))
+            || wav_header->data.magic != WAV_DATA) {
+		
+		fprintf(stderr, "non standard wav file.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static void wav_create_header(wav_header_t *wav_header, 
+        uint32_t channel, uint32_t sample_rate, uint32_t sample_length)
+{
+	wav_header->riff.magic = WAV_RIFF;
+    wav_header->riff.len   = 0;
+    wav_header->riff.type  = WAV_WAVE;
+
+    wav_header->fmt.magic         = WAV_FMT;
+    wav_header->fmt.size          = LE_INT(16);
+    wav_header->fmt.format        = FORMAT_PCM;
+    wav_header->fmt.channel       = LE_SHORT(channel);
+    wav_header->fmt.sample_rate   = sample_rate;
+    wav_header->fmt.byte_rate     = (channel * sample_length / 8) * sample_rate;
+    wav_header->fmt.block_align   = channel * sample_length / 8;
+    wav_header->fmt.sample_length = sample_length;
+
+    wav_header->data.magic  = WAV_DATA;
+    wav_header->data.length = 0;
+}
 
 #ifdef WAV_P_HEADER
 static char *format_to_str(uint16_t fmt)
@@ -95,100 +201,4 @@ static void print_wav_header(wav_header_t *wav_header)
 	printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 }
 #endif
-
-static int check_wav_header_valid(wav_header_t *wav_header)
-{
-	if (wav_header->riff.magic != WAV_RIFF
-            || wav_header->riff.type != WAV_WAVE
-            || wav_header->fmt.magic != WAV_FMT
-            || wav_header->fmt.size != LE_INT(16)
-            || (wav_header->fmt.channel != LE_SHORT(1)
-                && wav_header->fmt.channel != LE_SHORT(2)
-                && wav_header->fmt.channel != LE_SHORT(3)
-                && wav_header->fmt.channel != LE_SHORT(4)
-                && wav_header->fmt.channel != LE_SHORT(5))
-            || wav_header->data.magic != WAV_DATA) {
-		
-		fprintf(stderr, "non standard wav file.\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-int wav_header_r(int fd, wav_header_t * wav_header)
-{
-	assert((fd >=0) && wav_header);
-
-	if (read(fd, &wav_header->riff, WAV_HEADER_RIFF_LEN) != WAV_HEADER_RIFF_LEN
-     || read(fd, &wav_header->fmt,  WAV_HEADER_FMT_LEN)  != WAV_HEADER_FMT_LEN
-     || read(fd, &wav_header->data, WAV_HEADER_DATA_LEN) != WAV_HEADER_DATA_LEN) {
-
-		fprintf(stderr, "Error WAV_ReadHeader\n");
-		return -1;
-	}
-
-    if (check_wav_header_valid(wav_header) < 0)
-        return -2;
-
-#ifdef WAV_P_HEADER
-    print_wav_header(wav_header);
-#endif
-
-    return 0;
-}
-
-#define FORMAT_PCM	(1)			// 表示存储pcm数据
-static void wav_create_header(wav_header_t *wav_header, 
-        uint32_t channel, uint32_t sample_rate, uint32_t sample_length)
-{
-	wav_header->riff.magic = WAV_RIFF;
-    wav_header->riff.len   = 0;
-    wav_header->riff.type  = WAV_WAVE;
-
-    wav_header->fmt.magic         = WAV_FMT;
-    wav_header->fmt.size          = LE_INT(16);
-    wav_header->fmt.format        = FORMAT_PCM;
-    wav_header->fmt.channel       = LE_SHORT(channel);
-    wav_header->fmt.sample_rate   = sample_rate;
-    wav_header->fmt.byte_rate     = (channel * sample_length / 8) * sample_rate;
-    wav_header->fmt.block_align   = channel * sample_length / 8;
-    wav_header->fmt.sample_length = sample_length;
-
-    wav_header->data.magic  = WAV_DATA;
-    wav_header->data.length = 0;
-}
-
-void wav_update_header(wav_header_t *wav_header,  uint32_t pcm_len)
-{
-	assert((pcm_len > 0) && wav_header);
-
-    wav_header->data.length = pcm_len + 44;
-    wav_header->riff.len    = pcm_len + 44 - 8;
-}
-
-int wav_header_w(int fd, wav_header_t * wav_header,
-    uint32_t channel, uint32_t sample_rate, uint32_t sample_length)
-{
-	assert((fd >=0) && wav_header);
-
-    wav_create_header(wav_header, channel, sample_rate, sample_length);
-	
-	if (check_wav_header_valid(wav_header) < 0)
-		return -1;
-
-	if (write(fd, &wav_header->riff, WAV_HEADER_RIFF_LEN) != WAV_HEADER_RIFF_LEN
-     || write(fd, &wav_header->fmt,  WAV_HEADER_FMT_LEN)  != WAV_HEADER_FMT_LEN
-     || write(fd, &wav_header->data, WAV_HEADER_DATA_LEN) != WAV_HEADER_DATA_LEN) {
-		
-		fprintf(stderr, "Error WAV_WriteHeader\n");
-		return -2;
-	}
-
-#ifdef WAV_P_HEADER
-    print_wav_header(wav_header);
-#endif
-
-    return 0;
-}
 

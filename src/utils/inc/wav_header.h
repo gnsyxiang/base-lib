@@ -91,10 +91,39 @@ typedef struct _wav_header_tag {
 #define WAV_HEADER_FMT_LEN  sizeof(wav_fmt_t)
 #define WAV_HEADER_DATA_LEN sizeof(wav_data_t)
 
+/**
+ * @brief 读取wav头
+ *
+ * @param fd: wav文件句柄
+ * @param wav_header: wav头结构体指针
+ *
+ * @return 成功返回0，失败为负值
+ */
 U_WAV_HEADER_EX int wav_header_r(int fd, wav_header_t * wav_header);
+
+
+/**
+ * @brief 向文件写入wav头
+ *
+ * @param fd: wav文件句柄
+ * @param wav_header: wav头结构体指针
+ * @param channel: 音频包含的通道号
+ * @param sample_rate: 采样频率
+ * @param sample_length: 采样精度
+ *
+ * @return 成功返回0，失败为负值
+ */
 U_WAV_HEADER_EX int wav_header_w(int fd, wav_header_t * wav_header,
     uint32_t channel, uint32_t sample_rate, uint32_t sample_length);
 
+/**
+ * @brief 更新wav头
+ *
+ * @param wav_header: wav头结构体指针
+ * @param pcm_len: pcm数据长度
+ *
+ * @return 无
+ */
 U_WAV_HEADER_EX void wav_update_header(wav_header_t *wav_header, uint32_t pcm_len);
 
 #ifdef __cplusplus

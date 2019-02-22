@@ -32,20 +32,72 @@ extern "C" {
 #define U_WAV_FILE_EX
 #endif
 
+
+/**
+ * @brief wav_file结构体
+ */
 typedef struct _wav_file_tag {
-    wav_header_t wav_header;
-    int fd;
-    int open_create_flag;
-    uint32_t pcm_len;
+    int fd;                     // 打开wav的句柄
+    int pcm_len;                // pcm数据长度
+    int open_create_flag;       // 区分打开和新建wav文件，为新建文件更新wav头准备
+
+    wav_header_t wav_header;    // wav头结构体
 } wav_file_t;
 
+/**
+ * @brief 打开wav文件
+ *
+ * @param name: wav文件名
+ * @param wav_file: wav_file结构体指针
+ *
+ * @return 成功返回0，失败为负值
+ */
 U_WAV_FILE_EX int wav_file_open(const char * const name, wav_file_t * const wav_file);
+
+/**
+ * @brief 新建wav文件
+ *
+ * @param name: wav文件名
+ * @param wav_file: wav_file结构体指针
+ * @param channel: 音频包含的通道号
+ * @param sample_rate: 采样频率
+ * @param sample_length: 采样精度
+ *
+ * @return 成功返回0，失败为负值
+ */
 U_WAV_FILE_EX int wav_file_create(const char * const name, wav_file_t * const wav_file,
     uint32_t channel, uint32_t sample_rate, uint32_t sample_length);
+
+/**
+ * @brief 关闭wav文件
+ *
+ * @param wav_file: wav_file结构体指针
+ *
+ * @return 成功返回0，失败为负值
+ */
 U_WAV_FILE_EX int wav_file_close(wav_file_t * const wav_file);
 
-U_WAV_FILE_EX int wav_file_read(const wav_file_t * const wav_file, char *buf, int len);
-U_WAV_FILE_EX int wav_file_write(wav_file_t * const wav_file, char *buf, int len);
+/**
+ * @brief 读取pcm数据
+ *
+ * @param wav_file: wav_file结构体指针
+ * @param buf: 读取pcm数据的指针
+ * @param len: 读取pcm的长度
+ *
+ * @return 成功返回读取的长度，失败返回-1
+ */
+U_WAV_FILE_EX int wav_file_read(const wav_file_t * const wav_file, char * const buf, int len);
+
+/**
+ * @brief 
+ *
+ * @param wav_file
+ * @param buf: 写入pcm数据的指针
+ * @param len: 写入pcm的长度
+ *
+ * @return 成功返回写入的长度，失败返回-1
+ */
+U_WAV_FILE_EX int wav_file_write(wav_file_t * const wav_file, const char * const buf, int len);
 
 #ifdef __cplusplus
 }
